@@ -12,6 +12,7 @@ namespace Chess.GUI
         public static int WHITE = 0;
         public static int BLACK = 1;
 
+       
 
 
         bool ingame;
@@ -79,6 +80,7 @@ namespace Chess.GUI
             this.figuretype = FigureType;
             this.gameBoard = Board;
             this.position = Position;
+            
             configure();
         }
 
@@ -250,6 +252,11 @@ namespace Chess.GUI
         public List<FigurePosition> GetLegalMoves()
         {
             
+            
+            //TODO Bishop ( and queen bishop part) are not correct yet!!!!
+            //TODO Check for the king is not implemented
+            //TODO Pawn at start pos with figure in way is missing moves
+
             List<FigurePosition> legalMoves = new List<FigurePosition>();
             if (this.ingame)
             {
