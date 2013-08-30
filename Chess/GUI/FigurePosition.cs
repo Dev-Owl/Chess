@@ -193,5 +193,19 @@ namespace Chess.GUI
         {
             return Compare.PositionY < this.PositionY;
         }
+
+        public System.Drawing.Point ToDrawingPoint(int Width,int Height, int OffsetX=0,int OffsetY = 0)
+        {
+            System.Drawing.Point pFigure = new System.Drawing.Point();
+            int[] pos = this.ToInt();
+            pFigure.X = (pos[0] * Width) + OffsetX;
+            pFigure.Y = ((7  - pos[1]) * Height) + OffsetY;
+            return pFigure;
+        }
+
+        public System.Drawing.Rectangle ToDrawingRectangle(int Width, int Height)
+        {
+            return new System.Drawing.Rectangle(this.ToDrawingPoint(Width, Height), new System.Drawing.Size(Width, Height));
+        }
     }
 }
