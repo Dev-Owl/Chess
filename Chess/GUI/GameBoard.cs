@@ -5,6 +5,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Drawing;
+using Chess.Tools;
 
 namespace Chess.GUI
 {
@@ -47,8 +48,24 @@ namespace Chess.GUI
         {
             get { return this.Height/8; }
         }
+
+        private int offsetX = 5;
+        public int OffsetX
+        {
+            get { return offsetX; }
+            set { offsetX = value; }
+        }
+        private int offsetY = 5;
+        public int OffsetY
+        {
+            get { return offsetY; }
+            set { offsetY = value; }
+        }
+
         #endregion
 
+        private Dictionary<EFigures, Image> whiteFigureFiles;
+        private Dictionary<EFigures, Image> blackFigureFiles;
 
         List<Figure> figures;
         public List<Figure> Figures
@@ -66,20 +83,32 @@ namespace Chess.GUI
 
         private int[,] gameBoard;
 
+      
+
         public GameBoard() :base()
         {
             figures = new List<Figure>();
             gameBoard = new int[8, 8];
             highlightFields = new List<FigurePosition>();
-        }
+            whiteFigureFiles = new Dictionary<EFigures, Image>();
+            blackFigureFiles = new Dictionary<EFigures, Image>();
+            base.DoubleBuffered = true;
+            
+
+        }      
 
         #region Drawing
+        private Image resizeImage(Image imgToResize, Size size)
+        {
+            return (Image)(new Bitmap(imgToResize, size));
+        }
+        
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
             Graphics gra = e.Graphics;
             drawBoard(gra);
-            drawFigures(gra); 
+            drawFigures(gra);
         }
 
         private void drawBoard(Graphics gra)
@@ -105,14 +134,43 @@ namespace Chess.GUI
                 gra.FillRectangle(activeField, selectedX * width, selectedY * height, width, height);
                 foreach (FigurePosition selectedPos in this.highlightFields)
                 {
-                    gra.FillRectangle(activeField, selectedPos.ToInt()[0] * width, selectedPos.ToInt()[1] * height, width, height);
+                    gra.FillRectangle(activeField, selectedPos.ToDrawingRectangle(width, height));
+                    //gra.FillRectangle(activeField, selectedPos.ToInt()[0] * width, selectedPos.ToInt()[1] * height, width, height);
                 }
             }
         }
 
         private void drawFigures(Graphics gra)
-        { 
-        
+        {
+            int width = this.FieldSizeX, height = this.FieldSizeY;
+
+            foreach (Figure fig in this.figures.Where(k => k.Ingame))
+            {
+                if (fig.Color == Figure.BLACK)
+                {
+                    gra.DrawImage(this.blackFigureFiles[fig.Figuretype], fig.Position.ToDrawingPoint(width,height,offsetX,offsetY));
+                }
+                else {
+                    gra.DrawImage(this.whiteFigureFiles[fig.Figuretype], fig.Position.ToDrawingPoint(width, height, offsetX, offsetY));
+                }
+            }
+        }
+
+        public void LoadResources()
+        {
+            Size imageSize = new System.Drawing.Size(this.FieldSizeX, this.FieldSizeY);
+            whiteFigureFiles.Add(EFigures.Pawn, resizeImage(Image.FromFile(@"Graphics\PawnWhite.png"), imageSize));
+            whiteFigureFiles.Add(EFigures.Queen, resizeImage(Image.FromFile(@"Graphics\QueenWhite.png"), imageSize));
+            whiteFigureFiles.Add(EFigures.Rook, resizeImage(Image.FromFile(@"Graphics\RookWhite.png"), imageSize));
+            whiteFigureFiles.Add(EFigures.Knight, resizeImage(Image.FromFile(@"Graphics\KnightWhite.png"), imageSize));
+            whiteFigureFiles.Add(EFigures.Bishop, resizeImage(Image.FromFile(@"Graphics\BishopWhite.png"), imageSize));
+            whiteFigureFiles.Add(EFigures.King, resizeImage(Image.FromFile(@"Graphics\KingWhite.png"), imageSize));
+            blackFigureFiles.Add(EFigures.Pawn, resizeImage(Image.FromFile(@"Graphics\PawnBlack.png"), imageSize));
+            blackFigureFiles.Add(EFigures.Queen, resizeImage(Image.FromFile(@"Graphics\QueenBlack.png"), imageSize));
+            blackFigureFiles.Add(EFigures.Rook, resizeImage(Image.FromFile(@"Graphics\RookBlack.png"), imageSize));
+            blackFigureFiles.Add(EFigures.Knight, resizeImage(Image.FromFile(@"Graphics\KnightBlack.png"), imageSize));
+            blackFigureFiles.Add(EFigures.Bishop, resizeImage(Image.FromFile(@"Graphics\BishopBlack.png"), imageSize));
+            blackFigureFiles.Add(EFigures.King, resizeImage(Image.FromFile(@"Graphics\KingBlack.png"), imageSize));
         }
         #endregion
 
@@ -125,7 +183,7 @@ namespace Chess.GUI
                 highlightFields.Clear();
                 selectedX = (int)(e.X / FieldSizeX);
                 selectedY = (int)(e.Y / FieldSizeY);
-                FigurePosition selectedPos = new FigurePosition(selectedX+1, selectedY+1);
+                FigurePosition selectedPos = new FigurePosition(selectedX+1, 8 - selectedY);
                 Figure tmp = this.figures.Find(k => k.Position.Same(selectedPos));
                 if(tmp != null)
                 {
@@ -137,6 +195,7 @@ namespace Chess.GUI
 
         public void StartNewGame()
         {
+            LoadResources();
             this.figures.Clear();
             this.gameRunning = true;
             
@@ -165,7 +224,7 @@ namespace Chess.GUI
             }
 
             //TESTING !!!!!
-            this.figures.Find(f => f.Figuretype == EFigures.Queen && f.Color == Figure.BLACK).Position = new FigurePosition('b', 4);
+            this.figures.Find(f => f.Figuretype == EFigures.Bishop && f.Color == Figure.BLACK).Position = new FigurePosition('b', 4);
             //TESTING !!!!!
 
             for (int x = 0; x < 8; ++x)
@@ -177,6 +236,7 @@ namespace Chess.GUI
             }
             this.figures.ForEach(k => this.gameBoard[k.Position.PositionX - 97, k.Position.PositionY-1] = (int)k.Figuretype);
             this.figures.ForEach(k => k.Ingame = true);
+            this.Invalidate();
         }
 
         #region Figure and Position
