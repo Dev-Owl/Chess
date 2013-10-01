@@ -36,6 +36,12 @@
     <StartupObject>Chess.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MongoDB.Bson">
+      <HintPath>C:\Users\muhle001\Downloads\CSharpDriver-1.8.2\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver">
+      <HintPath>C:\Users\muhle001\Downloads\CSharpDriver-1.8.2\MongoDB.Driver.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -48,9 +54,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GUI\EFigures.cs" />
-    <Compile Include="GUI\Figure.cs" />
-    <Compile Include="GUI\FigurePosition.cs" />
+    <Compile Include="Game\MagicBitBoard.cs" />
+    <Compile Include="Game\Defaults.cs" />
+    <Compile Include="Game\EFigures.cs" />
+    <Compile Include="Game\MagicFigure.cs" />
+    <Compile Include="GUI\DrawHelper.cs" />
     <Compile Include="GUI\GameBoard.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -63,6 +71,14 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Thinking.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Thinking.Designer.cs">
+      <DependentUpon>Thinking.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Game\AttackDatabase.cs" />
+    <Compile Include="Tools\BitOperations.cs" />
     <Compile Include="Tools\INI.cs" />
     <Compile Include="Tools\DumpArray.cs" />
     <EmbeddedResource Include="MainForm.resx">
@@ -78,6 +94,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="Thinking.resx">
+      <DependentUpon>Thinking.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -91,10 +110,11 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Game\" />
-  </ItemGroup>
-  <ItemGroup>
+    <Content Include="Data\mongod.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Graphics\BishopBlack.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

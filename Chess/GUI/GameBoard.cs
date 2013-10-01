@@ -6,11 +6,24 @@ using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Drawing;
 using Chess.Tools;
+using Chess.Game;
+
 
 namespace Chess.GUI
 {
     public class GameBoard  : Panel
     {
+        //Magic
+        MagicBitBoard magicboard;
+
+        public MagicBitBoard Magicboard
+        {
+            get { return magicboard; }
+            set { magicboard = value; }
+        }
+       
+
+
 
         #region Draw and Colors
         int selectedX = -1;
@@ -27,7 +40,7 @@ namespace Chess.GUI
             set { selectedY = value; }
         }
 
-        List<FigurePosition> highlightFields;
+        //List<FigurePosition> highlightFields;
 
         bool selected = false;
         public bool Selected
@@ -62,17 +75,19 @@ namespace Chess.GUI
             set { offsetY = value; }
         }
 
+        public UInt64 SelectedMask=0;
+
         #endregion
 
         private Dictionary<EFigures, Image> whiteFigureFiles;
         private Dictionary<EFigures, Image> blackFigureFiles;
 
-        List<Figure> figures;
-        public List<Figure> Figures
-        {
-            get { return figures; }
-            set { figures = value; }
-        }
+        //List<Figure> figures;
+        //public List<Figure> Figures
+        //{
+        //    get { return figures; }
+        //    set { figures = value; }
+        //}
 
         bool gameRunning = false;
         public bool GameRunning
@@ -81,19 +96,21 @@ namespace Chess.GUI
             set { gameRunning = value; }
         }
 
-        private int[,] gameBoard;
+        public delegate void PropertyChangeHandler(string Event, object data);
+        // The event
+        public event PropertyChangeHandler PropertyChange;
 
-      
+
 
         public GameBoard() :base()
         {
-            figures = new List<Figure>();
-            gameBoard = new int[8, 8];
-            highlightFields = new List<FigurePosition>();
+            //figures = new List<Figure>();
+            
+       //     highlightFields = new List<FigurePosition>();
             whiteFigureFiles = new Dictionary<EFigures, Image>();
             blackFigureFiles = new Dictionary<EFigures, Image>();
             base.DoubleBuffered = true;
-            
+            magicboard = new MagicBitBoard();
 
         }      
 
@@ -132,28 +149,57 @@ namespace Chess.GUI
             if (selected)
             {
                 gra.FillRectangle(activeField, selectedX * width, selectedY * height, width, height);
-                foreach (FigurePosition selectedPos in this.highlightFields)
+                if (this.SelectedMask > 0)
                 {
-                    gra.FillRectangle(activeField, selectedPos.ToDrawingRectangle(width, height));
-                    //gra.FillRectangle(activeField, selectedPos.ToInt()[0] * width, selectedPos.ToInt()[1] * height, width, height);
+                    for (int index = 0; index < 64; ++index)
+                    {
+                        if (((SelectedMask >> index) & 1) != 0)
+                        {
+                            gra.FillRectangle(activeField, DrawHelper.ToDrawingRectangle(index, width, height));
+                        }
+                    }
                 }
+                
+                //foreach (FigurePosition selectedPos in this.highlightFields)
+                //{
+                //    gra.FillRectangle(activeField, selectedPos.ToDrawingRectangle(width, height));
+                //    //gra.FillRectangle(activeField, selectedPos.ToInt()[0] * width, selectedPos.ToInt()[1] * height, width, height);
+                //}
             }
         }
 
         private void drawFigures(Graphics gra)
         {
             int width = this.FieldSizeX, height = this.FieldSizeY;
-
-            foreach (Figure fig in this.figures.Where(k => k.Ingame))
+            UInt64 position = 1;
+            for (Int16 i = 0; i < 64; i++)
             {
-                if (fig.Color == Figure.BLACK)
+                
+                MagicFigure tmp = this.magicboard.GetFigureAtPosition(position  );
+                if (tmp != null)
                 {
-                    gra.DrawImage(this.blackFigureFiles[fig.Figuretype], fig.Position.ToDrawingPoint(width,height,offsetX,offsetY));
+                    if (tmp.Color == Defaults.BLACK)
+                    {
+                        //Draw image here 
+                        gra.DrawImage(this.blackFigureFiles[tmp.Type], DrawHelper.ToDrawingPoint(i, width, height, offsetX, OffsetY));
+                    }
+                    else
+                    {
+                        gra.DrawImage(this.whiteFigureFiles[tmp.Type], DrawHelper.ToDrawingPoint(i, width, height, offsetX, OffsetY));
+                    }
                 }
-                else {
-                    gra.DrawImage(this.whiteFigureFiles[fig.Figuretype], fig.Position.ToDrawingPoint(width, height, offsetX, offsetY));
-                }
+                position = (position << 1);
             }
+            //foreach (Figure fig in this.figures.Where(k => k.Ingame))
+            //{
+            //    if (fig.Color == Figure.BLACK)
+            //    {
+            //        gra.DrawImage(this.blackFigureFiles[fig.Figuretype], fig.Position.ToDrawingPoint(width,height,offsetX,offsetY));
+            //    }
+            //    else {
+            //        gra.DrawImage(this.whiteFigureFiles[fig.Figuretype], fig.Position.ToDrawingPoint(width, height, offsetX, offsetY));
+            //    }
+            //}
         }
 
         public void LoadResources()
@@ -174,20 +220,25 @@ namespace Chess.GUI
         }
         #endregion
 
+        #region EventAndCallbacks
+
         protected override void OnMouseClick(MouseEventArgs e)
         {
             base.OnMouseClick(e);
             if (gameRunning)
             {
+                SelectedMask = 0;
                 selected = true;
-                highlightFields.Clear();
+                //highlightFields.Clear();
                 selectedX = (int)(e.X / FieldSizeX);
                 selectedY = (int)(e.Y / FieldSizeY);
-                FigurePosition selectedPos = new FigurePosition(selectedX+1, 8 - selectedY);
-                Figure tmp = this.figures.Find(k => k.Position.Same(selectedPos));
-                if(tmp != null)
+                UInt64 bitBoardPosition = DrawHelper.FromDrawingPoint(7-selectedX, 7 - selectedY);
+                MagicFigure fig = this.magicboard.GetFigureAtPosition(bitBoardPosition);
+                if(fig != null)
                 {
-                    highlightFields = tmp.GetLegalMoves();
+                  //Get valid moves for the selected figures
+                    SelectedMask = this.magicboard.GetMoveForFigure(fig, (Int16)((7 - selectedX) + ((7 - selectedY) * 8)));
+                    FireChangeEvent("Figure selected", SelectedMask);
                 }
                 this.Invalidate();
             }
@@ -196,91 +247,106 @@ namespace Chess.GUI
         public void StartNewGame()
         {
             LoadResources();
-            this.figures.Clear();
             this.gameRunning = true;
-            
-            this.figures.Add(new Figure(EFigures.King, Figure.WHITE, this));
-            this.figures.Add(new Figure(EFigures.Queen, Figure.WHITE, this));
-            this.figures.Add(new Figure(EFigures.Knight, Figure.WHITE, this));
-            this.figures.Add(new Figure(EFigures.Bishop, Figure.WHITE, this));
-            this.figures.Add(new Figure(EFigures.Rook, Figure.WHITE, this));
-            this.figures.Add(new Figure(EFigures.Knight, Figure.WHITE, this));
-            this.figures.Add(new Figure(EFigures.Bishop, Figure.WHITE, this));
-            this.figures.Add(new Figure(EFigures.Rook, Figure.WHITE, this));
-
-
-            this.figures.Add(new Figure(EFigures.King, Figure.BLACK, this));
-            this.figures.Add(new Figure(EFigures.Queen, Figure.BLACK, this));
-            this.figures.Add(new Figure(EFigures.Knight, Figure.BLACK, this));
-            this.figures.Add(new Figure(EFigures.Bishop, Figure.BLACK, this));
-            this.figures.Add(new Figure(EFigures.Rook, Figure.BLACK, this));
-            this.figures.Add(new Figure(EFigures.Knight, Figure.BLACK, this));
-            this.figures.Add(new Figure(EFigures.Bishop, Figure.BLACK, this));
-            this.figures.Add(new Figure(EFigures.Rook, Figure.BLACK, this));
-
-            for (int i = 0; i < 16; ++i)
-            {
-                this.figures.Add(new Figure(EFigures.Pawn, i > 7 ? Figure.BLACK : Figure.WHITE, this));
-            }
-
-            //TESTING !!!!!
-            this.figures.Find(f => f.Figuretype == EFigures.Bishop && f.Color == Figure.BLACK).Position = new FigurePosition('b', 4);
-            //TESTING !!!!!
-
-            for (int x = 0; x < 8; ++x)
-            {
-                for (int y = 0; y < 8; ++y)
-                {
-                    this.gameBoard[x, y] = 0;
-                }
-            }
-            this.figures.ForEach(k => this.gameBoard[k.Position.PositionX - 97, k.Position.PositionY-1] = (int)k.Figuretype);
-            this.figures.ForEach(k => k.Ingame = true);
+            magicboard.NewGame();
             this.Invalidate();
+            FireChangeEvent("New Game");
+
+            #region OLD
+            //this.figures.Clear();
+            //this.figures.Add(new Figure(EFigures.King, Figure.WHITE, this));
+            //this.figures.Add(new Figure(EFigures.Queen, Figure.WHITE, this));
+            //this.figures.Add(new Figure(EFigures.Knight, Figure.WHITE, this));
+            //this.figures.Add(new Figure(EFigures.Bishop, Figure.WHITE, this));
+            //this.figures.Add(new Figure(EFigures.Rook, Figure.WHITE, this));
+            //this.figures.Add(new Figure(EFigures.Knight, Figure.WHITE, this));
+            //this.figures.Add(new Figure(EFigures.Bishop, Figure.WHITE, this));
+            //this.figures.Add(new Figure(EFigures.Rook, Figure.WHITE, this));
+
+
+            //this.figures.Add(new Figure(EFigures.King, Figure.BLACK, this));
+            //this.figures.Add(new Figure(EFigures.Queen, Figure.BLACK, this));
+            //this.figures.Add(new Figure(EFigures.Knight, Figure.BLACK, this));
+            //this.figures.Add(new Figure(EFigures.Bishop, Figure.BLACK, this));
+            //this.figures.Add(new Figure(EFigures.Rook, Figure.BLACK, this));
+            //this.figures.Add(new Figure(EFigures.Knight, Figure.BLACK, this));
+            //this.figures.Add(new Figure(EFigures.Bishop, Figure.BLACK, this));
+            //this.figures.Add(new Figure(EFigures.Rook, Figure.BLACK, this));
+
+            //for (int i = 0; i < 16; ++i)
+            //{
+            //    this.figures.Add(new Figure(EFigures.Pawn, i > 7 ? Figure.BLACK : Figure.WHITE, this));
+            //}
+
+            ////TESTING !!!!!
+            //this.figures.Find(f => f.Figuretype == EFigures.Knight && f.Color == Figure.BLACK).Position = new FigurePosition('d', 3);
+            //this.figures.Find(f => f.Figuretype == EFigures.Rook && f.Color == Figure.BLACK).Position = new FigurePosition('e', 3);
+            ////TESTING !!!!!
+
+            //for (int x = 0; x < 8; ++x)
+            //{
+            //    for (int y = 0; y < 8; ++y)
+            //    {
+            //        this.gameBoard[x, y] = 0;
+            //    }
+            //}
+            //this.figures.ForEach(k => this.gameBoard[k.Position.PositionX - 97, k.Position.PositionY-1] = (int)k.Figuretype);
+            //this.figures.ForEach(k => k.Ingame = true);
+            #endregion
         }
 
-        #region Figure and Position
-        public bool PositionFree(FigurePosition SinglePosition)
+        private void FireChangeEvent(string Event ="",object data=null)
         {
-            return this.figures.Count<Figure>(f => f.Position.Same(SinglePosition) && f.Ingame) == 0;
-        }
-
-        public bool PositionFree(FigurePosition[] MultiPositions)
-        {
-            return this.figures.FindAll(f => MultiPositions.Contains<FigurePosition>(f.Position) && f.Ingame).Count == 0;
-        }
-
-        public Figure GetFigureAt(FigurePosition SinglePosition)
-        {
-            return this.figures.Find(f => f.Position.Same(SinglePosition) && f.Ingame);
-        }
-
-        public List<Figure> GetFigureAt(FigurePosition[] Positions)
-        {
-            return this.figures.FindAll(f => Positions.FirstOrDefault<FigurePosition>( p=> p.Same( f.Position)) != null && f.Ingame);
-        }
-
-        public List<Figure> TestMove(Figure MovingFigure, FigurePosition Destination)
-        {
-            return null;
-        }
-
-        public void PreformMove(Figure MovingFigure, FigurePosition Destination)
-        {
-            
-        }
-
-        public bool TestCheckForColor(int COLOR)
-        {
-            //Get all figures that are not the same color as requested 
-            //Get all position where the fig can go
-            //If one of this positions match the kings position you are in check
-            //If all positions are matched it is checkmate
-
-            return false;
+               if (PropertyChange != null)
+            {
+                PropertyChange(Event, data);
+            }
         }
 
         #endregion
+
+        //#region Figure and Position
+        //public bool PositionFree(FigurePosition SinglePosition)
+        //{
+        //    return this.figures.Count<Figure>(f => f.Position.Same(SinglePosition) && f.Ingame) == 0;
+        //}
+
+        //public bool PositionFree(FigurePosition[] MultiPositions)
+        //{
+        //    return this.figures.FindAll(f => MultiPositions.Contains<FigurePosition>(f.Position) && f.Ingame).Count == 0;
+        //}
+
+        //public Figure GetFigureAt(FigurePosition SinglePosition)
+        //{
+        //    return this.figures.Find(f => f.Position.Same(SinglePosition) && f.Ingame);
+        //}
+
+        //public List<Figure> GetFigureAt(FigurePosition[] Positions)
+        //{
+        //    return this.figures.FindAll(f => Positions.FirstOrDefault<FigurePosition>( p=> p.Same( f.Position)) != null && f.Ingame);
+        //}
+
+        //public List<Figure> TestMove(Figure MovingFigure, FigurePosition Destination)
+        //{
+        //    return null;
+        //}
+
+        //public void PreformMove(Figure MovingFigure, FigurePosition Destination)
+        //{
+            
+        //}
+
+        //public bool TestCheckForColor(int COLOR)
+        //{
+        //    //Get all figures that are not the same color as requested 
+        //    //Get all position where the fig can go
+        //    //If one of this positions match the kings position you are in check
+        //    //If all positions are matched it is checkmate
+
+        //    return false;
+        //}
+
+        //#endregion
 
     }
 }

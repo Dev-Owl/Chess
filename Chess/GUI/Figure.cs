@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Chess.Game;
+using Chess.GUI;
 
 namespace Chess.GUI
 {
@@ -255,7 +257,7 @@ namespace Chess.GUI
             
             //TODO Bishop ( and queen bishop part) are not correct yet!!!!
             //TODO Check for the king is not implemented
-            //TODO Pawn at start pos with figure in way is missing moves
+            
 
             List<FigurePosition> legalMoves = new List<FigurePosition>();
             if (this.ingame)
@@ -275,6 +277,7 @@ namespace Chess.GUI
                             {
                                 legalMoves.Add(this.Color == Figure.WHITE ? this.position.Forward() : this.position.Backward());
                             }
+
                             Figure lastFig = null;
                             List<Figure> blocking = this.gameBoard.GetFigureAt(legalMoves.ToArray());
                             foreach (Figure single in blocking)
@@ -283,9 +286,8 @@ namespace Chess.GUI
                                 {
                                     lastFig = single;
                                 }
-                                legalMoves.RemoveAll(p => this.Color == Figure.WHITE ? p.Above(this.Position) : p.Below(this.Position));
+                                legalMoves.RemoveAll(p => this.Color == Figure.WHITE ? p.Above(single.Position) || p.Same(single.Position) : p.Below(single.Position) || p.Same(single.Position));
                             }
-                            
                             //Check possible attack position
                             List<FigurePosition> attackPositions = new List<FigurePosition>();
                             if (this.position.PositionX == 'a' || this.position.PositionX == 'h')
@@ -302,6 +304,8 @@ namespace Chess.GUI
                             {
                                 attackFigures.FindAll(f => f.Color != this.Color).ForEach(p=> legalMoves.Add(p.Position));
                             }
+                       
+
                             #endregion
                         }
                         break;
@@ -417,6 +421,14 @@ namespace Chess.GUI
                                             if (lastFig == null || lastFig.Color != this.Color)
                                             {
                                                 legalMoves.Add(workingPos);
+                                                if (lastFig != null)
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                break;
                                             }
                                         }
                                     }
@@ -443,6 +455,14 @@ namespace Chess.GUI
                                             if (lastFig == null || lastFig.Color != this.Color)
                                             {
                                                 legalMoves.Add(workingPos);
+                                                if (lastFig != null)
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                break;
                                             }
                                         }
                                     }
@@ -470,6 +490,14 @@ namespace Chess.GUI
                                             if (lastFig == null || lastFig.Color != this.Color)
                                             {
                                                 legalMoves.Add(workingPos);
+                                                if (lastFig != null)
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                break;
                                             }
                                         }
                                     }
@@ -496,6 +524,13 @@ namespace Chess.GUI
                                             if (lastFig == null || lastFig.Color != this.Color)
                                             {
                                                 legalMoves.Add(workingPos);
+                                                if (lastFig != null)
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                            else {
+                                                break;
                                             }
                                         }
                                     }
@@ -636,8 +671,8 @@ namespace Chess.GUI
                             #region Queen
                             FigurePosition workingPos = this.position.TopLeft();
                             Figure lastFig = null;
-                            #region Bishop part
-                            if ( workingPos != null)
+                            #region Bishop
+                            if (workingPos != null)
                             {
                                 lastFig = this.gameBoard.GetFigureAt(workingPos);
                                 if (lastFig == null)
@@ -652,11 +687,19 @@ namespace Chess.GUI
                                             if (lastFig == null || lastFig.Color != this.Color)
                                             {
                                                 legalMoves.Add(workingPos);
+                                                if (lastFig != null)
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                break;
                                             }
                                         }
                                     }
                                 }
-                                else if( lastFig.Color != this.Color)
+                                else if (lastFig.Color != this.Color)
                                 {
                                     legalMoves.Add(workingPos);
                                 }
@@ -678,6 +721,14 @@ namespace Chess.GUI
                                             if (lastFig == null || lastFig.Color != this.Color)
                                             {
                                                 legalMoves.Add(workingPos);
+                                                if (lastFig != null)
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                break;
                                             }
                                         }
                                     }
@@ -705,6 +756,14 @@ namespace Chess.GUI
                                             if (lastFig == null || lastFig.Color != this.Color)
                                             {
                                                 legalMoves.Add(workingPos);
+                                                if (lastFig != null)
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                break;
                                             }
                                         }
                                     }
@@ -731,6 +790,14 @@ namespace Chess.GUI
                                             if (lastFig == null || lastFig.Color != this.Color)
                                             {
                                                 legalMoves.Add(workingPos);
+                                                if (lastFig != null)
+                                                {
+                                                    break;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                break;
                                             }
                                         }
                                     }
@@ -910,7 +977,20 @@ namespace Chess.GUI
                                     legalMoves.Add(workingPos);
                                 }
                             }
-                            //Check that it is not possible to bring your own king in a attack position
+                            //All figs that are ingame and not the same color
+                            List<Figure> opponentFigs = this.gameBoard.Figures.FindAll(F => F.Color != this.Color && F.Ingame);
+                            //Remove all Paws and the King that are more than two fields away
+                            opponentFigs.RemoveAll(F => F.Figuretype == EFigures.Pawn || F.Figuretype == EFigures.King && F.Position.DifferenceY(this.position.PositionY) > 2);
+                            opponentFigs.RemoveAll(F => F.Figuretype == EFigures.Knight &&( F.Position.DifferenceY(this.position.PositionY) > 3 || F.Position.DifferenceX(this.position.PositionX) > 3));
+                            opponentFigs.RemoveAll(F => F.Figuretype == EFigures.Rook && ( F.Position.PositionX != this.Position.PositionX && F.Position.PositionY != this.Position.PositionY));
+                            opponentFigs.RemoveAll(F => F.Figuretype == EFigures.Bishop && F.Position.ColorEqual(this.Position));
+                            List<FigurePosition> attackPos = new List<FigurePosition>();
+                            foreach (Figure figure in opponentFigs)
+                            {
+                                attackPos.AddRange(figure.GetLegalMoves());
+                            }
+                            
+                            
                             #endregion
                         }
                         break;
@@ -918,7 +998,8 @@ namespace Chess.GUI
             }
             return legalMoves;
         }
-    
+
+      
         
     }
 }

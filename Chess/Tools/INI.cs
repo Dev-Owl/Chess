@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Windows.Forms;
 
 namespace Chess.Tools
 {
@@ -37,8 +38,8 @@ namespace Chess.Tools
                 sr = new StreamReader(this.pathToFile);
             }
             catch (Exception ex)
-            { 
-            
+            {
+                MessageBox.Show("Error during opening the file. System message:"+ ex.Message,"Error",MessageBoxButtons.OK);
             }
             while (!sr.EndOfStream)
             {
