@@ -6,7 +6,7 @@ using Chess.Tools;
 
 namespace Chess.Game
 {
-   public class MagicBitBoard
+   public class MagicBitBoard : IDisposable
    {
 
        #region Figures
@@ -266,6 +266,14 @@ namespace Chess.Game
        {
            return 0;
        }
-      
-    }
+
+
+       public void Dispose()
+       {
+           if (this.db != null)
+           {
+               db.Dispose();
+           }
+       }
+   }
 }

@@ -15,7 +15,7 @@ namespace Chess.Game
     /// <summary>
     /// This class is able to provide accses to a attack database or build a new database
     /// </summary>
-    public class AttackDatabase
+    public class AttackDatabase : IDisposable
     {
         /*
          * TODO:  
@@ -705,5 +705,13 @@ namespace Chess.Game
             ObjectId _id { get; set; }
         }
 
+
+        public void Dispose()
+        {
+            if (thinking != null)
+            {
+                thinking.Dispose();
+            }
+        }
     }
 }

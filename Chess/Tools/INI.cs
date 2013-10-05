@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace Chess.Tools
 {
-    public class INI
+    public class INI : IDisposable
     {
         private string workingSection;
         private string pathToFile;
@@ -95,6 +95,14 @@ namespace Chess.Tools
             else
             {
                 return DefaultValue;
+            }
+        }
+
+        public void Dispose()
+        {
+            if (sr != null)
+            {
+                sr.Dispose();
             }
         }
     }
