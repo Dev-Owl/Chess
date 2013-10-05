@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Chess.Tools;
+using System.Drawing;
 
 namespace Chess.Game
 {
-   public class MagicBitBoard : IDisposable
+   public class BitBoard
    {
 
        #region Figures
-       private UInt64 whiteKing;
+        private UInt64 whiteKing;
         public UInt64 WhiteKing
         {
             get { return whiteKing; }
@@ -110,7 +111,7 @@ namespace Chess.Game
 
        AttackDatabase db;
        
-       public MagicBitBoard()
+       public BitBoard()
         {
             db = new AttackDatabase();
         }
@@ -138,14 +139,14 @@ namespace Chess.Game
            this.emptySquares = ~this.squarsBlocked;
        }
 
-       public UInt64 GetMoveForFigure(MagicFigure FigureToCheck, Int16 Position)
+       public UInt64 GetMoveForFigure(Figure FigureToCheck, Int16 Position)
        {
            //Get all possible moves for this figure at the givin position
            UInt64 legalMoves =  db.GetMoveMask(Position, FigureToCheck);
            UInt64 enemyOrEmpty = this.emptySquares; //all enemies or empty squares
            UInt64 enemy = 0; //All figs of the current enemy color
            UInt64 tempResult = 0; //calculation or temp values
-
+           Point CurrentPoistion = Chess.GUI.DrawHelper.PositionMatrix(Position);
            if (FigureToCheck.Color == Defaults.WHITE)
            {
                enemyOrEmpty |= this.blackPieces;
@@ -196,10 +197,10 @@ namespace Chess.Game
            return result;
        }
        
-       public MagicFigure GetFigureAtPosition(UInt64 Position)
+       public Figure GetFigureAtPosition(UInt64 Position)
         {
             UInt64 result = Position & this.squarsBlocked;
-            MagicFigure returnValue = null;
+            Figure returnValue = null;
             if (result != 0)
             {
                 result = Position & this.blackPieces;
@@ -208,72 +209,68 @@ namespace Chess.Game
                     //Black Figure
                     if ((this.blackKing & Position) > 0)
                     {
-                        returnValue = new MagicFigure(Defaults.BLACK, EFigures.King);
+                        returnValue = new Figure(Defaults.BLACK, EFigures.King);
                     }
                     if ((this.BlackQueens & Position) > 0)
                     {
-                        returnValue = new MagicFigure(Defaults.BLACK, EFigures.Queen);
+                        returnValue = new Figure(Defaults.BLACK, EFigures.Queen);
                     }
                     if ((this.BlackRooks & Position) > 0)
                     {
-                        returnValue = new MagicFigure(Defaults.BLACK, EFigures.Rook);
+                        returnValue = new Figure(Defaults.BLACK, EFigures.Rook);
                     }
                     if ((this.Blackbishops & Position) > 0)
                     {
-                        returnValue = new MagicFigure(Defaults.BLACK, EFigures.Bishop);
+                        returnValue = new Figure(Defaults.BLACK, EFigures.Bishop);
                     }
                     if ((this.BlackKnights & Position) > 0)
                     {
-                        returnValue = new MagicFigure(Defaults.BLACK, EFigures.Knight);
+                        returnValue = new Figure(Defaults.BLACK, EFigures.Knight);
                     }
                     if ((this.BlackPawns & Position) > 0)
                     {
-                        returnValue = new MagicFigure(Defaults.BLACK, EFigures.Pawn);
+                        returnValue = new Figure(Defaults.BLACK, EFigures.Pawn);
                     }
                 }
                 else { 
                     //White Figure
                     if ((this.whiteKing & Position) > 0)
                     {
-                        returnValue = new MagicFigure(Defaults.WHITE, EFigures.King);
+                        returnValue = new Figure(Defaults.WHITE, EFigures.King);
                     }
                     if ((this.whiteQueens & Position) > 0)
                     {
-                        returnValue = new MagicFigure(Defaults.WHITE, EFigures.Queen);
+                        returnValue = new Figure(Defaults.WHITE, EFigures.Queen);
                     }
                     if ((this.whiteRooks & Position) > 0)
                     {
-                        returnValue = new MagicFigure(Defaults.WHITE, EFigures.Rook);
+                        returnValue = new Figure(Defaults.WHITE, EFigures.Rook);
                     }
                     if ((this.whiteBishops & Position) > 0)
                     {
-                        returnValue = new MagicFigure(Defaults.WHITE, EFigures.Bishop);
+                        returnValue = new Figure(Defaults.WHITE, EFigures.Bishop);
                     }
                     if ((this.whiteKnights & Position) > 0)
                     {
-                        returnValue = new MagicFigure(Defaults.WHITE, EFigures.Knight);
+                        returnValue = new Figure(Defaults.WHITE, EFigures.Knight);
                     }
                     if ((this.whitePawns & Position) > 0)
                     {
-                        returnValue = new MagicFigure(Defaults.WHITE, EFigures.Pawn);
+                        returnValue = new Figure(Defaults.WHITE, EFigures.Pawn);
                     }
                 }
             }
             return returnValue;
         }
 
-       public UInt64 GetBoardForFigure(MagicFigure Figure)
+       public UInt64 GetBoardForFigure(Figure Figure)
        {
            return 0;
        }
 
-
-       public void Dispose()
+       public UInt64 FileToRank(UInt64 Source, Int16 File)
        {
-           if (this.db != null)
-           {
-               db.Dispose();
-           }
+           return (Source >> 7-File) & Defaults.FirstFile;
        }
-   }
+    }
 }

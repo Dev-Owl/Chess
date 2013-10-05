@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Chess.Game
 {
-   public class MagicFigure
+   public class Figure
     {
 
         private int color;
@@ -22,7 +22,7 @@ namespace Chess.Game
             set { type = value; }
         }
 
-        public MagicFigure(int Color, EFigures Type)
+        public Figure(int Color, EFigures Type)
         {
             this.color = Color;
             this.type = Type;
