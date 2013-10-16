@@ -13,7 +13,7 @@ namespace Chess.Tools
         private string pathToFile;
         private StreamReader sr;
         private Dictionary<String, List<string[]>> content;
-
+        private bool _Disposed;
 
         public INI(string PathToFile)
         {
@@ -24,6 +24,11 @@ namespace Chess.Tools
             this.pathToFile = PathToFile;
             this.content = new Dictionary<string, List<string[]>>();
             Read();
+        }
+
+        ~INI()
+        {
+            Dispose();
         }
 
         public void Read()
@@ -100,10 +105,15 @@ namespace Chess.Tools
 
         public void Dispose()
         {
+            
             if (sr != null)
             {
                 sr.Dispose();
             }
+            GC.SuppressFinalize(this);
         }
+
+      
+        
     }
 }
