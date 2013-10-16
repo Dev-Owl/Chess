@@ -7,10 +7,10 @@ using System.Drawing;
 
 namespace Chess.Game
 {
-   public class BitBoard
+   public class BitBoard :IDisposable
    {
 
-       #region Figures
+        #region Figures
         private UInt64 whiteKing;
         public UInt64 WhiteKing
         {
@@ -107,14 +107,21 @@ namespace Chess.Game
             get { return emptySquares; }
             set { emptySquares = value; }
         }
-       #endregion
+        #endregion
+
+
 
        AttackDatabase db;
        
        public BitBoard()
-        {
-            db = new AttackDatabase();
-        }
+       {
+           db = new AttackDatabase();
+       }
+
+       ~BitBoard()
+       {
+           this.Dispose();
+       }
 
        public void NewGame()
        {
@@ -147,6 +154,7 @@ namespace Chess.Game
            UInt64 enemy = 0; //All figs of the current enemy color
            UInt64 tempResult = 0; //calculation or temp values
            Point CurrentPoistion = Chess.GUI.DrawHelper.PositionMatrix(Position);
+
            if (FigureToCheck.Color == Defaults.WHITE)
            {
                enemyOrEmpty |= this.blackPieces;
@@ -158,11 +166,7 @@ namespace Chess.Game
                enemy = this.whitePieces;
            }
            legalMoves &= enemyOrEmpty;
-           /*
-            *  Idea for the Other figures:
-            *  
-            * 
-            */
+           
            switch (FigureToCheck.Type)
            { 
                case EFigures.Pawn:
@@ -177,14 +181,41 @@ namespace Chess.Game
                     }break;
                case EFigures.Rook:
                    {
-                       //tempResult = this.squarsBlocked & legalMoves;
-                       //tempResult = tempResult - (2 * (UInt64)Math.Pow(2, Position));
-                       //tempResult = tempResult ^ this.squarsBlocked;
-                       //tempResult = tempResult & legalMoves;
-                       //legalMoves = tempResult;
-
+                      //NOT WORKING .... LOOKING AGAIN AT ROTATED BITBOARDS 
+                       bool foundMove = false;
+                       for (int currentRow = CurrentPoistion.Y; currentRow >= 0 || currentRow <= 7; currentRow += FigureToCheck.Color )
+                       {
+                           //Shift donw the current line and remove all the rest
+                           tempResult = (legalMoves >> currentRow * 8) & 0xFF;
+                           //Check the current line in the enemy data ( shift down to first line and remove the rest)
+                           tempResult = tempResult & ((enemy >> currentRow * 8) & 0xFF);
+                           //If we found a figure on this pos we can stop seaching
+                           if (tempResult != 0)
+                           {
+                               //Depending on figure position use different calculation to remove other fields
+                               if (currentRow > CurrentPoistion.Y)
+                               {
+                                   //Remove all fields above this line
+                                   //shift down  and up substract result from moves
+                                   tempResult = (legalMoves >> (currentRow - 1) * 8);
+                                   tempResult = (legalMoves << (currentRow - 1) * 8);
+                                   legalMoves -= tempResult;
+                               }
+                               else if (currentRow < CurrentPoistion.Y)
+                               {
+                                   //Remove all fields above this line
+                                   tempResult = (legalMoves >> (currentRow + 1) * 8);
+                                   tempResult = (legalMoves << (currentRow + 1) * 8);
+                                   legalMoves = legalMoves ^ tempResult;
+                               }
+                              //Leave the loop because everything is done 
+                               break;
+                           }
+                         
+                       }
                    }
                    break;
+                   
            }
            
            return legalMoves;
@@ -263,14 +294,16 @@ namespace Chess.Game
             return returnValue;
         }
 
-       public UInt64 GetBoardForFigure(Figure Figure)
-       {
-           return 0;
-       }
+       //public UInt64 FileToRank(UInt64 Source, Int16 File)
+       //{
+       //    return (Source >> 7-File) & Defaults.FirstFile;
+       //}
 
-       public UInt64 FileToRank(UInt64 Source, Int16 File)
+       public void Dispose()
        {
-           return (Source >> 7-File) & Defaults.FirstFile;
+           this.db.Dispose();
+           this.db = null;
+           GC.SuppressFinalize(this);
        }
-    }
+   }
 }

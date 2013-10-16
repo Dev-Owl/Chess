@@ -12,6 +12,7 @@ using Chess.Game;
 using Chess.Tools;
 using System.Diagnostics;
 using System.IO;
+using Chess.GUI;
 
 namespace Chess
 {
@@ -35,18 +36,18 @@ namespace Chess
             StopMongoDB();
         }
 
-        void panel1_PropertyChange(string Event,object Data)
+        void panel1_PropertyChange(string Event,ChangedEventArgs e)
         {
             switch (Event)
             {
                 case "New Game":
                     {
-                        this.binaryViewBox.Text = BitOperations.CreateHumanString(this.panel1.Magicboard.SquarsBlocked);
+                        this.binaryViewBox.Text = BitOperations.CreateHumanString(this.panel1.Board.SquarsBlocked);
                         this.fromLog.Log(Event);        
                     }break;
                 case "Figure selected":
                     {
-                        this.binaryViewBox.Text = BitOperations.CreateHumanString((UInt64)Data);
+                        this.binaryViewBox.Text = BitOperations.CreateHumanString((UInt64)e.EventData);
                         this.fromLog.Log(Event);  
                     }break;
                 default:

@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            Chess.Game.MagicBitBoard magicBitBoard5 = new Chess.Game.MagicBitBoard();
+            Chess.Game.BitBoard magicBitBoard5 = new Chess.Game.BitBoard();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panel1 = new Chess.GUI.GameBoard();
@@ -77,7 +77,7 @@
             magicBitBoard5.WhitePieces = ((ulong)(0ul));
             magicBitBoard5.WhiteQueens = ((ulong)(0ul));
             magicBitBoard5.WhiteRooks = ((ulong)(0ul));
-            this.panel1.Magicboard = magicBitBoard5;
+            this.panel1.Board = magicBitBoard5;
             this.panel1.Name = "panel1";
             this.panel1.OffsetX = 5;
             this.panel1.OffsetY = 5;

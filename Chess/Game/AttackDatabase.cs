@@ -625,7 +625,7 @@ namespace Chess.Game
             attacks.Insert(new AttackDocument() { F = (int)Type, M = MoveMask, P = Position });
         }
 
-        public UInt64 GetMoveMask(Int16 Position, MagicFigure Figure)
+        public UInt64 GetMoveMask(Int16 Position, Figure Figure)
         {
             UInt64 returnValue = 0;
             EFigures searchType = Figure.Type;

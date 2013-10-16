@@ -14,12 +14,12 @@ namespace Chess.GUI
     public class GameBoard  : Panel
     {
         //Magic
-        MagicBitBoard magicboard;
+        BitBoard board;
 
-        public MagicBitBoard Magicboard
+        public BitBoard Board
         {
-            get { return magicboard; }
-            set { magicboard = value; }
+            get { return board; }
+            set { board = value; }
         }
        
 
@@ -96,7 +96,7 @@ namespace Chess.GUI
             set { gameRunning = value; }
         }
 
-        public delegate void PropertyChangeHandler(string Event, object data);
+        public delegate void PropertyChangeHandler(string Event, ChangedEventArgs e);
         // The event
         public event PropertyChangeHandler PropertyChange;
 
@@ -110,7 +110,7 @@ namespace Chess.GUI
             whiteFigureFiles = new Dictionary<EFigures, Image>();
             blackFigureFiles = new Dictionary<EFigures, Image>();
             base.DoubleBuffered = true;
-            magicboard = new MagicBitBoard();
+            board = new BitBoard();
 
         }      
 
@@ -175,7 +175,7 @@ namespace Chess.GUI
             for (Int16 i = 0; i < 64; i++)
             {
                 
-                MagicFigure tmp = this.magicboard.GetFigureAtPosition(position  );
+                Figure tmp = this.board.GetFigureAtPosition(position  );
                 if (tmp != null)
                 {
                     if (tmp.Color == Defaults.BLACK)
@@ -233,11 +233,11 @@ namespace Chess.GUI
                 selectedX = (int)(e.X / FieldSizeX);
                 selectedY = (int)(e.Y / FieldSizeY);
                 UInt64 bitBoardPosition = DrawHelper.FromDrawingPoint(7-selectedX, 7 - selectedY);
-                MagicFigure fig = this.magicboard.GetFigureAtPosition(bitBoardPosition);
+                Figure fig = this.board.GetFigureAtPosition(bitBoardPosition);
                 if(fig != null)
                 {
                   //Get valid moves for the selected figures
-                    SelectedMask = this.magicboard.GetMoveForFigure(fig, (Int16)((7 - selectedX) + ((7 - selectedY) * 8)));
+                    SelectedMask = this.board.GetMoveForFigure(fig, (Int16)((7 - selectedX) + ((7 - selectedY) * 8)));
                     FireChangeEvent("Figure selected", SelectedMask);
                 }
                 this.Invalidate();
@@ -248,7 +248,7 @@ namespace Chess.GUI
         {
             LoadResources();
             this.gameRunning = true;
-            magicboard.NewGame();
+            board.NewGame();
             this.Invalidate();
             FireChangeEvent("New Game");
 
@@ -299,7 +299,7 @@ namespace Chess.GUI
         {
                if (PropertyChange != null)
             {
-                PropertyChange(Event, data);
+                PropertyChange(Event, new ChangedEventArgs( data));
             }
         }
 

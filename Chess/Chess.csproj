@@ -75,10 +75,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Game\MagicBitBoard.cs" />
+    <Compile Include="Game\BitBoard.cs" />
+    <Compile Include="Game\Figure.cs" />
     <Compile Include="Game\Defaults.cs" />
     <Compile Include="Game\EFigures.cs" />
-    <Compile Include="Game\MagicFigure.cs" />
+    <Compile Include="GUI\ChangedEventArgs.cs" />
     <Compile Include="GUI\DrawHelper.cs" />
     <Compile Include="GUI\GameBoard.cs">
       <SubType>Component</SubType>

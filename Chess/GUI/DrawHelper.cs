@@ -21,6 +21,14 @@ namespace Chess.GUI
             pFigure.Y = (7*Height)-((Position / 8) * Height) + OffsetY;
             return pFigure;
         }
+
+        public static Point PositionMatrix(Int16 Position)
+        {
+            System.Drawing.Point pFigure = new System.Drawing.Point();
+            pFigure.X =  (Position - ((Position / 8) * 8));
+            pFigure.Y = (Position / 8);
+            return pFigure;
+        }
        
         public static Rectangle ToDrawingRectangle(int Position, int Width, int Height, int OffsetX = 0, int OffsetY = 0)
         {
