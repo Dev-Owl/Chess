@@ -28,5 +28,34 @@ namespace Chess.Game
         public const UInt64 BlackPawns = 0xFF000000000000;
         public const UInt64 BlackPieces = 0xFFFF000000000000;
 
+        public const UInt64 Rotated90ClockWise_BlackKing = 0x1000000;
+        public const UInt64 Rotated90ClockWise_BlackQueens = 0x100000000;
+        public const UInt64 Rotated90ClockWise_BlackRooks = 0x100000000000001;
+        public const UInt64 Rotated90ClockWise_BlackBishops = 0x10000010000;
+        public const UInt64 Rotated90ClockWise_BlackKnights = 0x1000000000100;
+        public const UInt64 Rotated90ClockWise_BlackPawn = 0x202020202020202;
+        public const UInt64 Rotated90ClockWise_BlackPieces = 0x303030303030303;
+
+        public const UInt64 Rotated90ClockWise_WhiteKing =   0x80000000;
+        public const UInt64 Rotated90ClockWise_WhiteQueens = 0x8000000000;
+        public const UInt64 Rotated90ClockWise_WhiteRooks = 0x8000000000000080;
+        public const UInt64 Rotated90ClockWise_WhiteBishops = 0x800000800000;
+        public const UInt64 Rotated90ClockWise_WhiteKnights = 0x80000000008000;
+        public const UInt64 Rotated90ClockWise_WhitePawn = 0x4040404040404040;
+        public const UInt64 Rotated90ClockWise_WhitePieces = 0xC0C0C0C0C0C0C0C0;
+
+
+        public const int ROTATED_KING = 0;
+        public const int ROTATED_QUEEN = 1;
+        public const int ROTATED_BISHOPS = 2;
+        public const int ROTATED_KNIGHT = 3;
+        public const int ROTATED_ROOKS = 4;
+        public const int ROTATED_PAWN = 5;
+        public const int ROTATED_ALL = 6;
+
+        public const int ROTATED90CLOCKWISE = 0;
+        public const int ROTATED45CLOCKWISE = 1;
+        public const int ROTATED45ANTICLOCKWISE = 2;
     }
 }
+
