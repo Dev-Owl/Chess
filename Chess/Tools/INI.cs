@@ -13,7 +13,7 @@ namespace Chess.Tools
         private string pathToFile;
         private StreamReader sr;
         private Dictionary<String, List<string[]>> content;
-        private bool _Disposed;
+    
 
         public INI(string PathToFile)
         {
