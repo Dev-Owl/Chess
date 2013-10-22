@@ -108,7 +108,10 @@ namespace Chess.Game
             set { emptySquares = value; }
         }
         #endregion
-
+       /// <summary>
+       /// Dictionary<FigurColog,Dictionary<FigureType,List<Bitboards>>>
+       /// </summary>
+        private Dictionary<int, Dictionary<int, List<UInt64>>> rotatedBoards;
 
 
        AttackDatabase db;
@@ -116,6 +119,7 @@ namespace Chess.Game
        public BitBoard()
        {
            db = new AttackDatabase();
+           rotatedBoards = new Dictionary<int, Dictionary<int, List<ulong>>>();
        }
 
        ~BitBoard()
@@ -133,7 +137,6 @@ namespace Chess.Game
            this.WhitePawns = Defaults.WhitePawns;
            this.WhitePieces = this.WhiteKing | this.WhiteQueens | this.WhiteRooks | this.WhiteBishops
                               | this.WhiteKnights | this.WhitePawns;
-
            this.BlackKing = Defaults.BlackKing;
            this.BlackQueens = Defaults.BlackQueens;
            this.BlackRooks = Defaults.BlackRooks;
@@ -144,6 +147,58 @@ namespace Chess.Game
                              | this.BlackKnights | this.BlackPawns;
            this.SquarsBlocked = whitePieces | BlackPieces; 
            this.emptySquares = ~this.squarsBlocked;
+           //Create lists for each color
+           this.rotatedBoards.Add(Defaults.BLACK, new Dictionary<int, List<ulong>>());
+           this.rotatedBoards.Add(Defaults.WHITE, new Dictionary<int, List<ulong>>());
+
+           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_KING);
+           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_QUEEN);
+           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_ROOKS);
+           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_PAWN);
+           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_BISHOPS);
+           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_KNIGHT);
+           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_ALL);
+
+           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_KING);
+           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_QUEEN);
+           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_ROOKS);
+           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_PAWN);
+           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_BISHOPS);
+           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_KNIGHT);
+           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_ALL);
+           
+           
+           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_KING].Add(Defaults.Rotated90ClockWise_BlackKing);
+           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_QUEEN].Add(Defaults.Rotated90ClockWise_BlackQueens);
+           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_ROOKS].Add(Defaults.Rotated90ClockWise_BlackRooks);
+           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_PAWN].Add(Defaults.Rotated90ClockWise_BlackPawn);
+           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_BISHOPS].Add(Defaults.Rotated90ClockWise_BlackBishops);
+           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_KNIGHT].Add(Defaults.Rotated90ClockWise_BlackKnights);
+           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_ALL].Add(Defaults.Rotated90ClockWise_BlackPieces);
+
+           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_KING].Add(Defaults.Rotated90ClockWise_WhiteKing);
+           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_QUEEN].Add(Defaults.Rotated90ClockWise_WhiteQueens);
+           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_ROOKS].Add(Defaults.Rotated90ClockWise_WhiteRooks);
+           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_PAWN].Add(Defaults.Rotated90ClockWise_WhitePawn);
+           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_BISHOPS].Add(Defaults.Rotated90ClockWise_WhiteBishops);
+           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_KNIGHT].Add(Defaults.Rotated90ClockWise_WhiteKnights);
+           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_ALL].Add(Defaults.Rotated90ClockWise_WhitePieces);
+
+       }
+
+       private void CreateNewRotatedEntry(int Color, int FigureType)
+       {
+           this.rotatedBoards[Color].Add(FigureType, new List<ulong>());
+       }
+
+       public UInt64 GetBitBoardRotated(int Color, int FigureType, int Rotation)
+       {
+           UInt64 resultvalue = 0;
+           if( this.rotatedBoards[Color].Keys.Contains(FigureType))
+           {
+               resultvalue = this.rotatedBoards[Color][FigureType][Rotation];
+           }
+           return resultvalue;
        }
 
        public UInt64 GetMoveForFigure(Figure FigureToCheck, Int16 Position)
@@ -181,38 +236,7 @@ namespace Chess.Game
                     }break;
                case EFigures.Rook:
                    {
-                      //NOT WORKING .... LOOKING AGAIN AT ROTATED BITBOARDS 
-                       bool foundMove = false;
-                       for (int currentRow = CurrentPoistion.Y; currentRow >= 0 || currentRow <= 7; currentRow += FigureToCheck.Color )
-                       {
-                           //Shift donw the current line and remove all the rest
-                           tempResult = (legalMoves >> currentRow * 8) & 0xFF;
-                           //Check the current line in the enemy data ( shift down to first line and remove the rest)
-                           tempResult = tempResult & ((enemy >> currentRow * 8) & 0xFF);
-                           //If we found a figure on this pos we can stop seaching
-                           if (tempResult != 0)
-                           {
-                               //Depending on figure position use different calculation to remove other fields
-                               if (currentRow > CurrentPoistion.Y)
-                               {
-                                   //Remove all fields above this line
-                                   //shift down  and up substract result from moves
-                                   tempResult = (legalMoves >> (currentRow - 1) * 8);
-                                   tempResult = (legalMoves << (currentRow - 1) * 8);
-                                   legalMoves -= tempResult;
-                               }
-                               else if (currentRow < CurrentPoistion.Y)
-                               {
-                                   //Remove all fields above this line
-                                   tempResult = (legalMoves >> (currentRow + 1) * 8);
-                                   tempResult = (legalMoves << (currentRow + 1) * 8);
-                                   legalMoves = legalMoves ^ tempResult;
-                               }
-                              //Leave the loop because everything is done 
-                               break;
-                           }
-                         
-                       }
+                      
                    }
                    break;
                    
@@ -293,11 +317,6 @@ namespace Chess.Game
             }
             return returnValue;
         }
-
-       //public UInt64 FileToRank(UInt64 Source, Int16 File)
-       //{
-       //    return (Source >> 7-File) & Defaults.FirstFile;
-       //}
 
        public void Dispose()
        {
