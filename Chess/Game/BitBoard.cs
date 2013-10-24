@@ -142,7 +142,7 @@ namespace Chess.Game
            this.BlackRooks = Defaults.BlackRooks;
            this.Blackbishops = Defaults.Blackbishops;
            this.BlackKnights = Defaults.BlackKnights;
-           this.BlackPawns = 0xFE000000020000;//Defaults.BlackPawns;
+           this.BlackPawns = Defaults.BlackPawns;
            this.BlackPieces = this.BlackKing | this.BlackQueens | this.BlackRooks | this.Blackbishops
                              | this.BlackKnights | this.BlackPawns;
            this.SquarsBlocked = whitePieces | BlackPieces; 
@@ -238,9 +238,64 @@ namespace Chess.Game
                         legalMoves |= enemy & db.BuildPawnAttack(Position, FigureToCheck.Color);
                     }break;
                case EFigures.Rook:
-                   {    //000X0000
-                        //10011011
-                                      
+                   {
+                       legalMoves = 0;
+                       //Get all blocking pices to the right of this figure
+                       UInt64 currentboard =this.db.GetFieldsRight(Position);
+                       //Set all bits to 1 if a figure on the row (friendly or enemy)
+                       UInt64 currentmoves = currentboard & this.squarsBlocked;
+                       //shift the bits to set all bits after the figure on the row
+                       currentmoves = (currentmoves >> 1) | (currentmoves >> 2) | (currentmoves >> 3) | (currentmoves >> 4) | (currentmoves >> 5) | (currentmoves >> 6);
+                       //remove all over overflowing or left bits
+                       currentmoves &= currentboard;
+                       //Remove the bits behind the figure
+                       currentmoves ^= currentboard;
+                       //Remove friendly figure positions form the attack board
+                       currentmoves &= enemyOrEmpty;
+                       //Add to total moves board
+                       legalMoves |= currentmoves;
+
+                       currentboard = this.db.GetFieldsLeft(Position);
+                       //Set all bits to 1 if a figure on the row (friendly or enemy)
+                       currentmoves = currentboard & this.squarsBlocked;
+                       //shift the bits to set all bits after the figure on the row
+                       currentmoves = (currentmoves << 1) | (currentmoves << 2) | (currentmoves << 3) | (currentmoves << 4) | (currentmoves << 5) | (currentmoves << 6);
+                       //remove all over overflowing or left bits
+                       currentmoves &= currentboard;
+                       //Remove the bits behind the figure
+                       currentmoves ^= currentboard;
+                       //Remove friendly figure positions form the attack board
+                       currentmoves &= enemyOrEmpty;
+                       //Add to total moves board
+                       legalMoves |= currentmoves;
+
+                       currentboard = this.db.GetFieldsUP(Position);
+                       //Set all bits to 1 if a figure on the row (friendly or enemy)
+                       currentmoves = currentboard & this.squarsBlocked;
+                       //shift the bits to set all bits after the figure on the row
+                       currentmoves = (currentmoves << 8) | (currentmoves << 16) | (currentmoves << 24) | (currentmoves << 32) | (currentmoves << 40) | (currentmoves << 48);
+                       //remove all over overflowing or left bits
+                       currentmoves &= currentboard;
+                       //Remove the bits behind the figure
+                       currentmoves ^= currentboard;
+                       //Remove friendly figure positions form the attack board
+                       currentmoves &= enemyOrEmpty;
+                       //Add to total moves board
+                       legalMoves |= currentmoves;
+
+                       currentboard = this.db.GetFieldsDown(Position);
+                       //Set all bits to 1 if a figure on the row (friendly or enemy)
+                       currentmoves = currentboard & this.squarsBlocked;
+                       //shift the bits to set all bits after the figure on the row
+                       currentmoves = (currentmoves >> 8) | (currentmoves >> 16) | (currentmoves >> 24) | (currentmoves >> 32) | (currentmoves >> 40) | (currentmoves >> 48);
+                       //remove all over overflowing or left bits
+                       currentmoves &= currentboard;
+                       //Remove the bits behind the figure
+                       currentmoves ^= currentboard;
+                       //Remove friendly figure positions form the attack board
+                       currentmoves &= enemyOrEmpty;
+                       //Add to total moves board
+                       legalMoves |= currentmoves;
 
                    }
                    break;
@@ -249,6 +304,8 @@ namespace Chess.Game
            
            return legalMoves;
        }
+
+       
 
        public UInt64 GetPositionFromPosition(Int16 SourcePosition, Int16 MoveRange)
        {
