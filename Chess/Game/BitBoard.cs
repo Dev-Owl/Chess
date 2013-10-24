@@ -226,7 +226,7 @@ namespace Chess.Game
            }
            switch (FigureToCheck.Type)
            {
-               //http://www.mayothi.com/nagaskakichess6.html
+              
                case EFigures.Pawn:
                     {
                          //Check if pawn is blocked by any other figure in fornt of him
