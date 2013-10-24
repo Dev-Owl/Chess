@@ -32,6 +32,7 @@ namespace Chess.Game
         Dictionary<Int16, UInt64> upFields;
         Dictionary<Int16, UInt64> downFields;
 
+
         public AttackDatabase()
         {
             thinking = new Thinking();
@@ -129,7 +130,6 @@ namespace Chess.Game
             createThread.IsBackground = true;
             thinking.Show();
             createThread.Start();
-          
         }
 
         private void BuildAttackDatabase()
@@ -713,7 +713,7 @@ namespace Chess.Game
             //Insert the new position in the datbase 
             attacks.Insert(new AttackDocument() { F = (int)Type, M = MoveMask, P = Position });
         }
-
+        //TODO: Create comments in the function below
         public UInt64 GetMoveMask(Int16 Position, Figure Figure)
         {
             UInt64 returnValue = 0;
@@ -736,6 +736,29 @@ namespace Chess.Game
             return returnValue;
         }
 
+        #region Functions to get the values of the helper boards Right/Left/Top/Down
+        public UInt64 GetFieldsRight(Int16 CurrentSquare)
+        {
+            return this.rightFields[CurrentSquare];
+        }
+
+        public UInt64 GetFieldsLeft(Int16 CurrentSquare)
+        {
+            return this.leftFields[CurrentSquare];
+        }
+
+        public UInt64 GetFieldsUP(Int16 CurrentSquare)
+        {
+            return this.upFields[CurrentSquare];
+        }
+
+        public UInt64 GetFieldsDown(Int16 CurrentSquare)
+        {
+            return this.downFields[CurrentSquare];
+        }
+        #endregion 
+       
+        //TODO: Create comments in the function below
         public UInt64 BuildPawnAttack(Int16 Position, int Color)
         {
             UInt64 result = 0;
@@ -759,7 +782,7 @@ namespace Chess.Game
             
             return result;
         }
-
+        //TODO: Create comments in the function below    
         public bool BackgroundWorkInprogress()
         {
             try
