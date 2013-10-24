@@ -220,10 +220,13 @@ namespace Chess.Game
                enemyOrEmpty |= this.whitePieces;
                enemy = this.whitePieces;
            }
-           legalMoves &= enemyOrEmpty;
-           
+           if (FigureToCheck.Type != EFigures.Rook || FigureToCheck.Type != EFigures.Bishop || FigureToCheck.Type != EFigures.Queen)
+           {
+               legalMoves &= enemyOrEmpty;
+           }
            switch (FigureToCheck.Type)
-           { 
+           {
+               //http://www.mayothi.com/nagaskakichess6.html
                case EFigures.Pawn:
                     {
                          //Check if pawn is blocked by any other figure in fornt of him
@@ -235,8 +238,10 @@ namespace Chess.Game
                         legalMoves |= enemy & db.BuildPawnAttack(Position, FigureToCheck.Color);
                     }break;
                case EFigures.Rook:
-                   {
-                      
+                   {    //000X0000
+                        //10011011
+                                      
+
                    }
                    break;
                    

@@ -17,14 +17,20 @@ namespace Chess.Game
     /// </summary>
     public class AttackDatabase : IDisposable
     {
-        /*
-         * TODO:  
-         */
+        //Class interna
         Thinking thinking;
         Thread createThread;
+        
+        //Monog DB related
         string mongoConnection = @"mongodb://localhost/?safe=true";
         MongoDatabase attackBoard;
         MongoCollection<AttackDocument> attacks;
+
+        //Helper Boards
+        Dictionary<Int16, UInt64> rightFields;
+        Dictionary<Int16, UInt64> leftFields;
+        Dictionary<Int16, UInt64> upFields;
+        Dictionary<Int16, UInt64> downFields;
 
         public AttackDatabase()
         {
@@ -32,6 +38,89 @@ namespace Chess.Game
             var server = new MongoClient(this.mongoConnection).GetServer();
             attackBoard = server.GetDatabase("attackBoard");
             attacks = attackBoard.GetCollection<AttackDocument>("attacks");
+            BuildHelperBoards();
+        }
+
+        private void BuildHelperBoards()
+        {
+            //Helper
+            UInt64 tempBoard = 0;
+            Int16 borderValue = 0;
+            Int16 temp = 0;
+            rightFields = new Dictionary<short, ulong>();
+            for (Int16 index = 0; index < 64; index++)
+            {
+                tempBoard = 0;
+                temp = index;
+                // Have to check if current position must be set to 1 or 0???
+                temp -= 1;
+                while (temp >= borderValue)
+                {
+                    tempBoard |= (UInt64)Math.Pow(2, temp);
+                    temp -= 1;
+                }
+                rightFields.Add(index, tempBoard);
+                if ((index+1) % 8 == 0)
+                {
+                    borderValue += 8;
+                }
+            }
+            temp = 0;
+            tempBoard = 0;
+            borderValue = 7;
+            leftFields = new Dictionary<short, ulong>();
+            for (Int16 index = 0; index < 64; index++)
+            {
+                tempBoard = 0;
+                temp = index;
+                // Have to check if current position must be set to 1 or 0???
+                temp += 1;
+                while (temp <= borderValue)
+                {
+                    tempBoard |= (UInt64)Math.Pow(2, temp);
+                    temp += 1;
+                }
+                leftFields.Add(index, tempBoard);
+                if ((index + 1) % 8 == 0)
+                {
+                    borderValue += 8;
+                }
+            }
+            temp = 0;
+            tempBoard = 0;
+            borderValue = 0;
+            downFields = new Dictionary<short, ulong>();
+            for (Int16 index = 0; index < 64; index++)
+            {
+                tempBoard = 0;
+                temp = index;
+                // Have to check if current position must be set to 1 or 0???
+                temp -= 8;
+                while (temp >= 0)
+                {
+                    tempBoard |= (UInt64)Math.Pow(2, temp);
+                    temp -= 8;
+                }
+                downFields.Add(index, tempBoard);
+            }
+            temp = 0;
+            tempBoard = 0;
+            borderValue = 0;
+            upFields = new Dictionary<short, ulong>();
+            for (Int16 index = 0; index < 64; index++)
+            {
+                tempBoard = 0;
+                temp = index;
+                // Have to check if current position must be set to 1 or 0???
+                temp += 8;
+                while (temp <= 63)
+                {
+                    tempBoard |= (UInt64)Math.Pow(2, temp);
+                    temp += 8;
+                }
+                upFields.Add(index, tempBoard);
+            }
+
         }
 
         public void BuildAttackboard()
