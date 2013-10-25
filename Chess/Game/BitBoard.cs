@@ -299,6 +299,31 @@ namespace Chess.Game
 
                    }
                    break;
+               case EFigures.Bishop:
+                   {
+                       legalMoves = 0;
+                       //Get all blocking pices to the right of this figure
+                       UInt64 currentboard = this.db.GetFieldsUpRight(Position);
+                       //Set all bits to 1 if a figure on the row (friendly or enemy)
+                       UInt64 currentmoves = currentboard & this.squarsBlocked;
+                       //shift the bits to set all bits after the figure on the row
+                       currentmoves = (currentmoves << 7) | (currentmoves << 14) | (currentmoves << 21) | (currentmoves << 28) | (currentmoves << 35) | (currentmoves << 42);
+                       //remove all over overflowing or left bits
+                       currentmoves &= currentboard;
+                       //Remove the bits behind the figure
+                       currentmoves ^= currentboard;
+                       //Remove friendly figure positions form the attack board
+                       currentmoves &= enemyOrEmpty;
+                       //Add to total moves board
+                       legalMoves |= currentmoves;
+                   }
+                   break;
+               case EFigures.Queen:
+                   { 
+                   
+                   }
+                   break;
+
                    
            }
            
