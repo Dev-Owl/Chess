@@ -49,7 +49,7 @@ namespace Chess.Game
         {
             //Helper
             UInt64 tempBoard = 0;
-            Int16 borderValue = 64;
+            Int16 borderValue = 0;
             Int16 temp = 0;
             #region Rook
             rightFields = new Dictionary<short, ulong>();
@@ -126,7 +126,6 @@ namespace Chess.Game
                 upFields.Add(index, tempBoard);
             }
             #endregion
-           
             #region Bishop
             upRightFields = new Dictionary<short, ulong>();
             for (Int16 index = 0; index < 64; index++)
@@ -147,6 +146,66 @@ namespace Chess.Game
                     }
                 }
                 upRightFields.Add(index, tempBoard);
+            }
+            upLeftFields = new Dictionary<short, ulong>();
+            for (Int16 index = 0; index < 64; index++)
+            {
+                tempBoard = 0;
+                temp = index;
+                temp += 9;
+                if ((index+1) % 8 != 0)
+                {
+                    while (temp < 64)
+                    {
+                        tempBoard |= (UInt64)Math.Pow(2, temp);
+                        if ((temp+1) % 8 == 0)
+                        {
+                            break;
+                        }
+                        temp += 9;
+                    }
+                }
+                upLeftFields.Add(index, tempBoard);
+            }
+            downRightFields = new Dictionary<short, ulong>();
+            for (Int16 index = 0; index < 64; index++)
+            {
+                tempBoard = 0;
+                temp = index;
+                temp -= 9;
+                if (index  % 8 != 0)
+                {
+                    while (temp >= 0)
+                    {
+                        tempBoard |= (UInt64)Math.Pow(2, temp);
+                        if (temp  % 8 == 0)
+                        {
+                            break;
+                        }
+                        temp -= 9;
+                    }
+                }
+                downRightFields.Add(index, tempBoard);
+            }
+            downLeftFields = new Dictionary<short, ulong>();
+            for (Int16 index = 0; index < 64; index++)
+            {
+                tempBoard = 0;
+                temp = index;
+                temp -= 7;
+                if ((index+1) % 8 != 0)
+                {
+                    while (temp >= 0)
+                    {
+                        tempBoard |= (UInt64)Math.Pow(2, temp);
+                        if ((temp+1) % 8 == 0)
+                        {
+                            break;
+                        }
+                        temp -= 7;
+                    }
+                }
+                downLeftFields.Add(index, tempBoard);
             }
             #endregion
         }
@@ -768,7 +827,7 @@ namespace Chess.Game
         {
             return this.rightFields[CurrentSquare];
         }
-
+        //Rook,Bishop,Queen
         public UInt64 GetFieldsLeft(Int16 CurrentSquare)
         {
             return this.leftFields[CurrentSquare];
@@ -783,6 +842,27 @@ namespace Chess.Game
         {
             return this.downFields[CurrentSquare];
         }
+        //Bishop,Queen
+        public UInt64 GetFieldsUpRight(Int16 CurrentSquare)
+        {
+            return this.upRightFields[CurrentSquare];
+        }
+
+        public UInt64 GetFieldsUpLeft(Int16 CurrentSquare)
+        {
+            return this.upLeftFields[CurrentSquare];
+        }
+
+        public UInt64 GetFieldsDownRight(Int16 CurrentSquare)
+        {
+            return this.downRightFields[CurrentSquare];
+        }
+
+        public UInt64 GetFieldsDownLeft(Int16 CurrentSquare)
+        {
+            return this.downLeftFields[CurrentSquare];
+        }
+
         #endregion 
        
         //TODO: Create comments in the function below
