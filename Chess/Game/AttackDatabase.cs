@@ -26,13 +26,16 @@ namespace Chess.Game
         MongoDatabase attackBoard;
         MongoCollection<AttackDocument> attacks;
 
-        //Helper Boards
+        //Helper Boards for Rooks
         Dictionary<Int16, UInt64> rightFields;
         Dictionary<Int16, UInt64> leftFields;
         Dictionary<Int16, UInt64> upFields;
         Dictionary<Int16, UInt64> downFields;
-
-
+        //Helper Boards for Bishops
+        Dictionary<Int16, UInt64> upRightFields;
+        Dictionary<Int16, UInt64> upLeftFields;
+        Dictionary<Int16, UInt64> downRightFields;
+        Dictionary<Int16, UInt64> downLeftFields;
         public AttackDatabase()
         {
             thinking = new Thinking();
@@ -46,8 +49,9 @@ namespace Chess.Game
         {
             //Helper
             UInt64 tempBoard = 0;
-            Int16 borderValue = 0;
+            Int16 borderValue = 64;
             Int16 temp = 0;
+            #region Rook
             rightFields = new Dictionary<short, ulong>();
             for (Int16 index = 0; index < 64; index++)
             {
@@ -121,7 +125,30 @@ namespace Chess.Game
                 }
                 upFields.Add(index, tempBoard);
             }
-
+            #endregion
+           
+            #region Bishop
+            upRightFields = new Dictionary<short, ulong>();
+            for (Int16 index = 0; index < 64; index++)
+            {
+                tempBoard = 0;
+                temp = index;
+                temp += 7;
+                if (index % 8 != 0)
+                {
+                    while (temp < 64)
+                    {
+                        tempBoard |= (UInt64)Math.Pow(2, temp);
+                        if (temp % 8 == 0)
+                        {
+                            break;
+                        }
+                        temp += 7;
+                    }
+                }
+                upRightFields.Add(index, tempBoard);
+            }
+            #endregion
         }
 
         public void BuildAttackboard()
