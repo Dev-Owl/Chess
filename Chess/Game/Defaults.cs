@@ -15,9 +15,9 @@ namespace Chess.Game
         public const UInt64 WhiteKing = 0x8;
         public const UInt64 WhiteQueens = 0x10;
         public const UInt64 WhiteRooks = 0x100080;//0x81;
-        public const UInt64 WhiteBishops = 0x24;
+        public const UInt64 WhiteBishops = 0x420;//0x24;
         public const UInt64 WhiteKnights = 0x42;
-        public const UInt64 WhitePawns = 0x4FB00;//0xFF00;
+        public const UInt64 WhitePawns = 0x0;//x4FB00;//0xFF00;
         public const UInt64 WhitePieces = 0xFFFF;
 
         public const UInt64 BlackKing = 0x800000000000000;
