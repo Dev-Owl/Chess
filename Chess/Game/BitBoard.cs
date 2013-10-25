@@ -347,7 +347,7 @@ namespace Chess.Game
            //Set all bits to 1 if a figure on the row (friendly or enemy)
            currentmoves = currentboard & this.squarsBlocked;
            //shift the bits to set all bits after the figure on the row
-           currentmoves = (currentmoves >> 7) | (currentmoves >> 14) | (currentmoves >> 21) | (currentmoves >> 28) | (currentmoves >> 35) | (currentmoves >> 42);
+           currentmoves = (currentmoves >> 9) | (currentmoves >> 18) | (currentmoves >> 27) | (currentmoves >> 36) | (currentmoves >> 45) | (currentmoves >> 54);
            //remove all over overflowing or left bits
            currentmoves &= currentboard;
            //Remove the bits behind the figure
@@ -377,7 +377,7 @@ namespace Chess.Game
            //Set all bits to 1 if a figure on the row (friendly or enemy)
            currentmoves = currentboard & this.squarsBlocked;
            //shift the bits to set all bits after the figure on the row
-           currentmoves = (currentmoves << 7) | (currentmoves << 14) | (currentmoves << 21) | (currentmoves << 28) | (currentmoves << 35) | (currentmoves << 42);
+           currentmoves = (currentmoves << 9) | (currentmoves << 18) | (currentmoves << 27) | (currentmoves << 36) | (currentmoves << 45) | (currentmoves << 54);
            //remove all over overflowing or left bits
            currentmoves &= currentboard;
            //Remove the bits behind the figure
