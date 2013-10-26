@@ -95,6 +95,9 @@ namespace Chess.Game
             get { return blackPieces; }
             set { blackPieces = value; }
         }
+        #endregion
+
+        #region Helping Boards
         private UInt64 squarsBlocked;
         public UInt64 SquarsBlocked
         {
@@ -107,19 +110,33 @@ namespace Chess.Game
             get { return emptySquares; }
             set { emptySquares = value; }
         }
+        private UInt64 attackedByWhite;
+        public UInt64 AttackedByWhite
+        {
+            get { return this.attackedByWhite; }
+            set { this.attackedByWhite = value; }
+        }
+        private UInt64 attackedByBlack;
+        public UInt64 AttackedByBlack
+        {
+            get { return this.attackedByBlack; }
+            set { this.attackedByBlack = value; }
+        }
         #endregion
-       /// <summary>
-       /// Dictionary<FigurColog,Dictionary<FigureType,List<Bitboards>>>
-       /// </summary>
-        private Dictionary<int, Dictionary<int, List<UInt64>>> rotatedBoards;
 
+        bool gameRunning = false;
+        public bool GameRunning
+        {
+            get;
+            set;
+        }
 
-       AttackDatabase db;
+        AttackDatabase db;
        
        public BitBoard()
        {
            db = new AttackDatabase();
-           rotatedBoards = new Dictionary<int, Dictionary<int, List<ulong>>>();
+         
        }
 
        ~BitBoard()
@@ -147,58 +164,32 @@ namespace Chess.Game
                              | this.BlackKnights | this.BlackPawns;
            this.SquarsBlocked = whitePieces | BlackPieces; 
            this.emptySquares = ~this.squarsBlocked;
-           //Create lists for each color
-           this.rotatedBoards.Add(Defaults.BLACK, new Dictionary<int, List<ulong>>());
-           this.rotatedBoards.Add(Defaults.WHITE, new Dictionary<int, List<ulong>>());
-
-           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_KING);
-           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_QUEEN);
-           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_ROOKS);
-           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_PAWN);
-           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_BISHOPS);
-           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_KNIGHT);
-           this.CreateNewRotatedEntry(Defaults.BLACK, Defaults.ROTATED_ALL);
-
-           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_KING);
-           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_QUEEN);
-           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_ROOKS);
-           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_PAWN);
-           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_BISHOPS);
-           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_KNIGHT);
-           this.CreateNewRotatedEntry(Defaults.WHITE, Defaults.ROTATED_ALL);
-           
-           
-           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_KING].Add(Defaults.Rotated90ClockWise_BlackKing);
-           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_QUEEN].Add(Defaults.Rotated90ClockWise_BlackQueens);
-           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_ROOKS].Add(Defaults.Rotated90ClockWise_BlackRooks);
-           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_PAWN].Add(Defaults.Rotated90ClockWise_BlackPawn);
-           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_BISHOPS].Add(Defaults.Rotated90ClockWise_BlackBishops);
-           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_KNIGHT].Add(Defaults.Rotated90ClockWise_BlackKnights);
-           this.rotatedBoards[Defaults.BLACK][Defaults.ROTATED_ALL].Add(Defaults.Rotated90ClockWise_BlackPieces);
-
-           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_KING].Add(Defaults.Rotated90ClockWise_WhiteKing);
-           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_QUEEN].Add(Defaults.Rotated90ClockWise_WhiteQueens);
-           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_ROOKS].Add(Defaults.Rotated90ClockWise_WhiteRooks);
-           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_PAWN].Add(Defaults.Rotated90ClockWise_WhitePawn);
-           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_BISHOPS].Add(Defaults.Rotated90ClockWise_WhiteBishops);
-           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_KNIGHT].Add(Defaults.Rotated90ClockWise_WhiteKnights);
-           this.rotatedBoards[Defaults.WHITE][Defaults.ROTATED_ALL].Add(Defaults.Rotated90ClockWise_WhitePieces);
-
+           this.gameRunning = true;
+           UpdateAttackedFields();
        }
 
-       private void CreateNewRotatedEntry(int Color, int FigureType)
+       private void UpdateAttackedFields()
        {
-           this.rotatedBoards[Color].Add(FigureType, new List<ulong>());
-       }
-
-       public UInt64 GetBitBoardRotated(int Color, int FigureType, int Rotation)
-       {
-           UInt64 resultvalue = 0;
-           if( this.rotatedBoards[Color].Keys.Contains(FigureType))
+           UInt64 tmpMoves = 0;
+           UInt64 position = 1;
+           for (UInt16 i = 0; i < 64; ++i)
            {
-               resultvalue = this.rotatedBoards[Color][FigureType][Rotation];
+               tmpMoves = 0;
+               Figure fig = GetFigureAtPosition(position);
+               if (fig != null)
+               {
+                   tmpMoves = GetMoveForFigure(fig, (short)i);
+                   if (fig.Color == Defaults.WHITE)
+                   {
+                       this.attackedByWhite |= tmpMoves;
+                   }
+                   else
+                   {
+                       this.attackedByBlack |= tmpMoves;
+                   }
+               }
+               position = (position << 1);
            }
-           return resultvalue;
        }
 
        public UInt64 GetMoveForFigure(Figure FigureToCheck, Int16 Position)
@@ -207,18 +198,21 @@ namespace Chess.Game
            UInt64 legalMoves =  db.GetMoveMask(Position, FigureToCheck);
            UInt64 enemyOrEmpty = this.emptySquares; //all enemies or empty squares
            UInt64 enemy = 0; //All figs of the current enemy color
-           UInt64 tempResult = 0; //calculation or temp values
+           UInt64 enemyAttacked =0;
+           //Get current x,y position
            Point CurrentPoistion = Chess.GUI.DrawHelper.PositionMatrix(Position);
-
+           
            if (FigureToCheck.Color == Defaults.WHITE)
            {
                enemyOrEmpty |= this.blackPieces;
                enemy = this.blackPieces;
+               enemyAttacked = this.attackedByBlack;
            }
            else
            {
                enemyOrEmpty |= this.whitePieces;
                enemy = this.whitePieces;
+               enemyAttacked = this.attackedByWhite;
            }
            if (FigureToCheck.Type != EFigures.Rook || FigureToCheck.Type != EFigures.Bishop || FigureToCheck.Type != EFigures.Queen)
            {
@@ -253,10 +247,19 @@ namespace Chess.Game
                        legalMoves = GetRookMovesOn(Position, enemyOrEmpty) | GetBishopMovesOn(Position, enemyOrEmpty);
                    }
                    break;
-
+               case EFigures.King:
+                   {
+                       //Do not move on attacked fields 
+                       legalMoves &= ~enemyAttacked;
+                   }
+                   break;
                    
            }
-           
+           //IDEA: For king check detection
+           //1. Check if an enemy figure is atticking current figure
+           //2. Check if king is on row,column or 45 °degres angle the first figure from this fig
+           //3. Get the figures that are attacking this figure
+           //4. ?????
            return legalMoves;
        }
 
@@ -398,64 +401,68 @@ namespace Chess.Game
        
        public Figure GetFigureAtPosition(UInt64 Position)
         {
-            UInt64 result = Position & this.squarsBlocked;
             Figure returnValue = null;
-            if (result != 0)
+            if (gameRunning)
             {
-                result = Position & this.blackPieces;
+                UInt64 result = Position & this.squarsBlocked;
                 if (result != 0)
                 {
-                    //Black Figure
-                    if ((this.blackKing & Position) > 0)
+                    result = Position & this.blackPieces;
+                    if (result != 0)
                     {
-                        returnValue = new Figure(Defaults.BLACK, EFigures.King);
+                        //Black Figure
+                        if ((this.blackKing & Position) > 0)
+                        {
+                            returnValue = new Figure(Defaults.BLACK, EFigures.King);
+                        }
+                        if ((this.BlackQueens & Position) > 0)
+                        {
+                            returnValue = new Figure(Defaults.BLACK, EFigures.Queen);
+                        }
+                        if ((this.BlackRooks & Position) > 0)
+                        {
+                            returnValue = new Figure(Defaults.BLACK, EFigures.Rook);
+                        }
+                        if ((this.Blackbishops & Position) > 0)
+                        {
+                            returnValue = new Figure(Defaults.BLACK, EFigures.Bishop);
+                        }
+                        if ((this.BlackKnights & Position) > 0)
+                        {
+                            returnValue = new Figure(Defaults.BLACK, EFigures.Knight);
+                        }
+                        if ((this.BlackPawns & Position) > 0)
+                        {
+                            returnValue = new Figure(Defaults.BLACK, EFigures.Pawn);
+                        }
                     }
-                    if ((this.BlackQueens & Position) > 0)
+                    else
                     {
-                        returnValue = new Figure(Defaults.BLACK, EFigures.Queen);
-                    }
-                    if ((this.BlackRooks & Position) > 0)
-                    {
-                        returnValue = new Figure(Defaults.BLACK, EFigures.Rook);
-                    }
-                    if ((this.Blackbishops & Position) > 0)
-                    {
-                        returnValue = new Figure(Defaults.BLACK, EFigures.Bishop);
-                    }
-                    if ((this.BlackKnights & Position) > 0)
-                    {
-                        returnValue = new Figure(Defaults.BLACK, EFigures.Knight);
-                    }
-                    if ((this.BlackPawns & Position) > 0)
-                    {
-                        returnValue = new Figure(Defaults.BLACK, EFigures.Pawn);
-                    }
-                }
-                else { 
-                    //White Figure
-                    if ((this.whiteKing & Position) > 0)
-                    {
-                        returnValue = new Figure(Defaults.WHITE, EFigures.King);
-                    }
-                    if ((this.whiteQueens & Position) > 0)
-                    {
-                        returnValue = new Figure(Defaults.WHITE, EFigures.Queen);
-                    }
-                    if ((this.whiteRooks & Position) > 0)
-                    {
-                        returnValue = new Figure(Defaults.WHITE, EFigures.Rook);
-                    }
-                    if ((this.whiteBishops & Position) > 0)
-                    {
-                        returnValue = new Figure(Defaults.WHITE, EFigures.Bishop);
-                    }
-                    if ((this.whiteKnights & Position) > 0)
-                    {
-                        returnValue = new Figure(Defaults.WHITE, EFigures.Knight);
-                    }
-                    if ((this.whitePawns & Position) > 0)
-                    {
-                        returnValue = new Figure(Defaults.WHITE, EFigures.Pawn);
+                        //White Figure
+                        if ((this.whiteKing & Position) > 0)
+                        {
+                            returnValue = new Figure(Defaults.WHITE, EFigures.King);
+                        }
+                        if ((this.whiteQueens & Position) > 0)
+                        {
+                            returnValue = new Figure(Defaults.WHITE, EFigures.Queen);
+                        }
+                        if ((this.whiteRooks & Position) > 0)
+                        {
+                            returnValue = new Figure(Defaults.WHITE, EFigures.Rook);
+                        }
+                        if ((this.whiteBishops & Position) > 0)
+                        {
+                            returnValue = new Figure(Defaults.WHITE, EFigures.Bishop);
+                        }
+                        if ((this.whiteKnights & Position) > 0)
+                        {
+                            returnValue = new Figure(Defaults.WHITE, EFigures.Knight);
+                        }
+                        if ((this.whitePawns & Position) > 0)
+                        {
+                            returnValue = new Figure(Defaults.WHITE, EFigures.Pawn);
+                        }
                     }
                 }
             }
