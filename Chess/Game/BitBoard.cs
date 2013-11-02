@@ -122,6 +122,12 @@ namespace Chess.Game
             get { return this.attackedByBlack; }
             set { this.attackedByBlack = value; }
         }
+        private Dictionary<UInt64, List<Figure>> attackedBy;
+        public Dictionary<UInt64, List<Figure>> AttackedBy
+        {
+            get { return attackedBy; }
+            set { attackedBy = value; }
+        }
         #endregion
 
         bool gameRunning = false;
@@ -136,7 +142,13 @@ namespace Chess.Game
        public BitBoard()
        {
            db = new AttackDatabase();
-         
+           this.attackedBy = new Dictionary<ulong, List<Figure>>();
+           UInt64 position = 1;
+           for (int index = 0; index < 64; ++index)
+           {
+               this.attackedBy.Add(position, new List<Figure>());
+               position = (position << 1);    
+           }
        }
 
        ~BitBoard()
@@ -178,7 +190,9 @@ namespace Chess.Game
                Figure fig = GetFigureAtPosition(position);
                if (fig != null)
                {
+                   //Moves for the figure
                    tmpMoves = GetMoveForFigure(fig, (short)i);
+                   //Update helper boards for the figure color
                    if (fig.Color == Defaults.WHITE)
                    {
                        this.attackedByWhite |= tmpMoves;
@@ -187,7 +201,18 @@ namespace Chess.Game
                    {
                        this.attackedByBlack |= tmpMoves;
                    }
+                   //Update the attacked by status for the different fields 
+                   foreach (UInt64 key in this.attackedBy.Keys)
+                   {
+                       if ( (key & tmpMoves) > 0)
+                       {
+                           //To get the figure position later faster we store it inside the figure object
+                           fig.Position = position;
+                           this.attackedBy[key].Add(fig);
+                       }
+                   }
                }
+               //Jump to the next position
                position = (position << 1);
            }
        }
