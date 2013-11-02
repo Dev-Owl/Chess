@@ -189,9 +189,26 @@ namespace Chess.Game
                tmpMoves = 0;
                Figure fig = GetFigureAtPosition(position);
                if (fig != null)
-               {
-                   //Moves for the figure
-                   tmpMoves = GetMoveForFigure(fig, (short)i);
+               {   
+                   // Pawns moves are not the attacks
+                   if (fig.Type != EFigures.Pawn)
+                   {   
+                       //Moves for the figure
+                       tmpMoves = GetMoveForFigure(fig, position);
+                   }
+                   else {
+                       //calculate possible pawn attacks
+                       UInt64 enemyAndEmpy =0;
+                       if(fig.Color == Defaults.BLACK)
+                       {
+                            enemyAndEmpy = this.whitePieces | this.emptySquares;
+                       }
+                       else
+                       {
+                           enemyAndEmpy = this.blackPieces | this.emptySquares;
+                       }
+                       tmpMoves = enemyAndEmpy & this.db.BuildPawnAttack(position,fig.Color)
+                   }
                    //Update helper boards for the figure color
                    if (fig.Color == Defaults.WHITE)
                    {
