@@ -22,6 +22,14 @@ namespace Chess.Game
             set { type = value; }
         }
 
+       //Used to store the information only in the attack by helper boards (see Bitboard class)
+        private UInt64 position;
+        public UInt64 Position
+        {
+            get { return position; }
+            set { position = value; }
+        }
+
         public Figure(int Color, EFigures Type)
         {
             this.color = Color;
