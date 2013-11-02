@@ -224,7 +224,7 @@ namespace Chess.Game
                case EFigures.Pawn:
                     {
                          //Check if pawn is blocked by any other figure in fornt of him
-                        if ((GetPositionFromPosition(Position, (Int16)(8 * FigureToCheck.Color)) & enemy) > 0)
+                        if ((GetPositionFromPosition(Position, (Int16)(8 * FigureToCheck.Color)) & squarsBlocked) > 0)
                         {
                             legalMoves = 0;
                         }
@@ -238,12 +238,12 @@ namespace Chess.Game
                    }
                    break;
                case EFigures.Bishop:
-                   {
+                   {    //Get all legal moves for the bishop
                        legalMoves = GetBishopMovesOn(Position, enemyOrEmpty);
                    }
                    break;
                case EFigures.Queen:
-                   {
+                   {    //Queen is just rook + bishop
                        legalMoves = GetRookMovesOn(Position, enemyOrEmpty) | GetBishopMovesOn(Position, enemyOrEmpty);
                    }
                    break;
@@ -255,12 +255,20 @@ namespace Chess.Game
                    break;
                    
            }
+
+           
            //IDEA: For king check detection
            //1. Check if an enemy figure is atticking current figure
            //2. Check if king is on row,column or 45 °degres angle the first figure from this fig
            //3. Get the figures that are attacking this figure
            //4. ?????
            return legalMoves;
+       }
+
+       //Check if the own King is in check and if yes check how this figure can move to solve it
+       private UInt64 CheckKingStatus(Figure CurrentFig, Int16 Position)
+       {
+           return 0;
        }
 
        private UInt64 GetRookMovesOn(Int16 Position, UInt64 EnemyAndEmpty)
