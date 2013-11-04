@@ -8,11 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Chess.Log;
-using Chess.Game;
 using Chess.Tools;
 using System.Diagnostics;
 using System.IO;
 using Chess.GUI;
+using Chess.Engine;
 
 namespace Chess
 {
@@ -42,7 +42,7 @@ namespace Chess
             {
                 case "New Game":
                     {
-                        this.binaryViewBox.Text = BitOperations.CreateHumanString(this.panel1.Board.SquarsBlocked);
+                        this.binaryViewBox.Text = BitOperations.CreateHumanString(this.panel1.MoveGenerator.CurrentGameState.SquarsBlocked);
                         this.fromLog.Log(Event);        
                     }break;
                 case "Figure selected":
@@ -94,6 +94,24 @@ namespace Chess
         {
             AttackDatabase db = new AttackDatabase();
             db.BuildAttackboard();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            UInt64 attacked = 0;
+            UInt64 shift = 1;
+            Stopwatch watch = new Stopwatch();
+            watch.Start();
+            for (UInt64 i = 0; i < 64; ++i)
+            {
+                Figure fig =this.panel1.MoveGenerator.GetFigureAtPosition(i);
+                if( fig!=null)
+                    attacked |= this.panel1.MoveGenerator.GetMoveForFigure(fig, (short)i);
+                shift = shift << 1;
+            }   
+            watch.Stop();
+            MessageBox.Show("Time " + watch.ElapsedMilliseconds.ToString());
+            this.binaryViewBox.Text = BitOperations.CreateHumanString(attacked);
         }
     }
 }

@@ -10,7 +10,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver.Builders;
 
-namespace Chess.Game
+namespace Chess.Engine
 {
     /// <summary>
     /// This class is able to provide accses to a attack database or build a new database

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Chess.Game
+namespace Chess.Engine
 {
    public class Figure
     {

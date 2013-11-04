@@ -28,8 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            Chess.Game.BitBoard magicBitBoard5 = new Chess.Game.BitBoard();
+            
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.panel1 = new Chess.GUI.GameBoard();
@@ -37,6 +36,7 @@
             this.binaryViewBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.button2 = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // textBox1
@@ -60,24 +60,9 @@
             // 
             // panel1
             // 
+           
             this.panel1.GameRunning = false;
             this.panel1.Location = new System.Drawing.Point(12, 12);
-            magicBitBoard5.Blackbishops = ((ulong)(0ul));
-            magicBitBoard5.BlackKing = ((ulong)(0ul));
-            magicBitBoard5.BlackKnights = ((ulong)(0ul));
-            magicBitBoard5.BlackPawns = ((ulong)(0ul));
-            magicBitBoard5.BlackPieces = ((ulong)(0ul));
-            magicBitBoard5.BlackQueens = ((ulong)(0ul));
-            magicBitBoard5.BlackRooks = ((ulong)(0ul));
-            magicBitBoard5.SquarsBlocked = ((ulong)(0ul));
-            magicBitBoard5.WhiteBishops = ((ulong)(0ul));
-            magicBitBoard5.WhiteKing = ((ulong)(0ul));
-            magicBitBoard5.WhiteKnights = ((ulong)(0ul));
-            magicBitBoard5.WhitePawns = ((ulong)(0ul));
-            magicBitBoard5.WhitePieces = ((ulong)(0ul));
-            magicBitBoard5.WhiteQueens = ((ulong)(0ul));
-            magicBitBoard5.WhiteRooks = ((ulong)(0ul));
-            this.panel1.Board = magicBitBoard5;
             this.panel1.Name = "panel1";
             this.panel1.OffsetX = 5;
             this.panel1.OffsetY = 5;
@@ -124,11 +109,22 @@
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
+            // button3
+            // 
+            this.button3.Location = new System.Drawing.Point(852, 41);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(75, 40);
+            this.button3.TabIndex = 7;
+            this.button3.Text = "Calculate All Attacks";
+            this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1063, 675);
+            this.Controls.Add(this.button3);
             this.Controls.Add(this.button2);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.binaryViewBox);
@@ -154,6 +150,7 @@
         private System.Windows.Forms.TextBox binaryViewBox;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button button3;
     }
 }
 

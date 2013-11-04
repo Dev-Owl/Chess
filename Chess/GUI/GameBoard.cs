@@ -6,22 +6,20 @@ using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Drawing;
 using Chess.Tools;
-using Chess.Game;
-
+using Chess.Engine;
 
 namespace Chess.GUI
 {
     public class GameBoard  : Panel
     {
-        //Magic
-        BitBoard board;
 
-        public BitBoard Board
+        MoveGenerator moveGenerator;
+
+        public MoveGenerator MoveGenerator
         {
-            get { return board; }
-            set { board = value; }
+            get { return moveGenerator; }
+            set { moveGenerator = value; }
         }
-       
 
 
 
@@ -104,14 +102,10 @@ namespace Chess.GUI
 
         public GameBoard() :base()
         {
-            //figures = new List<Figure>();
-            
-       //     highlightFields = new List<FigurePosition>();
             whiteFigureFiles = new Dictionary<EFigures, Image>();
             blackFigureFiles = new Dictionary<EFigures, Image>();
             base.DoubleBuffered = true;
-            board = new BitBoard();
-
+            this.moveGenerator = new MoveGenerator();
         }      
 
         #region Drawing
@@ -175,7 +169,7 @@ namespace Chess.GUI
             for (Int16 i = 0; i < 64; i++)
             {
                 
-                Figure tmp = this.board.GetFigureAtPosition(position  );
+                Figure tmp = this.moveGenerator.GetFigureAtPosition(position  );
                 if (tmp != null)
                 {
                     if (tmp.Color == Defaults.BLACK)
@@ -233,11 +227,11 @@ namespace Chess.GUI
                 selectedX = (int)(e.X / FieldSizeX);
                 selectedY = (int)(e.Y / FieldSizeY);
                 UInt64 bitBoardPosition = DrawHelper.FromDrawingPoint(7-selectedX, 7 - selectedY);
-                Figure fig = this.board.GetFigureAtPosition(bitBoardPosition);
+                Figure fig = this.moveGenerator.GetFigureAtPosition(bitBoardPosition);
                 if(fig != null)
                 {
                   //Get valid moves for the selected figures
-                    SelectedMask = this.board.GetMoveForFigure(fig, (Int16)((7 - selectedX) + ((7 - selectedY) * 8)));
+                    SelectedMask = this.moveGenerator.GetMoveForFigure(fig, (Int16)((7 - selectedX) + ((7 - selectedY) * 8)));
                     FireChangeEvent("Figure selected", SelectedMask);
                 }
                 this.Invalidate();
@@ -248,7 +242,7 @@ namespace Chess.GUI
         {
             LoadResources();
             this.gameRunning = true;
-            board.NewGame();
+            moveGenerator.NewGame();
             this.Invalidate();
             FireChangeEvent("New Game");
 

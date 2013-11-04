@@ -75,10 +75,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Game\BitBoard.cs" />
-    <Compile Include="Game\Figure.cs" />
-    <Compile Include="Game\Defaults.cs" />
-    <Compile Include="Game\EFigures.cs" />
+    <Compile Include="Engine\BitBoard.cs" />
+    <Compile Include="Engine\Figure.cs" />
+    <Compile Include="Engine\Defaults.cs" />
+    <Compile Include="Engine\EFigures.cs" />
+    <Compile Include="Engine\MoveGenerator.cs" />
     <Compile Include="GUI\ChangedEventArgs.cs" />
     <Compile Include="GUI\DrawHelper.cs" />
     <Compile Include="GUI\GameBoard.cs">
@@ -99,7 +100,7 @@
     <Compile Include="GUI\Forms\Thinking.Designer.cs">
       <DependentUpon>Thinking.cs</DependentUpon>
     </Compile>
-    <Compile Include="Game\AttackDatabase.cs" />
+    <Compile Include="Engine\AttackDatabase.cs" />
     <Compile Include="Tools\BitOperations.cs" />
     <Compile Include="Tools\INI.cs" />
     <EmbeddedResource Include="GUI\Forms\MainForm.resx">
@@ -193,6 +194,9 @@
     <Content Include="Graphics\RookWhite.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Game\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
