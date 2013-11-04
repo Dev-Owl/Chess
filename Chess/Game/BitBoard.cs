@@ -194,7 +194,7 @@ namespace Chess.Game
                    if (fig.Type != EFigures.Pawn)
                    {   
                        //Moves for the figure
-                       tmpMoves = GetMoveForFigure(fig, position);
+                       tmpMoves = GetMoveForFigure(fig, (short)i);
                    }
                    else {
                        //calculate possible pawn attacks
@@ -207,7 +207,7 @@ namespace Chess.Game
                        {
                            enemyAndEmpy = this.blackPieces | this.emptySquares;
                        }
-                       tmpMoves = enemyAndEmpy & this.db.BuildPawnAttack(position,fig.Color)
+                       tmpMoves = enemyAndEmpy & this.db.BuildPawnAttack((short)i, fig.Color);
                    }
                    //Update helper boards for the figure color
                    if (fig.Color == Defaults.WHITE)
@@ -265,7 +265,7 @@ namespace Chess.Game
               
                case EFigures.Pawn:
                     {
-                         //Check if pawn is blocked by any other figure in fornt of him
+                        //Check if pawn is blocked by any other figure in fornt of him
                         if ((GetPositionFromPosition(Position, (Int16)(8 * FigureToCheck.Color)) & squarsBlocked) > 0)
                         {
                             legalMoves = 0;
@@ -280,12 +280,14 @@ namespace Chess.Game
                    }
                    break;
                case EFigures.Bishop:
-                   {    //Get all legal moves for the bishop
+                   {    
+                       //Get all legal moves for the bishop
                        legalMoves = GetBishopMovesOn(Position, enemyOrEmpty);
                    }
                    break;
                case EFigures.Queen:
-                   {    //Queen is just rook + bishop
+                   {   
+                       //Queen is just rook + bishop
                        legalMoves = GetRookMovesOn(Position, enemyOrEmpty) | GetBishopMovesOn(Position, enemyOrEmpty);
                    }
                    break;
