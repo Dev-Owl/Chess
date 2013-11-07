@@ -65,14 +65,15 @@ namespace Chess.Engine
                               | this.currentGameState.BlackKnights | this.currentGameState.BlackPawns;
             this.currentGameState.SquarsBlocked = this.currentGameState.WhitePieces | this.currentGameState.BlackPieces;
             this.currentGameState.EmptySquares = ~this.currentGameState.SquarsBlocked;
-            this.UpdateAttackedFields();
             this.GameRunning = true;
+            this.UpdateHelperBoards();
         }
 
-        private void UpdateAttackedFields()
+        private void UpdateHelperBoards()
         {
             //Helper variable and temp. storage
             UInt64 tmpMoves = 0;
+            UInt64 protectedFields=0;
             UInt64 position = 1;
 
             //Reset current attack boards
@@ -84,17 +85,19 @@ namespace Chess.Engine
                 this.currentGameState.AttackedBy[key].Clear();
                 this.currentGameState.ProtecteddBy[key].Clear();
             }
-            this.currentGameState.AttackedBy
+            
             for (UInt16 i = 0; i < 64; ++i)
             {
                 tmpMoves = 0;
                 //Get figure on the selected board position
-                Figure fig = this.GetFigureAtPosition(position); ?????
+                Figure fig = this.GetFigureAtPosition(position); 
                 //Get the protected figures squares
 
                 //Only go on if we found a figure
                 if (fig != null)
                 {
+
+                    protectedFields = this.GetProtectedFields(fig,(short)i);
                     // Pawns moves are not the attacks
                     if (fig.Type != EFigures.Pawn)
                     {
@@ -132,7 +135,13 @@ namespace Chess.Engine
                         {
                             //To get the figure position later faster we store it inside the figure object
                             fig.Position = position;
-                            this.currentGameState.AttackedBy[key].Add(fig);
+                            this.currentGameState.AttackedBy[key].Add(fig);      
+                        }
+                        if ((key & protectedFields) > 0)
+                        {
+                            //This field is protected by the figure
+                            fig.Position = position;
+                            this.currentGameState.ProtecteddBy[key].Add(fig);
                         }
                     }
                 }
@@ -229,9 +238,21 @@ namespace Chess.Engine
                 friendlyAndEmpty = (this.currentGameState.BlackPieces | this.currentGameState.EmptySquares);
             }
             //For sliding figures we need different calculation
-            if (FigureToCheck.Type != EFigures.Bishop || FigureToCheck.Type != EFigures.Rook || FigureToCheck.Type != EFigures.Queen)
+            if (FigureToCheck.Type == EFigures.Bishop || FigureToCheck.Type == EFigures.Rook || FigureToCheck.Type == EFigures.Queen)
             {
                 //NOTE: use related method for figure and pass the friendlyAndEmpty board to it instead of the enemyAndEmpty ???
+                if (FigureToCheck.Type == EFigures.Bishop)
+                { 
+                    protectedSquares = GetBishopMovesOn(Position,friendlyAndEmpty);
+                }
+                else if (FigureToCheck.Type == EFigures.Rook)
+                { 
+                    protectedSquares = GetRookMovesOn(Position,friendlyAndEmpty);
+                }
+                else
+                {
+                    protectedSquares = (GetRookMovesOn(Position, friendlyAndEmpty) | GetBishopMovesOn(Position, friendlyAndEmpty));
+                }
             }
             else 
             {
