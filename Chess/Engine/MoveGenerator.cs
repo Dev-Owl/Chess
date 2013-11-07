@@ -71,12 +71,28 @@ namespace Chess.Engine
 
         private void UpdateAttackedFields()
         {
+            //Helper variable and temp. storage
             UInt64 tmpMoves = 0;
             UInt64 position = 1;
+
+            //Reset current attack boards
+            this.currentGameState.AttackedByWhite = 0;
+            this.currentGameState.AttackedByBlack = 0;
+            //Reset the Attack and protected status of the fields
+            foreach (UInt64 key in this.currentGameState.AttackedBy.Keys)
+            {
+                this.currentGameState.AttackedBy[key].Clear();
+                this.currentGameState.ProtecteddBy[key].Clear();
+            }
+            this.currentGameState.AttackedBy
             for (UInt16 i = 0; i < 64; ++i)
             {
                 tmpMoves = 0;
-                Figure fig = this.GetFigureAtPosition(position);
+                //Get figure on the selected board position
+                Figure fig = this.GetFigureAtPosition(position); ?????
+                //Get the protected figures squares
+
+                //Only go on if we found a figure
                 if (fig != null)
                 {
                     // Pawns moves are not the attacks
@@ -97,6 +113,7 @@ namespace Chess.Engine
                         {
                             enemyAndEmpy = this.currentGameState.BlackPieces | this.currentGameState.EmptySquares;
                         }
+                        // Check if the fields are not blocked by a friendly square
                         tmpMoves = enemyAndEmpy & this.attackDatabase.BuildPawnAttack((short)i, fig.Color);
                     }
                     //Update helper boards for the figure color
@@ -196,6 +213,41 @@ namespace Chess.Engine
             //3. Get the figures that are attacking this figure
             //4. ?????
             return legalMoves;
+        }
+
+        public UInt64 GetProtectedFields(Figure FigureToCheck, Int16 Position)
+        {
+            UInt64 protectedSquares = 0;
+            UInt64 friendlyAndEmpty = 0;
+            //Get all non enemy squars
+            if (FigureToCheck.Color == Defaults.WHITE)
+            {
+                friendlyAndEmpty = (this.currentGameState.WhitePieces |  this.currentGameState.EmptySquares);
+            }
+            else 
+            {
+                friendlyAndEmpty = (this.currentGameState.BlackPieces | this.currentGameState.EmptySquares);
+            }
+            //For sliding figures we need different calculation
+            if (FigureToCheck.Type != EFigures.Bishop || FigureToCheck.Type != EFigures.Rook || FigureToCheck.Type != EFigures.Queen)
+            {
+                //NOTE: use related method for figure and pass the friendlyAndEmpty board to it instead of the enemyAndEmpty ???
+            }
+            else 
+            {
+                //Get possible moves
+                protectedSquares = attackDatabase.GetMoveMask(Position, FigureToCheck);
+                //If pawn reset the moves to the attack fields
+                if (FigureToCheck.Type == EFigures.Pawn)
+                {
+                   protectedSquares = attackDatabase.BuildPawnAttack(Position, FigureToCheck.Color);
+                }
+                //remove all enemys in the squars
+                protectedSquares &= friendlyAndEmpty;
+                //NOTE: Might be needed to excluded attacked fields for the king but not sure yet...
+            }
+
+            return protectedSquares;
         }
 
         private UInt64 GetRookMovesOn(Int16 Position, UInt64 EnemyAndEmpty)
