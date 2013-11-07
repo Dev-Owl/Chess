@@ -128,15 +128,23 @@ namespace Chess.Engine
             get { return attackedBy; }
             set { attackedBy = value; }
         }
+        private Dictionary<UInt64, List<Figure>> protectedBy = null;
+        public Dictionary<UInt64, List<Figure>> ProtecteddBy
+        {
+            get { return attackedBy; }
+            set { attackedBy = value; }
+        }
         #endregion
 
        public BitBoard()
        {
            this.attackedBy = new Dictionary<ulong, List<Figure>>();
+           this.protectedBy = new Dictionary<ulong, List<Figure>>();
            UInt64 position = 1;
            for (int index = 0; index < 64; ++index)
            {
                this.attackedBy.Add(position, new List<Figure>());
+               this.protectedBy.Add(position, new List<Figure>());
                position = (position << 1);    
            }
        }
