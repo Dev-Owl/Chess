@@ -5,6 +5,13 @@ using System.Text;
 
 namespace Chess.Engine
 {
+    //TODO: Check if king is in check hast to be included
+    //TODO: FigureMove has to be included
+
+
+    /// <summary>
+    /// Provides any needed calculation for Figures on the board
+    /// </summary>
     public class MoveGenerator
     {
         /// <summary>
