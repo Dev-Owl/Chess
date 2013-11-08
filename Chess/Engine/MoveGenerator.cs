@@ -15,7 +15,6 @@ namespace Chess.Engine
         }
 
         AttackDatabase attackDatabase;
-
         public AttackDatabase AttackDatabase
         {
             get { return attackDatabase; }
@@ -29,9 +28,6 @@ namespace Chess.Engine
             get { return gameRunning; }
             set { gameRunning = value; }
         }
-
-
-
 
         public MoveGenerator()
         {
@@ -157,7 +153,8 @@ namespace Chess.Engine
             UInt64 enemyOrEmpty = this.currentGameState.EmptySquares; //all enemies or empty squares
             UInt64 enemy = 0; //All figs of the current enemy color
             UInt64 enemyAttacked = 0;
-           
+            UInt64 protectedFields = 0;
+            
 
             if (FigureToCheck.Color == Defaults.WHITE)
             {
@@ -210,6 +207,14 @@ namespace Chess.Engine
                     {
                         //Do not move on attacked fields 
                         legalMoves &= ~enemyAttacked;
+                        Figure[] protectedFigs = this.GetProtectedFigures(legalMoves, FigureToCheck.Color * -1);
+                        if (protectedFigs.Length > 0)
+                        {
+                            foreach (Figure fig in protectedFigs)
+                            {
+                                legalMoves ^= fig.Position;
+                            }
+                        }
                     }
                     break;
 
@@ -475,6 +480,25 @@ namespace Chess.Engine
                 }
             }
             return returnValue;
+        }
+
+        public Figure[] GetProtectedFigures(UInt64 SearchVlaues, int Color)
+        {
+            //list with figures that protected the passed search mask
+            List<Figure> protectors = new List<Figure>();
+            //Loop to the protection list
+            foreach (UInt64 Key in this.currentGameState.ProtecteddBy.Keys)
+            {
+                if ((Key & SearchVlaues) > 0)
+                { 
+                    //Add the searched figures to our temp. storage
+                    foreach (Figure fig in this.currentGameState.ProtecteddBy[Key])
+                    {
+                        protectors.Add(fig);
+                    }
+                }
+            }
+            return protectors.ToArray();
         }
     }
 }
