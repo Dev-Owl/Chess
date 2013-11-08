@@ -176,6 +176,7 @@ namespace Chess.Engine
             UInt64 enemyAttacked = 0;
             UInt64 protectedFields = 0;
             
+            //TODO: Check the check status for each kind and calculate based on this
 
             if (FigureToCheck.Color == Defaults.WHITE)
             {
@@ -228,18 +229,12 @@ namespace Chess.Engine
                     {
                         //Do not move on attacked fields 
                         legalMoves &= ~enemyAttacked;
+                        //Do not attack protected Figures
                         legalMoves &= ~this.IsProtected(legalMoves, FigureToCheck.Color * -1);
                     }
                     break;
 
             }
-
-
-            //IDEA: For king check detection
-            //1. Check if an enemy figure is atticking current figure
-            //2. Check if king is on row,column or 45 °degres angle the first figure from this fig
-            //3. Get the figures that are attacking this figure
-            //4. ?????
             return legalMoves;
         }
         /// <summary>
