@@ -7,40 +7,54 @@ namespace Chess.Engine
 {
     public class MoveGenerator
     {
+        /// <summary>
+        /// Current board situation of the game
+        /// </summary>
         BitBoard currentGameState;
         public BitBoard CurrentGameState
         {
             get { return currentGameState; }
             set { currentGameState = value; }
         }
-
+        /// <summary>
+        /// Attack datase offers basic attack creation and other helper function
+        /// </summary>
         AttackDatabase attackDatabase;
         public AttackDatabase AttackDatabase
         {
             get { return attackDatabase; }
             set { attackDatabase = value; }
         }
-
+        /// <summary>
+        /// Is an active game running
+        /// </summary>
         bool gameRunning = false;
-
         public bool GameRunning
         {
             get { return gameRunning; }
             set { gameRunning = value; }
         }
 
+        /// <summary>
+        /// Create a MoveGenerator with an empty Board
+        /// </summary>
         public MoveGenerator()
         {
             this.attackDatabase = new AttackDatabase();
             this.currentGameState = new BitBoard();
         }
-
+        /// <summary>
+        /// Create a MoveGenerator with a pre set Board
+        /// </summary>
+        /// <param name="CurrentState">The current game situation</param>
         public MoveGenerator(BitBoard CurrentState)
         {
             this.attackDatabase = new AttackDatabase();
             this.currentGameState = CurrentState;
         }
-
+        /// <summary>
+        /// Start a new game reset all values in the current Board
+        /// </summary>
         public void NewGame()
         {
             this.currentGameState.WhiteKing = Defaults.WhiteKing;
@@ -64,7 +78,9 @@ namespace Chess.Engine
             this.GameRunning = true;
             this.UpdateHelperBoards();
         }
-
+        /// <summary>
+        /// Update all helper boards that are used for the calculation
+        /// </summary>
         private void UpdateHelperBoards()
         {
             //Helper variable and temp. storage
@@ -145,7 +161,12 @@ namespace Chess.Engine
                 position = (position << 1);
             }
         }
-
+        /// <summary>
+        /// Get all legal moves for the given figure at the given position on the current board
+        /// </summary>
+        /// <param name="FigureToCheck">The Figure that is used for the calculation</param>
+        /// <param name="Position">Current Position of the Figure on the Board</param>
+        /// <returns>Moves for the selected Figure</returns>
         public UInt64 GetMoveForFigure(Figure FigureToCheck, Int16 Position)
         {
             //Get all possible moves for this figure at the givin position
@@ -207,14 +228,7 @@ namespace Chess.Engine
                     {
                         //Do not move on attacked fields 
                         legalMoves &= ~enemyAttacked;
-                        Figure[] protectedFigs = this.GetProtectedFigures(legalMoves, FigureToCheck.Color * -1);
-                        if (protectedFigs.Length > 0)
-                        {
-                            foreach (Figure fig in protectedFigs)
-                            {
-                                legalMoves ^= fig.Position;
-                            }
-                        }
+                        legalMoves &= ~this.IsProtected(legalMoves, FigureToCheck.Color * -1);
                     }
                     break;
 
@@ -228,7 +242,12 @@ namespace Chess.Engine
             //4. ?????
             return legalMoves;
         }
-
+        /// <summary>
+        /// Calculate all Fields protected by the given Figure on the given Position
+        /// </summary>
+        /// <param name="FigureToCheck">The Figure that is used for the calculation</param>
+        /// <param name="Position">Current Position of the Figure on the Board</param>
+        /// <returns>Protected Fields by the selected Figure</returns>
         public UInt64 GetProtectedFields(Figure FigureToCheck, Int16 Position)
         {
             UInt64 protectedSquares = 0;
@@ -275,7 +294,12 @@ namespace Chess.Engine
 
             return protectedSquares;
         }
-
+        /// <summary>
+        /// Calculate all possible moves for the Rook on the given Position
+        /// </summary>
+        /// <param name="Position">Position of the Rook</param>
+        /// <param name="EnemyAndEmpty">Representaion of all enemies and empty fields</param>
+        /// <returns>Legal Possible moves</returns>
         private UInt64 GetRookMovesOn(Int16 Position, UInt64 EnemyAndEmpty)
         {
             UInt64 legalMoves = 0;
@@ -339,7 +363,12 @@ namespace Chess.Engine
             return legalMoves;
 
         }
-
+        /// <summary>
+        /// Calculate all possible moves for the Bishop on the given Position
+        /// </summary>
+        /// <param name="Position">Position of the Bishop</param>
+        /// <param name="EnemyAndEmpty">Representaion of all enemies and empty fields</param>
+        /// <returns>Legal Possible moves</returns>
         private UInt64 GetBishopMovesOn(Int16 Position, UInt64 EnemyAndEmpty)
         {
             UInt64 legalMoves = 0;
@@ -404,14 +433,27 @@ namespace Chess.Engine
             legalMoves |= currentmoves;
             return legalMoves;
         }
-
+        /// <summary>
+        /// Creates based on the given Postion and the MoveRange the target Position
+        /// </summary>
+        /// <param name="SourcePosition">Start position for the calculation</param>
+        /// <param name="MoveRange">Fields to move on the board. Can be positive or negative.</param>
+        /// <returns>New Position</returns>
         public UInt64 GetPositionFromPosition(Int16 SourcePosition, Int16 MoveRange)
         {
             UInt64 result = 0;
-            result |= (UInt64)Math.Pow(2, SourcePosition + MoveRange);
+            //Prevent out of board moves ( should never happen but ....)
+            if (SourcePosition + MoveRange > 0 & SourcePosition + MoveRange < 64)
+            {
+                result |= (UInt64)Math.Pow(2, SourcePosition + MoveRange);
+            }
             return result;
         }
-
+        /// <summary>
+        /// Get the Figure at the given Position on the current Board
+        /// </summary>
+        /// <param name="Position">The Position of the Figure</param>
+        /// <returns>Figure object if Figure was found if not null.</returns>
         public Figure GetFigureAtPosition(UInt64 Position)
         {
             Figure returnValue = null;
@@ -481,24 +523,54 @@ namespace Chess.Engine
             }
             return returnValue;
         }
-
-        public Figure[] GetProtectedFigures(UInt64 SearchVlaues, int Color)
+        /// <summary>
+        /// Returns an Array of Figures that are Protecting the Provided Fields for the given Color
+        /// </summary>
+        /// <param name="SearchValues">Fields to be checked</param>
+        /// <param name="Color">Only this Color will be checked</param>
+        /// <returns>Array of Figures that are matching the search creteria</returns>
+        public Figure[] GetProtectingFigures(UInt64 SearchValues, int Color)
         {
             //list with figures that protected the passed search mask
             List<Figure> protectors = new List<Figure>();
             //Loop to the protection list
             foreach (UInt64 Key in this.currentGameState.ProtecteddBy.Keys)
             {
-                if ((Key & SearchVlaues) > 0)
+                if ((Key & SearchValues) > 0)
                 { 
                     //Add the searched figures to our temp. storage
-                    foreach (Figure fig in this.currentGameState.ProtecteddBy[Key])
+                    foreach (Figure fig in this.currentGameState.ProtecteddBy[Key].Where(F=>F.Color == Color))
                     {
                         protectors.Add(fig);
                     }
                 }
             }
             return protectors.ToArray();
+        }
+        /// <summary>
+        /// Calculates a Value that contains all Bits that are Protected based on the given Color and SearchVlaue
+        /// </summary>
+        /// <param name="SearchValues">Bits to be checked for protection</param>
+        /// <param name="Color">Only check this color</param>
+        /// <returns>Protected fields</returns>
+        public UInt64 IsProtected(UInt64 SearchValues, int Color)
+        {
+            UInt64 result = 0;
+            //Loop to the protection list
+            foreach (UInt64 Key in this.currentGameState.ProtecteddBy.Keys)
+            {
+                if ((Key & SearchValues) > 0)
+                {
+                    //Set bits if we find figures for the given color
+                    foreach (Figure fig in this.currentGameState.ProtecteddBy[Key].Where(F => F.Color == Color))
+                    {
+                        result |= Key;
+                        break;
+                    }
+                }
+            }
+            
+            return result;
         }
     }
 }
