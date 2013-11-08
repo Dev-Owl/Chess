@@ -98,6 +98,20 @@ namespace Chess.Engine
         #endregion
 
         #region Helping Boards
+        private bool blackKingCheck = false;
+        public bool BlackKingCheck
+        {
+            get { return blackKingCheck; }
+            set { blackKingCheck = value; }
+        }
+
+        private bool whiteKingCheck = false;
+        public bool WhiteKingCheck
+        {
+            get { return whiteKingCheck; }
+            set { whiteKingCheck = value; }
+        }
+       
         private UInt64 squarsBlocked = 0ul;
         public UInt64 SquarsBlocked
         {
@@ -135,6 +149,8 @@ namespace Chess.Engine
             set { attackedBy = value; }
         }
         #endregion
+
+
 
        public BitBoard()
        {
