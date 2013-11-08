@@ -869,23 +869,30 @@ namespace Chess.Engine
         public UInt64 BuildPawnAttack(Int16 Position, int Color)
         {
             UInt64 result = 0;
+            int right = 7, left = 9;
+            if (Color == -1)
+            { 
+                right= 9;
+                left = 7;
+            }
             if (Position % 8 != 0)
             {
-                int newPos = Position + (7 * Color);
+                int newPos = Position + (right * Color);
                 if (newPos >= 0 && newPos <= 63)
                 {
-                    result |= (UInt64)Math.Pow(2, Position + (7 * Color));    
+                    result |= (UInt64)Math.Pow(2, Position + (right * Color));    
                 }
             }
             if ((Position+1) % 8 != 0)
             {
-                int newPos = Position + (9 * Color);
+                int newPos = Position + (left * Color);
                 if (newPos >= 0 && newPos <= 63)
                 {
-                    result |= (UInt64)Math.Pow(2, Position + (7 * Color));
+
+                    result |= (UInt64)Math.Pow(2, Position + (left * Color));
                 }
             }
-            result |= (UInt64)Math.Pow(2, Position+(9*Color));
+            //result |= (UInt64)Math.Pow(2, Position+(9*Color));
             
             return result;
         }
