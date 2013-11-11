@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Chess.Engine
 {
-    //TODO: Check if king is in check hast to be included
+    //TODO: Check if king is in check has to be included
     //TODO: FigureMove has to be included
 
 
@@ -182,7 +182,8 @@ namespace Chess.Engine
             UInt64 enemy = 0; //All figs of the current enemy color
             UInt64 enemyAttacked = 0;
             UInt64 protectedFields = 0;
-            
+            bool myKingInCheck = false;
+            UInt64 myKingPosition = 0;
             //TODO: Check the check status for each kind and calculate based on this
 
             if (FigureToCheck.Color == Defaults.WHITE)
@@ -190,12 +191,16 @@ namespace Chess.Engine
                 enemyOrEmpty |= this.currentGameState.BlackPieces;
                 enemy = this.currentGameState.BlackPieces;
                 enemyAttacked = this.currentGameState.AttackedByBlack;
+                myKingInCheck = this.currentGameState.WhiteKingCheck;
+                myKingPosition = this.currentGameState.WhiteKing;
             }
             else
             {
                 enemyOrEmpty |= this.currentGameState.WhitePieces;
                 enemy = this.currentGameState.WhitePieces;
                 enemyAttacked = this.currentGameState.AttackedByWhite;
+                myKingInCheck = this.currentGameState.BlackKingCheck;
+                myKingPosition = this.currentGameState.BlackKing;
             }
             if (FigureToCheck.Type != EFigures.Rook || FigureToCheck.Type != EFigures.Bishop || FigureToCheck.Type != EFigures.Queen)
             {
@@ -242,6 +247,38 @@ namespace Chess.Engine
                     break;
 
             }
+            //If current figure color king is under attack
+            if (myKingInCheck)
+            {
+                //Get all attacking Figures for this king
+                List<Figure> kingAttacks = this.currentGameState.AttackedBy[myKingPosition];
+                //Temp storage for moves that are still valid
+                UInt64 tmpMoves = 0;
+                foreach (Figure fig in kingAttacks)
+                {
+                    //Pawns have diffrent move and attack fields so we need the if here
+                    if (FigureToCheck.Type == EFigures.Pawn)
+                    {
+                        if (this.attackDatabase.BuildPawnAttack(Position, FigureToCheck.Color) & fig.Position)
+                        {
+                            tmpMoves |= fig.Position;
+                        }
+                    }
+                    else
+                    {
+                        //If the "normal" moves are also reaching this figure 
+                        if (legalMoves & fig.Position > 0)
+                        {   //Add the position to the valid moves
+                            tmpMoves |= fig.Position;
+                        }
+                    }
+                    //Now we need to check if the way to the king could be blocked instead of an attack
+                    //???
+
+                }
+                
+            }
+
             return legalMoves;
         }
         /// <summary>
