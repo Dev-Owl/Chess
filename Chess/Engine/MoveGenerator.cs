@@ -247,6 +247,7 @@ namespace Chess.Engine
                     break;
 
             }
+            //TODO: TEST THIS CODE BELOW !!!
             //If current figure color king is under attack
             if (myKingInCheck)
             {
@@ -254,12 +255,15 @@ namespace Chess.Engine
                 List<Figure> kingAttacks = this.currentGameState.AttackedBy[myKingPosition];
                 //Temp storage for moves that are still valid
                 UInt64 tmpMoves = 0;
+                //Helper variable to store the figure directions
+                UInt64 tmpKingDirection=0;
+                UInt64 tmpMatchingDirection = 0;
                 foreach (Figure fig in kingAttacks)
                 {
                     //Pawns have diffrent move and attack fields so we need the if here
                     if (FigureToCheck.Type == EFigures.Pawn)
                     {
-                        if (this.attackDatabase.BuildPawnAttack(Position, FigureToCheck.Color) & fig.Position)
+                        if ((this.attackDatabase.BuildPawnAttack(Position, FigureToCheck.Color) & fig.Position) >0)
                         {
                             tmpMoves |= fig.Position;
                         }
@@ -267,20 +271,49 @@ namespace Chess.Engine
                     else
                     {
                         //If the "normal" moves are also reaching this figure 
-                        if (legalMoves & fig.Position > 0)
+                        if ((legalMoves & fig.Position) > 0)
                         {   //Add the position to the valid moves
                             tmpMoves |= fig.Position;
                         }
                     }
                     //Now we need to check if the way to the king could be blocked instead of an attack
-                    //???
+                    if (fig.Type == (EFigures.Rook | EFigures.Queen | EFigures.Bishop))
+                    { 
+                        //Get the direction for the attacking figure 
+                        //tmpAttackerDirection = PinPosition(fig.Position);
+                        //Pin the King position on the Board
+                        tmpKingDirection = PinPosition((short)Tools.BitOperations.MostSigExponent(myKingPosition));
+                        //Only get the matching part of the two pined positions
+                        tmpMatchingDirection = tmpKingDirection & PinPosition( (short)Tools.BitOperations.MostSigExponent(fig.Position));
+                        //Add the blocking moves to the already checked attack move
+                        tmpMoves = tmpMoves | (legalMoves & tmpMatchingDirection);
+                    }
 
                 }
+                //Override the normal moves with the king in check calculations
+                legalMoves = tmpMoves;
                 
             }
 
             return legalMoves;
         }
+
+        /// <summary>
+        /// Sets all bits on the Left,Right,Bottom,Top and the diagonal bits of the given Position
+        /// </summary>
+        /// <param name="Position">Position that is used as the center</param>
+        /// <returns>The resulting bitboard</returns>
+        private UInt64 PinPosition(short Position)
+        {
+            return (this.attackDatabase.GetFieldsDown(Position) |
+                    this.attackDatabase.GetFieldsDownLeft(Position) |
+                    this.attackDatabase.GetFieldsDownRight(Position) |
+                    this.attackDatabase.GetFieldsLeft(Position) |
+                    this.attackDatabase.GetFieldsRight(Position));
+        
+        }
+
+
         /// <summary>
         /// Calculate all Fields protected by the given Figure on the given Position
         /// </summary>
