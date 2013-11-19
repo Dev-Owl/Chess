@@ -313,7 +313,6 @@ namespace Chess.Engine
         
         }
 
-
         /// <summary>
         /// Calculate all Fields protected by the given Figure on the given Position
         /// </summary>
@@ -366,6 +365,116 @@ namespace Chess.Engine
 
             return protectedSquares;
         }
+
+        //TODO: Add other methods to make a complete valid move (calculation, checks and so on)
+
+        /// <summary>
+        /// Move a Figure to the provided Position. This function just sets and removes the bits in the current bitboard.
+        /// </summary>
+        /// <param name="FigureToMove">Figure that should be moved to a new position</param>
+        /// <param name="TargetPosition">The new position of the figure</param>
+        public void MoveFigure(Figure FigureToMove, Int16 TargetPosition)
+        {
+            //Get the figure at the target square
+            Figure targetFigure = this.GetFigureAtPosition((ulong)Math.Pow(2, TargetPosition));
+            //Set the target bit to 1 so we can use it in our calculation
+            ulong calculationBoard =  (ulong)Math.Pow(2, TargetPosition); 
+            //Depending on the figure we have to move set the matching bitboard
+            switch (FigureToMove.Type)
+            {
+                case EFigures.Bishop:
+                    {
+                        if (FigureToMove.Color == Defaults.WHITE)
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.WhiteBishops ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.WhiteBishops |= calculationBoard; 
+                        }
+                        else 
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.Blackbishops ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.Blackbishops |= calculationBoard; 
+                        }
+                    }
+                    break;
+                case EFigures.Knight: 
+                    {
+                        if (FigureToMove.Color == Defaults.WHITE)
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.WhiteKnights ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.WhiteKnights |= calculationBoard;
+                        }
+                        else
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.BlackKnights ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.BlackKnights |= calculationBoard;
+                        }
+                    }
+                    break;
+                case EFigures.Pawn: 
+                    {
+                        if (FigureToMove.Color == Defaults.WHITE)
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.WhitePawns ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.WhitePawns |= calculationBoard;
+                        }
+                        else
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.BlackPawns ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.BlackPawns |= calculationBoard;
+                        }
+                    }
+                    break;
+                case EFigures.Queen: 
+                    {
+                        if (FigureToMove.Color == Defaults.WHITE)
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.WhiteQueens ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.WhiteQueens |= calculationBoard;
+                        }
+                        else
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.BlackQueens ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.BlackQueens |= calculationBoard;
+                        }
+                    }
+                    break;
+                case EFigures.Rook:
+                    {
+                        if (FigureToMove.Color == Defaults.WHITE)
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.WhiteRooks ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.WhiteRooks |= calculationBoard;
+                        }
+                        else
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.BlackRooks ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.BlackRooks |= calculationBoard;
+                        }
+                    }
+                    break;
+            }
+        }
+        
         /// <summary>
         /// Calculate all possible moves for the Rook on the given Position
         /// </summary>
@@ -593,6 +702,9 @@ namespace Chess.Engine
                     }
                 }
             }
+            //Set the current position of the figure to speed up calculations later
+            returnValue.Position = Position;
+            //Return the result 
             return returnValue;
         }
         /// <summary>
