@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Chess.Engine
 {
-    //TODO: Check if king is in check has to be included
+   
     //TODO: FigureMove has to be included
 
 
@@ -90,6 +90,8 @@ namespace Chess.Engine
         /// </summary>
         private void UpdateHelperBoards()
         {
+            //TODO: Update the non figure boards like blockedSquares and so on
+
             //Helper variable and temp. storage
             UInt64 tmpMoves = 0;
             UInt64 protectedFields=0;
@@ -365,15 +367,32 @@ namespace Chess.Engine
 
             return protectedSquares;
         }
+   
+        /// <summary>
+        /// Make a move with a figure to a position
+        /// </summary>
+        /// <param name="FigureToMove">The Figure that should be moved</param>
+        /// <param name="TargetPosition">The new position of the figure</param>
+        public void MakeAMove(Figure FigureToMove, Int16 TargetPosition)
+        {
+            //IDEA: Fire pre and after move events to hook them elsewhere ( Computer player, other calculations)
 
-        //TODO: Add other methods to make a complete valid move (calculation, checks and so on)
+            //TODO: Add the current Bitboard object to a history to offer the possibility to revert a move
+            
+            //Change the related bitboards
+            this.MoveFigure(FigureToMove, TargetPosition);
+            //Refresh the helper boards
+            this.UpdateHelperBoards();
+
+            
+        }
 
         /// <summary>
         /// Move a Figure to the provided Position. This function just sets and removes the bits in the current bitboard.
         /// </summary>
         /// <param name="FigureToMove">Figure that should be moved to a new position</param>
         /// <param name="TargetPosition">The new position of the figure</param>
-        public void MoveFigure(Figure FigureToMove, Int16 TargetPosition)
+        private void MoveFigure(Figure FigureToMove, Int16 TargetPosition)
         {
             //Get the figure at the target square
             Figure targetFigure = this.GetFigureAtPosition((ulong)Math.Pow(2, TargetPosition));
