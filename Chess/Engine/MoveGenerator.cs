@@ -15,6 +15,26 @@ namespace Chess.Engine
     public class MoveGenerator
     {
         /// <summary>
+        /// Contains information about the current game
+        /// </summary>
+        GameInfo currentGame;
+        public GameInfo CurrentGame
+        {
+            get { return currentGame; }
+            set { currentGame = value; }
+        }
+        
+        /// <summary>
+        /// The history of the game
+        /// </summary>
+        GameHistory history;
+        public GameHistory History
+        {
+            get { return history; }
+            set { history = value; }
+        }
+
+        /// <summary>
         /// Current board situation of the game
         /// </summary>
         BitBoard currentGameState;
@@ -23,6 +43,7 @@ namespace Chess.Engine
             get { return currentGameState; }
             set { currentGameState = value; }
         }
+        
         /// <summary>
         /// Attack datase offers basic attack creation and other helper function
         /// </summary>
@@ -32,6 +53,7 @@ namespace Chess.Engine
             get { return attackDatabase; }
             set { attackDatabase = value; }
         }
+       
         /// <summary>
         /// Is an active game running
         /// </summary>
@@ -47,18 +69,29 @@ namespace Chess.Engine
         /// </summary>
         public MoveGenerator()
         {
-            this.attackDatabase = new AttackDatabase();
-            this.currentGameState = new BitBoard();
+            initClass();
         }
+       
         /// <summary>
         /// Create a MoveGenerator with a pre set Board
         /// </summary>
         /// <param name="CurrentState">The current game situation</param>
         public MoveGenerator(BitBoard CurrentState)
         {
-            this.attackDatabase = new AttackDatabase();
+            initClass();
             this.currentGameState = CurrentState;
         }
+
+        /// <summary>
+        /// Creates the interal used objects for the class and will be called in each constructor 
+        /// </summary>
+        private void initClass()
+        {
+            this.attackDatabase = new AttackDatabase();
+            this.currentGameState = new BitBoard();
+            this.history = new GameHistory();
+        }
+
         /// <summary>
         /// Start a new game reset all values in the current Board
         /// </summary>
@@ -70,28 +103,21 @@ namespace Chess.Engine
             this.currentGameState.WhiteBishops = Defaults.WhiteBishops;
             this.currentGameState.WhiteKnights = Defaults.WhiteKnights;
             this.currentGameState.WhitePawns = Defaults.WhitePawns;
-            this.currentGameState.WhitePieces = this.currentGameState.WhiteKing | this.currentGameState.WhiteQueens | this.currentGameState.WhiteRooks | this.currentGameState.WhiteBishops
-                               | this.currentGameState.WhiteKnights | this.currentGameState.WhitePawns;
             this.currentGameState.BlackKing = Defaults.BlackKing;
             this.currentGameState.BlackQueens = Defaults.BlackQueens;
             this.currentGameState.BlackRooks = Defaults.BlackRooks;
             this.currentGameState.Blackbishops = Defaults.Blackbishops;
             this.currentGameState.BlackKnights = Defaults.BlackKnights;
             this.currentGameState.BlackPawns = Defaults.BlackPawns;
-            this.currentGameState.BlackPieces = this.currentGameState.BlackKing | this.currentGameState.BlackQueens | this.currentGameState.BlackRooks | this.currentGameState.Blackbishops
-                              | this.currentGameState.BlackKnights | this.currentGameState.BlackPawns;
-            this.currentGameState.SquarsBlocked = this.currentGameState.WhitePieces | this.currentGameState.BlackPieces;
-            this.currentGameState.EmptySquares = ~this.currentGameState.SquarsBlocked;
             this.GameRunning = true;
             this.UpdateHelperBoards();
         }
+        
         /// <summary>
         /// Update all helper boards that are used for the calculation
         /// </summary>
         private void UpdateHelperBoards()
         {
-            //TODO: Update the non figure boards like blockedSquares and so on
-
             //Helper variable and temp. storage
             UInt64 tmpMoves = 0;
             UInt64 protectedFields=0;
@@ -106,6 +132,16 @@ namespace Chess.Engine
                 this.currentGameState.AttackedBy[key].Clear();
                 this.currentGameState.ProtecteddBy[key].Clear();
             }
+            //Collect the position of each white figure on the board
+            this.currentGameState.WhitePieces = this.currentGameState.WhiteKing | this.currentGameState.WhiteQueens | this.currentGameState.WhiteRooks | this.currentGameState.WhiteBishops
+                               | this.currentGameState.WhiteKnights | this.currentGameState.WhitePawns;
+            //Collect the position of each black figure on the board
+            this.currentGameState.BlackPieces = this.currentGameState.BlackKing | this.currentGameState.BlackQueens | this.currentGameState.BlackRooks | this.currentGameState.Blackbishops
+                  | this.currentGameState.BlackKnights | this.currentGameState.BlackPawns;
+            //All figures on the boards
+            this.currentGameState.SquarsBlocked = this.currentGameState.WhitePieces | this.currentGameState.BlackPieces;
+            //All squares without a figure
+            this.currentGameState.EmptySquares = ~this.currentGameState.SquarsBlocked;
             
             for (UInt16 i = 0; i < 64; ++i)
             {
@@ -169,7 +205,11 @@ namespace Chess.Engine
                 //Jump to the next position
                 position = (position << 1);
             }
+            //Check if a king is in check
+            this.currentGameState.WhiteKingCheck = (this.currentGameState.AttackedByBlack & this.currentGameState.WhiteKing) > 0;
+            this.currentGameState.BlackKingCheck = (this.currentGameState.AttackedByWhite & this.currentGameState.BlackKing) > 0;
         }
+        
         /// <summary>
         /// Get all legal moves for the given figure at the given position on the current board
         /// </summary>
@@ -186,7 +226,6 @@ namespace Chess.Engine
             UInt64 protectedFields = 0;
             bool myKingInCheck = false;
             UInt64 myKingPosition = 0;
-            //TODO: Check the check status for each kind and calculate based on this
 
             if (FigureToCheck.Color == Defaults.WHITE)
             {
@@ -563,6 +602,7 @@ namespace Chess.Engine
             return legalMoves;
 
         }
+      
         /// <summary>
         /// Calculate all possible moves for the Bishop on the given Position
         /// </summary>
@@ -633,6 +673,7 @@ namespace Chess.Engine
             legalMoves |= currentmoves;
             return legalMoves;
         }
+       
         /// <summary>
         /// Creates based on the given Postion and the MoveRange the target Position
         /// </summary>
@@ -649,6 +690,7 @@ namespace Chess.Engine
             }
             return result;
         }
+      
         /// <summary>
         /// Get the Figure at the given Position on the current Board
         /// </summary>
@@ -726,6 +768,7 @@ namespace Chess.Engine
             //Return the result 
             return returnValue;
         }
+      
         /// <summary>
         /// Returns an Array of Figures that are Protecting the Provided Fields for the given Color
         /// </summary>
@@ -750,6 +793,7 @@ namespace Chess.Engine
             }
             return protectors.ToArray();
         }
+      
         /// <summary>
         /// Calculates a Value that contains all Bits that are Protected based on the given Color and SearchVlaue
         /// </summary>
