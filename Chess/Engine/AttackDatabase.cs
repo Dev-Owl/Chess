@@ -36,11 +36,16 @@ namespace Chess.Engine
         Dictionary<Int16, UInt64> upLeftFields;
         Dictionary<Int16, UInt64> downRightFields;
         Dictionary<Int16, UInt64> downLeftFields;
+        
         public AttackDatabase()
-        {
+        {   
+            //Create forn object to show a progress
             thinking = new Thinking();
+            //get the client object for the mongo db
             var server = new MongoClient(this.mongoConnection).GetServer();
+            //Get the attack database
             attackBoard = server.GetDatabase("attackBoard");
+            //Lookup our main collection for attacks
             attacks = attackBoard.GetCollection<AttackDocument>("attacks");
             BuildHelperBoards();
         }
@@ -51,13 +56,13 @@ namespace Chess.Engine
             UInt64 tempBoard = 0;
             Int16 borderValue = 0;
             Int16 temp = 0;
+            //Build the needed boards for the figures
             #region Rook
             rightFields = new Dictionary<short, ulong>();
             for (Int16 index = 0; index < 64; index++)
             {
                 tempBoard = 0;
                 temp = index;
-                // Have to check if current position must be set to 1 or 0???
                 temp -= 1;
                 while (temp >= borderValue)
                 {
@@ -78,7 +83,6 @@ namespace Chess.Engine
             {
                 tempBoard = 0;
                 temp = index;
-                // Have to check if current position must be set to 1 or 0???
                 temp += 1;
                 while (temp <= borderValue)
                 {
@@ -99,7 +103,6 @@ namespace Chess.Engine
             {
                 tempBoard = 0;
                 temp = index;
-                // Have to check if current position must be set to 1 or 0???
                 temp -= 8;
                 while (temp >= 0)
                 {
@@ -116,7 +119,6 @@ namespace Chess.Engine
             {
                 tempBoard = 0;
                 temp = index;
-                // Have to check if current position must be set to 1 or 0???
                 temp += 8;
                 while (temp <= 63)
                 {
@@ -212,6 +214,7 @@ namespace Chess.Engine
 
         public void BuildAttackboard()
         {
+            //Show the form and start the worker thread
             createThread = new Thread(BuildAttackDatabase);
             createThread.IsBackground = true;
             thinking.Show();
@@ -799,9 +802,11 @@ namespace Chess.Engine
             //Insert the new position in the datbase 
             attacks.Insert(new AttackDocument() { F = (int)Type, M = MoveMask, P = Position });
         }
-        //TODO: Create comments in the function below
+       
+       
         public UInt64 GetMoveMask(Int16 Position, Figure Figure)
         {
+            //Depending on the figure set the search creteria 
             UInt64 returnValue = 0;
             EFigures searchType = Figure.Type;
             if (Figure.Type == EFigures.Pawn && Figure.Color == Defaults.BLACK)
@@ -811,10 +816,12 @@ namespace Chess.Engine
             else if(Figure.Type == EFigures.Pawn)  {
                 searchType = EFigures.PawnWhite;
             }
+            //Create the search document
             QueryDocument doc = new QueryDocument();
             doc.Add("F",(int)searchType);
             doc.Add("P", Position);
             var result = attacks.Find(doc);
+            //If we found something in the database return the first result
             if (result.Count() > 0)
             {
                 returnValue = result.ElementAt(0).M;
@@ -865,18 +872,22 @@ namespace Chess.Engine
 
         #endregion 
        
-        //TODO: Create comments in the function below
+       
         public UInt64 BuildPawnAttack(Int16 Position, int Color)
         {
             UInt64 result = 0;
             int right = 7, left = 9;
+            //Depending on the figure color we have to adjust the moveboards
             if (Color == -1)
             { 
+                //A black pawn is going down which means that the calculation for right and left must be changed
                 right= 9;
                 left = 7;
             }
+            //Prevent the result to jump into the next row of the board
             if (Position % 8 != 0)
             {
+                //Depending of the color move down or up ( Color =1 White , Color =-1 Black)
                 int newPos = Position + (right * Color);
                 if (newPos >= 0 && newPos <= 63)
                 {
@@ -892,15 +903,13 @@ namespace Chess.Engine
                     result |= (UInt64)Math.Pow(2, Position + (left * Color));
                 }
             }
-            //result |= (UInt64)Math.Pow(2, Position+(9*Color));
-            
             return result;
         }
-        //TODO: Create comments in the function below    
+          
         public bool BackgroundWorkInprogress()
         {
             try
-            {
+            {   //Returns true as long as the attackdatabase will be build
                 return createThread.IsAlive;
             }
             catch
