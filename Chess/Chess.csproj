@@ -79,6 +79,8 @@
     <Compile Include="Engine\Figure.cs" />
     <Compile Include="Engine\Defaults.cs" />
     <Compile Include="Engine\EFigures.cs" />
+    <Compile Include="Engine\GameHistory.cs" />
+    <Compile Include="Engine\GameInfo.cs" />
     <Compile Include="Engine\MoveGenerator.cs" />
     <Compile Include="GUI\ChangedEventArgs.cs" />
     <Compile Include="GUI\DrawHelper.cs" />
