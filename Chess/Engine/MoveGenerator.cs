@@ -762,9 +762,12 @@ namespace Chess.Engine
                         }
                     }
                 }
+                if (returnValue != null)
+                {
+                    //Set the current position of the figure to speed up calculations later
+                    returnValue.Position = Position;
+                }
             }
-            //Set the current position of the figure to speed up calculations later
-            returnValue.Position = Position;
             //Return the result 
             return returnValue;
         }
