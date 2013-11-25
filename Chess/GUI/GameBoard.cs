@@ -21,8 +21,6 @@ namespace Chess.GUI
             set { moveGenerator = value; }
         }
 
-
-
         #region Draw and Colors
         int selectedX = -1;
         public int SelectedX
@@ -80,13 +78,6 @@ namespace Chess.GUI
         private Dictionary<EFigures, Image> whiteFigureFiles;
         private Dictionary<EFigures, Image> blackFigureFiles;
 
-        //List<Figure> figures;
-        //public List<Figure> Figures
-        //{
-        //    get { return figures; }
-        //    set { figures = value; }
-        //}
-
         bool gameRunning = false;
         public bool GameRunning
         {
@@ -95,7 +86,7 @@ namespace Chess.GUI
         }
 
         public delegate void PropertyChangeHandler(string Event, ChangedEventArgs e);
-        // The event
+        // This is not the event you are looking for ;)
         public event PropertyChangeHandler PropertyChange;
 
 
@@ -124,41 +115,42 @@ namespace Chess.GUI
 
         private void drawBoard(Graphics gra)
         {
-            int width = this.FieldSizeX, height = this.FieldSizeY;
+            try
+            {
+                int width = this.FieldSizeX, height = this.FieldSizeY;
 
-            for (int x = 0; x < 8; ++x)
-            {
-                for (int y = 0; y < 8; ++y)
+                for (int x = 0; x < 8; ++x)
                 {
-                    if (y % 2 == 0)
+                    for (int y = 0; y < 8; ++y)
                     {
-                        gra.FillRectangle(x % 2 == 0 ? white : black, x * width, y * height, width, height);
-                    }
-                    else
-                    {
-                        gra.FillRectangle(x % 2 == 0 ? black : white, x * width, y * height, width, height);
-                    }
-                }
-            }
-            if (selected)
-            {
-                gra.FillRectangle(activeField, selectedX * width, selectedY * height, width, height);
-                if (this.SelectedMask > 0)
-                {
-                    for (int index = 0; index < 64; ++index)
-                    {
-                        if (((SelectedMask >> index) & 1) != 0)
+                        if (y % 2 == 0)
                         {
-                            gra.FillRectangle(activeField, DrawHelper.ToDrawingRectangle(index, width, height));
+                            gra.FillRectangle(x % 2 == 0 ? white : black, x * width, y * height, width, height);
+                        }
+                        else
+                        {
+                            gra.FillRectangle(x % 2 == 0 ? black : white, x * width, y * height, width, height);
                         }
                     }
                 }
-                
-                //foreach (FigurePosition selectedPos in this.highlightFields)
-                //{
-                //    gra.FillRectangle(activeField, selectedPos.ToDrawingRectangle(width, height));
-                //    //gra.FillRectangle(activeField, selectedPos.ToInt()[0] * width, selectedPos.ToInt()[1] * height, width, height);
-                //}
+                if (selected)
+                {
+                    gra.FillRectangle(activeField, selectedX * width, selectedY * height, width, height);
+                    if (this.SelectedMask > 0)
+                    {
+                        for (int index = 0; index < 64; ++index)
+                        {
+                            if (((SelectedMask >> index) & 1) != 0)
+                            {
+                                gra.FillRectangle(activeField, DrawHelper.ToDrawingRectangle(index, width, height));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            { 
+            
             }
         }
 
@@ -168,13 +160,11 @@ namespace Chess.GUI
             UInt64 position = 1;
             for (Int16 i = 0; i < 64; i++)
             {
-                
                 Figure tmp = this.moveGenerator.GetFigureAtPosition(position  );
                 if (tmp != null)
                 {
                     if (tmp.Color == Defaults.BLACK)
                     {
-                        //Draw image here 
                         gra.DrawImage(this.blackFigureFiles[tmp.Type], DrawHelper.ToDrawingPoint(i, width, height, offsetX, OffsetY));
                     }
                     else
@@ -184,16 +174,6 @@ namespace Chess.GUI
                 }
                 position = (position << 1);
             }
-            //foreach (Figure fig in this.figures.Where(k => k.Ingame))
-            //{
-            //    if (fig.Color == Figure.BLACK)
-            //    {
-            //        gra.DrawImage(this.blackFigureFiles[fig.Figuretype], fig.Position.ToDrawingPoint(width,height,offsetX,offsetY));
-            //    }
-            //    else {
-            //        gra.DrawImage(this.whiteFigureFiles[fig.Figuretype], fig.Position.ToDrawingPoint(width, height, offsetX, offsetY));
-            //    }
-            //}
         }
 
         public void LoadResources()
@@ -222,15 +202,14 @@ namespace Chess.GUI
             if (gameRunning)
             {
                 SelectedMask = 0;
-                selected = true;
-                //highlightFields.Clear();
                 selectedX = (int)(e.X / FieldSizeX);
                 selectedY = (int)(e.Y / FieldSizeY);
                 UInt64 bitBoardPosition = DrawHelper.FromDrawingPoint(7-selectedX, 7 - selectedY);
                 Figure fig = this.moveGenerator.GetFigureAtPosition(bitBoardPosition);
                 if(fig != null)
                 {
-                  //Get valid moves for the selected figures
+                    //Get valid moves for the selected figures
+                    selected = true;
                     SelectedMask = this.moveGenerator.GetMoveForFigure(fig, (Int16)((7 - selectedX) + ((7 - selectedY) * 8)));
                     FireChangeEvent("Figure selected", SelectedMask);
                 }
@@ -245,48 +224,6 @@ namespace Chess.GUI
             moveGenerator.NewGame();
             this.Invalidate();
             FireChangeEvent("New Game");
-
-            #region OLD
-            //this.figures.Clear();
-            //this.figures.Add(new Figure(EFigures.King, Figure.WHITE, this));
-            //this.figures.Add(new Figure(EFigures.Queen, Figure.WHITE, this));
-            //this.figures.Add(new Figure(EFigures.Knight, Figure.WHITE, this));
-            //this.figures.Add(new Figure(EFigures.Bishop, Figure.WHITE, this));
-            //this.figures.Add(new Figure(EFigures.Rook, Figure.WHITE, this));
-            //this.figures.Add(new Figure(EFigures.Knight, Figure.WHITE, this));
-            //this.figures.Add(new Figure(EFigures.Bishop, Figure.WHITE, this));
-            //this.figures.Add(new Figure(EFigures.Rook, Figure.WHITE, this));
-
-
-            //this.figures.Add(new Figure(EFigures.King, Figure.BLACK, this));
-            //this.figures.Add(new Figure(EFigures.Queen, Figure.BLACK, this));
-            //this.figures.Add(new Figure(EFigures.Knight, Figure.BLACK, this));
-            //this.figures.Add(new Figure(EFigures.Bishop, Figure.BLACK, this));
-            //this.figures.Add(new Figure(EFigures.Rook, Figure.BLACK, this));
-            //this.figures.Add(new Figure(EFigures.Knight, Figure.BLACK, this));
-            //this.figures.Add(new Figure(EFigures.Bishop, Figure.BLACK, this));
-            //this.figures.Add(new Figure(EFigures.Rook, Figure.BLACK, this));
-
-            //for (int i = 0; i < 16; ++i)
-            //{
-            //    this.figures.Add(new Figure(EFigures.Pawn, i > 7 ? Figure.BLACK : Figure.WHITE, this));
-            //}
-
-            ////TESTING !!!!!
-            //this.figures.Find(f => f.Figuretype == EFigures.Knight && f.Color == Figure.BLACK).Position = new FigurePosition('d', 3);
-            //this.figures.Find(f => f.Figuretype == EFigures.Rook && f.Color == Figure.BLACK).Position = new FigurePosition('e', 3);
-            ////TESTING !!!!!
-
-            //for (int x = 0; x < 8; ++x)
-            //{
-            //    for (int y = 0; y < 8; ++y)
-            //    {
-            //        this.gameBoard[x, y] = 0;
-            //    }
-            //}
-            //this.figures.ForEach(k => this.gameBoard[k.Position.PositionX - 97, k.Position.PositionY-1] = (int)k.Figuretype);
-            //this.figures.ForEach(k => k.Ingame = true);
-            #endregion
         }
 
         private void FireChangeEvent(string Event ="",object data=null)
@@ -298,49 +235,5 @@ namespace Chess.GUI
         }
 
         #endregion
-
-        //#region Figure and Position
-        //public bool PositionFree(FigurePosition SinglePosition)
-        //{
-        //    return this.figures.Count<Figure>(f => f.Position.Same(SinglePosition) && f.Ingame) == 0;
-        //}
-
-        //public bool PositionFree(FigurePosition[] MultiPositions)
-        //{
-        //    return this.figures.FindAll(f => MultiPositions.Contains<FigurePosition>(f.Position) && f.Ingame).Count == 0;
-        //}
-
-        //public Figure GetFigureAt(FigurePosition SinglePosition)
-        //{
-        //    return this.figures.Find(f => f.Position.Same(SinglePosition) && f.Ingame);
-        //}
-
-        //public List<Figure> GetFigureAt(FigurePosition[] Positions)
-        //{
-        //    return this.figures.FindAll(f => Positions.FirstOrDefault<FigurePosition>( p=> p.Same( f.Position)) != null && f.Ingame);
-        //}
-
-        //public List<Figure> TestMove(Figure MovingFigure, FigurePosition Destination)
-        //{
-        //    return null;
-        //}
-
-        //public void PreformMove(Figure MovingFigure, FigurePosition Destination)
-        //{
-            
-        //}
-
-        //public bool TestCheckForColor(int COLOR)
-        //{
-        //    //Get all figures that are not the same color as requested 
-        //    //Get all position where the fig can go
-        //    //If one of this positions match the kings position you are in check
-        //    //If all positions are matched it is checkmate
-
-        //    return false;
-        //}
-
-        //#endregion
-
     }
 }
