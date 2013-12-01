@@ -79,7 +79,7 @@ namespace Chess.Engine
         public MoveGenerator(BitBoard CurrentState)
         {
             initClass();
-            this.currentGameState = CurrentState;
+//this.currentGameState = CurrentState;
         }
 
         /// <summary>
@@ -97,6 +97,9 @@ namespace Chess.Engine
         /// </summary>
         public void NewGame()
         {
+            this.currentGameState.Dispose();
+            this.currentGameState = null;
+            this.currentGameState = new BitBoard();
             this.currentGameState.WhiteKing = Defaults.WhiteKing;
             this.currentGameState.WhiteQueens = Defaults.WhiteQueens;
             this.currentGameState.WhiteRooks = Defaults.WhiteRooks;
@@ -110,6 +113,7 @@ namespace Chess.Engine
             this.currentGameState.BlackKnights = Defaults.BlackKnights;
             this.currentGameState.BlackPawns = Defaults.BlackPawns;
             this.GameRunning = true;
+            
             this.UpdateHelperBoards();
         }
         
