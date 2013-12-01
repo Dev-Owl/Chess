@@ -12,11 +12,11 @@ namespace Chess.GUI
     class DrawHelper
     {
 
-        public static Point ToDrawingPoint(int Position,int Width,int Height, int OffsetX=0,int OffsetY = 0)
+        public static Point ToDrawingPoint(int Position, int Width, int Height, int totalWidth, int OffsetX = 0, int OffsetY = 0)
         { 
          
             System.Drawing.Point pFigure = new System.Drawing.Point();
-            pFigure.X = (831 - Width - 7)-(Position - ((Position / 8) * 8)) * Width + OffsetX;
+            pFigure.X = (totalWidth - Width - 7) - (Position - ((Position / 8) * 8)) * Width + OffsetX;
             pFigure.Y = (7*Height)-((Position / 8) * Height) + OffsetY;
             return pFigure;
         }
@@ -29,14 +29,13 @@ namespace Chess.GUI
             return pFigure;
         }
        
-        public static Rectangle ToDrawingRectangle(int Position, int Width, int Height, int OffsetX = 0, int OffsetY = 0)
+        public static Rectangle ToDrawingRectangle(int Position, int Width, int Height,int TotalWidth, int OffsetX = 0, int OffsetY = 0)
         {
             System.Drawing.Rectangle rec = new System.Drawing.Rectangle();
-
-            rec.X =(831-Width-7) - (Position - ((Position / 8) * 8)) * Width + OffsetX;
+            rec.X = (8*Width) - (Width * (Position - ((Position / 8) * 8)+1));
             rec.Y = (7 * Height) - ((Position / 8) * Height) + OffsetY;
-            rec.Width = Width;
-            rec.Height = Height;
+            rec.Width = Width-OffsetX;
+            rec.Height = Height-OffsetY;
             return rec;
         }
 
