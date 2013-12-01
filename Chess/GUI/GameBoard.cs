@@ -14,7 +14,7 @@ namespace Chess.GUI
     {
 
         MoveGenerator moveGenerator;
-
+        
         public MoveGenerator MoveGenerator
         {
             get { return moveGenerator; }
@@ -107,10 +107,18 @@ namespace Chess.GUI
         
         protected override void OnPaint(PaintEventArgs e)
         {
-            base.OnPaint(e);
-            Graphics gra = e.Graphics;
-            drawBoard(gra);
-            drawFigures(gra);
+            try
+            {
+                base.OnPaint(e);
+                Graphics gra = e.Graphics;
+                drawBoard(gra);
+                if (this.gameRunning)
+                {
+                    drawFigures(gra);
+                }
+            }
+            catch (Exception ex)
+            { }
         }
 
         private void drawBoard(Graphics gra)
@@ -142,7 +150,7 @@ namespace Chess.GUI
                         {
                             if (((SelectedMask >> index) & 1) != 0)
                             {
-                                gra.FillRectangle(activeField, DrawHelper.ToDrawingRectangle(index, width, height));
+                                gra.FillRectangle(activeField, DrawHelper.ToDrawingRectangle(index, width, height,this.Width));
                             }
                         }
                     }
@@ -165,11 +173,11 @@ namespace Chess.GUI
                 {
                     if (tmp.Color == Defaults.BLACK)
                     {
-                        gra.DrawImage(this.blackFigureFiles[tmp.Type], DrawHelper.ToDrawingPoint(i, width, height, offsetX, OffsetY));
+                        gra.DrawImage(this.blackFigureFiles[tmp.Type], DrawHelper.ToDrawingPoint(i, width, height,this.Width, offsetX, OffsetY));
                     }
                     else
                     {
-                        gra.DrawImage(this.whiteFigureFiles[tmp.Type], DrawHelper.ToDrawingPoint(i, width, height, offsetX, OffsetY));
+                        gra.DrawImage(this.whiteFigureFiles[tmp.Type], DrawHelper.ToDrawingPoint(i, width, height,this.Width, offsetX, OffsetY));
                     }
                 }
                 position = (position << 1);
@@ -219,6 +227,7 @@ namespace Chess.GUI
 
         public void StartNewGame()
         {
+            
             LoadResources();
             this.gameRunning = true;
             moveGenerator.NewGame();
