@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Chess.Engine
 {
+    [Serializable]
    public class Figure
     {
 
@@ -34,6 +35,11 @@ namespace Chess.Engine
         {
             this.color = Color;
             this.type = Type;
+        }
+
+        public Figure()
+        { 
+        
         }
 
     }
