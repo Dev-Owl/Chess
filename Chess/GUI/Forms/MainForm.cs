@@ -68,7 +68,7 @@ namespace Chess
 
         private void button1_Click(object sender, EventArgs e)
         {
-            this.panel1.StartNewGame();
+            //this.panel1.StartNewGame();
         }
 
         private void StartMongoDB()
