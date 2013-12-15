@@ -6,9 +6,6 @@ using System.Text;
 namespace Chess.Engine
 {
    
-    //TODO: FigureMove has to be included
-
-
     /// <summary>
     /// Provides any needed calculation for Figures on the board
     /// </summary>
@@ -31,7 +28,11 @@ namespace Chess.Engine
         public GameHistory History
         {
             get { return history; }
-            set { history = value; }
+            set { 
+                history = value; 
+                //When a new Histor is set , set the Movegenerator to enable reverting of moves
+                history.MoveGenerator = this;
+            }
         }
 
         /// <summary>
@@ -41,7 +42,16 @@ namespace Chess.Engine
         public BitBoard CurrentGameState
         {
             get { return currentGameState; }
-            set { currentGameState = value; }
+            set {
+                currentGameState.Dispose();
+                currentGameState = null;
+                currentGameState = value;
+                //When the gamestate was changed reload the helper boards if the game is running
+                if (gameRunning)
+                {
+                    this.UpdateHelperBoards();
+                }
+            }
         }
         
         /// <summary>
@@ -79,7 +89,7 @@ namespace Chess.Engine
         public MoveGenerator(BitBoard CurrentState)
         {
             initClass();
-//this.currentGameState = CurrentState;
+            this.currentGameState = CurrentState;
         }
 
         /// <summary>
@@ -90,13 +100,16 @@ namespace Chess.Engine
             this.attackDatabase = new AttackDatabase();
             this.currentGameState = new BitBoard();
             this.history = new GameHistory();
+            this.history.MoveGenerator = this;
         }
 
         /// <summary>
         /// Start a new game reset all values in the current Board
         /// </summary>
-        public void NewGame()
+        public void NewGame(GameInfo NewGame)
         {
+            this.currentGame = null;
+            this.currentGame = NewGame;
             this.currentGameState.Dispose();
             this.currentGameState = null;
             this.currentGameState = new BitBoard();
@@ -113,7 +126,7 @@ namespace Chess.Engine
             this.currentGameState.BlackKnights = Defaults.BlackKnights;
             this.currentGameState.BlackPawns = Defaults.BlackPawns;
             this.GameRunning = true;
-            
+            this.history.AddGame(NewGame);
             this.UpdateHelperBoards();
         }
         
@@ -292,7 +305,7 @@ namespace Chess.Engine
                     break;
 
             }
-            //TODO: TEST THIS CODE BELOW !!!
+            
             //If current figure color king is under attack
             if (myKingInCheck)
             {
@@ -325,7 +338,6 @@ namespace Chess.Engine
                     if (fig.Type == (EFigures.Rook | EFigures.Queen | EFigures.Bishop))
                     { 
                         //Get the direction for the attacking figure 
-                        //tmpAttackerDirection = PinPosition(fig.Position);
                         //Pin the King position on the Board
                         tmpKingDirection = PinPosition((short)Tools.BitOperations.MostSigExponent(myKingPosition));
                         //Only get the matching part of the two pined positions
@@ -420,14 +432,12 @@ namespace Chess.Engine
         {
             //IDEA: Fire pre and after move events to hook them elsewhere ( Computer player, other calculations)
 
-            //TODO: Add the current Bitboard object to a history to offer the possibility to revert a move
-            
+            //Add the current Bitboard object to a history to offer the possibility to revert a move
+            this.history.AddHistory(this.currentGame, this.currentGameState);
             //Change the related bitboards
             this.MoveFigure(FigureToMove, TargetPosition);
             //Refresh the helper boards
             this.UpdateHelperBoards();
-
-            
         }
 
         /// <summary>
@@ -437,10 +447,17 @@ namespace Chess.Engine
         /// <param name="TargetPosition">The new position of the figure</param>
         private void MoveFigure(Figure FigureToMove, Int16 TargetPosition)
         {
-            //Get the figure at the target square
-            Figure targetFigure = this.GetFigureAtPosition((ulong)Math.Pow(2, TargetPosition));
-            //Set the target bit to 1 so we can use it in our calculation
-            ulong calculationBoard =  (ulong)Math.Pow(2, TargetPosition); 
+            // The target figure is only important if this is not a "remove move" ( TargetPosition > 0)
+            Figure targetFigure = null;
+            //By default we do not set the figure on a new position currentBoard |= 0 does not change a bit ;)
+            ulong calculationBoard =0; 
+            if (TargetPosition >= 0)
+            {
+                //Set the target bit to 1 so we can use it in our calculation
+                calculationBoard = (ulong)Math.Pow(2, TargetPosition);
+                //Get the figure at the target square 
+                targetFigure = this.GetFigureAtPosition((ulong)Math.Pow(2, TargetPosition)); 
+            }
             //Depending on the figure we have to move set the matching bitboard
             switch (FigureToMove.Type)
             {
@@ -534,6 +551,13 @@ namespace Chess.Engine
                         }
                     }
                     break;
+            }
+            
+            //If the move attacks a figure remove it from the board
+            if (targetFigure != null)
+            {
+                //Call the function again with the target figure to remove it from the board
+                this.MoveFigure(targetFigure, -1);
             }
         }
         
