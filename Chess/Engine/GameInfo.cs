@@ -11,21 +11,31 @@ namespace Chess.Engine
         /// Name of the Player that owns the white figures
         /// </summary>
         public string Player1 { get; set; }
-        
+
+        /// <summary>
+        /// If true this player is owned by the AI
+        /// </summary>
+        public bool Player1IsAI { get; set; }
+
         /// <summary>
         /// Name of the Player that owns the black figures
         /// </summary>
         public string Player2 { get; set; }
-        
+
+        /// <summary>
+        /// If true this player is owned by the AI
+        /// </summary>
+        public bool Player2IsAI { get; set; }
+
         /// <summary>
         /// The game time in seconds
         /// </summary>
-        public int GameTime { get; set; }
+        public UInt64 GameTime { get; set; }
 
         /// <summary>
         /// Starting time for the game (UNIX-Timestamp)
         /// </summary>
-        public int StartingTime { get; set; }
+        public UInt64 StartingTime { get; set; }
         
     }
 }
