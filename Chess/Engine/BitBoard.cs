@@ -7,6 +7,8 @@ using System.Drawing;
 
 namespace Chess.Engine
 {
+    //TODO: Add documentation for this class
+
    public class BitBoard :IDisposable
    {
 
@@ -150,8 +152,6 @@ namespace Chess.Engine
         }
         #endregion
 
-
-
        public BitBoard()
        {
            this.attackedBy = new Dictionary<ulong, List<Figure>>();
@@ -174,5 +174,46 @@ namespace Chess.Engine
        {
            GC.SuppressFinalize(this);
        }
+
+       /// <summary>
+       /// Returns a new Bitboard with default values for all Figures.NOTE: The helper boards are EMPTY!
+       /// </summary>
+       /// <returns>New Bitboard with FigureValues</returns>
+       public static BitBoard CreateDefaultBoard()
+       {
+           BitBoard newBoard = new BitBoard();
+           newBoard.WhiteKing = Defaults.WhiteKing;
+           newBoard.WhiteQueens = Defaults.WhiteQueens;
+           newBoard.WhiteRooks = Defaults.WhiteRooks;
+           newBoard.WhiteBishops = Defaults.WhiteBishops;
+           newBoard.WhiteKnights = Defaults.WhiteKnights;
+           newBoard.WhitePawns = Defaults.WhitePawns;
+           newBoard.BlackKing = Defaults.BlackKing;
+           newBoard.BlackQueens = Defaults.BlackQueens;
+           newBoard.BlackRooks = Defaults.BlackRooks;
+           newBoard.Blackbishops = Defaults.Blackbishops;
+           newBoard.BlackKnights = Defaults.BlackKnights;
+           newBoard.BlackPawns = Defaults.BlackPawns;
+           return newBoard;
+       }
+
+       public static BitBoard CopyFigureValues(BitBoard BoardToCopy)
+       {
+           BitBoard newBoard = new BitBoard();
+           newBoard.WhiteKing = BoardToCopy.WhiteKing;
+           newBoard.WhiteQueens = BoardToCopy.WhiteQueens;
+           newBoard.WhiteRooks = BoardToCopy.WhiteRooks;
+           newBoard.WhiteBishops = BoardToCopy.WhiteBishops;
+           newBoard.WhiteKnights = BoardToCopy.WhiteKnights;
+           newBoard.WhitePawns = BoardToCopy.WhitePawns;
+           newBoard.BlackKing = BoardToCopy.BlackKing;
+           newBoard.BlackQueens = BoardToCopy.BlackQueens;
+           newBoard.BlackRooks = BoardToCopy.BlackRooks;
+           newBoard.Blackbishops = BoardToCopy.Blackbishops;
+           newBoard.BlackKnights = BoardToCopy.BlackKnights;
+           newBoard.BlackPawns = BoardToCopy.BlackPawns;
+           return newBoard;
+       }
+
    }
 }
