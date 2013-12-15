@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 
 namespace Chess.Engine
-{   //TODO: Revert values back to orginal !!!
+{   
     class Defaults
     {
         //Default value for each starting bitboard
