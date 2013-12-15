@@ -10,11 +10,12 @@ using Chess.Engine;
 
 namespace Chess.GUI
 {
+    //TODO: Add documentaion for the class below
+
     public class GameBoard  : Panel
     {
 
-        MoveGenerator moveGenerator;
-        
+        MoveGenerator moveGenerator;        
         public MoveGenerator MoveGenerator
         {
             get { return moveGenerator; }
@@ -47,8 +48,10 @@ namespace Chess.GUI
         
         Brush black = new SolidBrush(Color.FromArgb(140, 70, 0));
         Brush white = new SolidBrush(Color.FromArgb(255, 191, 128));
-        Brush activeField = new SolidBrush(Color.FromArgb(70, 0, 0, 255));
-        
+        Brush activeFieldPlayer = new SolidBrush(Color.FromArgb(70, 36, 255, 36));
+        Brush activeFieldEnemy = new SolidBrush(Color.FromArgb(70, 255, 36, 36));
+
+
         public int FieldSizeX
         {
             get { return this.Width/8; }
@@ -73,6 +76,8 @@ namespace Chess.GUI
 
         public UInt64 SelectedMask=0;
 
+        public Figure SelectedFigure { get; set; }
+        
         #endregion
 
         private Dictionary<EFigures, Image> whiteFigureFiles;
@@ -89,6 +94,7 @@ namespace Chess.GUI
         // This is not the event you are looking for ;)
         public event PropertyChangeHandler PropertyChange;
 
+        public int ActiveColor { get; set; }
 
 
         public GameBoard() :base()
@@ -97,6 +103,7 @@ namespace Chess.GUI
             blackFigureFiles = new Dictionary<EFigures, Image>();
             base.DoubleBuffered = true;
             this.moveGenerator = new MoveGenerator();
+            this.ActiveColor = Defaults.WHITE;
         }      
 
         #region Drawing
@@ -143,14 +150,15 @@ namespace Chess.GUI
                 }
                 if (selected)
                 {
-                    gra.FillRectangle(activeField, selectedX * width, selectedY * height, width, height);
+                    Brush drawBursh = this.SelectedFigure == null ? this.activeFieldPlayer: this.ActiveColor == this.SelectedFigure.Color ? activeFieldPlayer : activeFieldEnemy;
+                    gra.FillRectangle(drawBursh, selectedX * width, selectedY * height, width, height);
                     if (this.SelectedMask > 0)
                     {
                         for (int index = 0; index < 64; ++index)
                         {
                             if (((SelectedMask >> index) & 1) != 0)
                             {
-                                gra.FillRectangle(activeField, DrawHelper.ToDrawingRectangle(index, width, height,this.Width));
+                                gra.FillRectangle(drawBursh, DrawHelper.ToDrawingRectangle(index, width, height, this.Width));
                             }
                         }
                     }
@@ -186,19 +194,22 @@ namespace Chess.GUI
 
         public void LoadResources()
         {
-            Size imageSize = new System.Drawing.Size(this.FieldSizeX, this.FieldSizeY);
-            whiteFigureFiles.Add(EFigures.Pawn, resizeImage(Image.FromFile(@"Graphics\PawnWhite.png"), imageSize));
-            whiteFigureFiles.Add(EFigures.Queen, resizeImage(Image.FromFile(@"Graphics\QueenWhite.png"), imageSize));
-            whiteFigureFiles.Add(EFigures.Rook, resizeImage(Image.FromFile(@"Graphics\RookWhite.png"), imageSize));
-            whiteFigureFiles.Add(EFigures.Knight, resizeImage(Image.FromFile(@"Graphics\KnightWhite.png"), imageSize));
-            whiteFigureFiles.Add(EFigures.Bishop, resizeImage(Image.FromFile(@"Graphics\BishopWhite.png"), imageSize));
-            whiteFigureFiles.Add(EFigures.King, resizeImage(Image.FromFile(@"Graphics\KingWhite.png"), imageSize));
-            blackFigureFiles.Add(EFigures.Pawn, resizeImage(Image.FromFile(@"Graphics\PawnBlack.png"), imageSize));
-            blackFigureFiles.Add(EFigures.Queen, resizeImage(Image.FromFile(@"Graphics\QueenBlack.png"), imageSize));
-            blackFigureFiles.Add(EFigures.Rook, resizeImage(Image.FromFile(@"Graphics\RookBlack.png"), imageSize));
-            blackFigureFiles.Add(EFigures.Knight, resizeImage(Image.FromFile(@"Graphics\KnightBlack.png"), imageSize));
-            blackFigureFiles.Add(EFigures.Bishop, resizeImage(Image.FromFile(@"Graphics\BishopBlack.png"), imageSize));
-            blackFigureFiles.Add(EFigures.King, resizeImage(Image.FromFile(@"Graphics\KingBlack.png"), imageSize));
+            if ((whiteFigureFiles.Count + blackFigureFiles.Count) == 0)
+            {
+                Size imageSize = new System.Drawing.Size(this.FieldSizeX, this.FieldSizeY);
+                whiteFigureFiles.Add(EFigures.Pawn, resizeImage(Image.FromFile(@"Graphics\PawnWhite.png"), imageSize));
+                whiteFigureFiles.Add(EFigures.Queen, resizeImage(Image.FromFile(@"Graphics\QueenWhite.png"), imageSize));
+                whiteFigureFiles.Add(EFigures.Rook, resizeImage(Image.FromFile(@"Graphics\RookWhite.png"), imageSize));
+                whiteFigureFiles.Add(EFigures.Knight, resizeImage(Image.FromFile(@"Graphics\KnightWhite.png"), imageSize));
+                whiteFigureFiles.Add(EFigures.Bishop, resizeImage(Image.FromFile(@"Graphics\BishopWhite.png"), imageSize));
+                whiteFigureFiles.Add(EFigures.King, resizeImage(Image.FromFile(@"Graphics\KingWhite.png"), imageSize));
+                blackFigureFiles.Add(EFigures.Pawn, resizeImage(Image.FromFile(@"Graphics\PawnBlack.png"), imageSize));
+                blackFigureFiles.Add(EFigures.Queen, resizeImage(Image.FromFile(@"Graphics\QueenBlack.png"), imageSize));
+                blackFigureFiles.Add(EFigures.Rook, resizeImage(Image.FromFile(@"Graphics\RookBlack.png"), imageSize));
+                blackFigureFiles.Add(EFigures.Knight, resizeImage(Image.FromFile(@"Graphics\KnightBlack.png"), imageSize));
+                blackFigureFiles.Add(EFigures.Bishop, resizeImage(Image.FromFile(@"Graphics\BishopBlack.png"), imageSize));
+                blackFigureFiles.Add(EFigures.King, resizeImage(Image.FromFile(@"Graphics\KingBlack.png"), imageSize));
+            }
         }
         #endregion
 
@@ -207,32 +218,79 @@ namespace Chess.GUI
         protected override void OnMouseClick(MouseEventArgs e)
         {
             base.OnMouseClick(e);
+            selectedX = (int)(e.X / FieldSizeX);
+            selectedY = (int)(e.Y / FieldSizeY);
+
             if (gameRunning)
             {
-                SelectedMask = 0;
-                selectedX = (int)(e.X / FieldSizeX);
-                selectedY = (int)(e.Y / FieldSizeY);
-                UInt64 bitBoardPosition = DrawHelper.FromDrawingPoint(7-selectedX, 7 - selectedY);
-                Figure fig = this.moveGenerator.GetFigureAtPosition(bitBoardPosition);
-                if(fig != null)
+                if (!ClickedMarkedField())
                 {
-                    //Get valid moves for the selected figures
+                    SelectedMask = 0;
+                    UInt64 bitBoardPosition = DrawHelper.FromDrawingPoint(7 - selectedX, 7 - selectedY);
+                    Figure fig = this.moveGenerator.GetFigureAtPosition(bitBoardPosition);
                     selected = true;
-                    SelectedMask = this.moveGenerator.GetMoveForFigure(fig, (Int16)((7 - selectedX) + ((7 - selectedY) * 8)));
-                    FireChangeEvent("Figure selected", SelectedMask);
+                    if (fig != null)
+                    {
+                        //Get valid moves for the selected figures
+                        SelectedMask = this.moveGenerator.GetMoveForFigure(fig, (Int16)((7 - selectedX) + ((7 - selectedY) * 8)));
+                        this.SelectedFigure = fig;
+                        FireChangeEvent("Figure selected", SelectedMask);
+                    }
+                    else {
+                        this.SelectedFigure = null;
+                    }
                 }
                 this.Invalidate();
             }
         }
 
-        public void StartNewGame()
+        private bool ClickedMarkedField()
         {
-            
+            bool moveDone = false;
+            if (this.SelectedFigure != null)
+            {
+                //Get the bitboard position of the click
+                UInt64 bitBoardPosition = DrawHelper.FromDrawingPoint(7 - selectedX, 7 - selectedY);
+                //If the move fields contain this position and the color of the selected figure is matching move the figure
+                if ((SelectedMask & bitBoardPosition) > 0 && this.ActiveColor == this.SelectedFigure.Color)
+                {
+                    //The figure that should be move ( current selected one) and the position in the  1 to 64 matrix
+                    this.moveGenerator.MakeAMove(this.SelectedFigure, (short)(((7 - selectedY) * 8) + (7 - SelectedX)));
+                    //Change the color of the active player
+                    this.ActiveColor *= -1;
+                    //Show the calling function that the move is done
+                    moveDone = true;
+                    //Fire Move event
+                    FireChangeEvent("Figure moved", this.SelectedFigure);
+                    //Clear the selected values
+                    this.SelectedMask = 0;
+                    this.SelectedFigure = null;
+                    this.selected = false;
+                    
+                }
+            }
+            return moveDone;
+        }
+
+        public void StartNewGame(GameInfo NewGame)
+        {
             LoadResources();
             this.gameRunning = true;
-            moveGenerator.NewGame();
+            moveGenerator.NewGame(NewGame);
             this.Invalidate();
             FireChangeEvent("New Game");
+        }
+
+        public void MoveReverted()
+        {
+            //Clear the selected values
+            this.SelectedMask = 0;
+            this.SelectedFigure = null;
+            this.selected = false;
+            //Change the active player
+            this.ActiveColor *= -1;
+            FireChangeEvent("Move reverted");
+            this.Invalidate();
         }
 
         private void FireChangeEvent(string Event ="",object data=null)
