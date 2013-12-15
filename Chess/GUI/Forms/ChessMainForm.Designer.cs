@@ -28,19 +28,21 @@
         /// </summary>
         private void InitializeComponent()
         {
-            Chess.Engine.MoveGenerator moveGenerator2 = new Chess.Engine.MoveGenerator();
-            Chess.Engine.AttackDatabase attackDatabase2 = new Chess.Engine.AttackDatabase();
-            Chess.Engine.BitBoard bitBoard2 = new Chess.Engine.BitBoard();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ChessMainForm));
+            Chess.Engine.MoveGenerator moveGenerator1 = new Chess.Engine.MoveGenerator();
+            Chess.Engine.AttackDatabase attackDatabase1 = new Chess.Engine.AttackDatabase();
+            Chess.Engine.BitBoard bitBoard1 = new Chess.Engine.BitBoard();
+            Chess.Engine.GameHistory gameHistory1 = new Chess.Engine.GameHistory();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.gameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.gameBoard = new Chess.GUI.GameBoard();
             this.optionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.actionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.revertMoveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.gameBoard = new Chess.GUI.GameBoard();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -48,7 +50,8 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.gameToolStripMenuItem,
-            this.optionToolStripMenuItem});
+            this.optionToolStripMenuItem,
+            this.actionsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(784, 24);
@@ -69,68 +72,30 @@
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
             // loadToolStripMenuItem
             // 
+            this.loadToolStripMenuItem.Enabled = false;
             this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            this.loadToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.loadToolStripMenuItem.Text = "Load";
             // 
             // saveToolStripMenuItem
             // 
+            this.saveToolStripMenuItem.Enabled = false;
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.saveToolStripMenuItem.Text = "Save";
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
-            // 
-            // gameBoard
-            // 
-            this.gameBoard.GameRunning = false;
-            this.gameBoard.Location = new System.Drawing.Point(12, 27);
-            moveGenerator2.AttackDatabase = attackDatabase2;
-            moveGenerator2.CurrentGame = null;
-            bitBoard2.AttackedBy = ((System.Collections.Generic.Dictionary<ulong, System.Collections.Generic.List<Chess.Engine.Figure>>)(resources.GetObject("bitBoard2.AttackedBy")));
-            bitBoard2.AttackedByBlack = ((ulong)(0ul));
-            bitBoard2.AttackedByWhite = ((ulong)(0ul));
-            bitBoard2.Blackbishops = ((ulong)(0ul));
-            bitBoard2.BlackKing = ((ulong)(0ul));
-            bitBoard2.BlackKingCheck = false;
-            bitBoard2.BlackKnights = ((ulong)(0ul));
-            bitBoard2.BlackPawns = ((ulong)(0ul));
-            bitBoard2.BlackPieces = ((ulong)(0ul));
-            bitBoard2.BlackQueens = ((ulong)(0ul));
-            bitBoard2.BlackRooks = ((ulong)(0ul));
-            bitBoard2.EmptySquares = ((ulong)(0ul));
-            bitBoard2.ProtecteddBy = ((System.Collections.Generic.Dictionary<ulong, System.Collections.Generic.List<Chess.Engine.Figure>>)(resources.GetObject("bitBoard2.ProtecteddBy")));
-            bitBoard2.SquarsBlocked = ((ulong)(0ul));
-            bitBoard2.WhiteBishops = ((ulong)(0ul));
-            bitBoard2.WhiteKing = ((ulong)(0ul));
-            bitBoard2.WhiteKingCheck = false;
-            bitBoard2.WhiteKnights = ((ulong)(0ul));
-            bitBoard2.WhitePawns = ((ulong)(0ul));
-            bitBoard2.WhitePieces = ((ulong)(0ul));
-            bitBoard2.WhiteQueens = ((ulong)(0ul));
-            bitBoard2.WhiteRooks = ((ulong)(0ul));
-            moveGenerator2.CurrentGameState = bitBoard2;
-            moveGenerator2.GameRunning = false;
-            this.gameBoard.MoveGenerator = moveGenerator2;
-            this.gameBoard.Name = "gameBoard";
-            this.gameBoard.OffsetX = 5;
-            this.gameBoard.OffsetY = 5;
-            this.gameBoard.Selected = false;
-            this.gameBoard.SelectedX = -1;
-            this.gameBoard.SelectedY = -1;
-            this.gameBoard.Size = new System.Drawing.Size(760, 523);
-            this.gameBoard.TabIndex = 1;
             // 
             // optionToolStripMenuItem
             // 
@@ -145,6 +110,67 @@
             this.debugViewToolStripMenuItem.Name = "debugViewToolStripMenuItem";
             this.debugViewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.debugViewToolStripMenuItem.Text = "Debug view";
+            this.debugViewToolStripMenuItem.Click += new System.EventHandler(this.debugViewToolStripMenuItem_Click);
+            // 
+            // actionsToolStripMenuItem
+            // 
+            this.actionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.revertMoveToolStripMenuItem});
+            this.actionsToolStripMenuItem.Name = "actionsToolStripMenuItem";
+            this.actionsToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
+            this.actionsToolStripMenuItem.Text = "Actions";
+            // 
+            // revertMoveToolStripMenuItem
+            // 
+            this.revertMoveToolStripMenuItem.Enabled = false;
+            this.revertMoveToolStripMenuItem.Name = "revertMoveToolStripMenuItem";
+            this.revertMoveToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.revertMoveToolStripMenuItem.Text = "Revert Move";
+            this.revertMoveToolStripMenuItem.Click += new System.EventHandler(this.revertMoveToolStripMenuItem_Click);
+            // 
+            // gameBoard
+            // 
+            this.gameBoard.ActiveColor = 1;
+            this.gameBoard.GameRunning = false;
+            this.gameBoard.Location = new System.Drawing.Point(12, 27);
+            moveGenerator1.AttackDatabase = attackDatabase1;
+            moveGenerator1.CurrentGame = null;
+            bitBoard1.AttackedBy = null;
+            bitBoard1.AttackedByBlack = ((ulong)(0ul));
+            bitBoard1.AttackedByWhite = ((ulong)(0ul));
+            bitBoard1.Blackbishops = ((ulong)(0ul));
+            bitBoard1.BlackKing = ((ulong)(0ul));
+            bitBoard1.BlackKingCheck = false;
+            bitBoard1.BlackKnights = ((ulong)(0ul));
+            bitBoard1.BlackPawns = ((ulong)(0ul));
+            bitBoard1.BlackPieces = ((ulong)(0ul));
+            bitBoard1.BlackQueens = ((ulong)(0ul));
+            bitBoard1.BlackRooks = ((ulong)(0ul));
+            bitBoard1.EmptySquares = ((ulong)(0ul));
+            bitBoard1.ProtecteddBy = null;
+            bitBoard1.SquarsBlocked = ((ulong)(0ul));
+            bitBoard1.WhiteBishops = ((ulong)(0ul));
+            bitBoard1.WhiteKing = ((ulong)(0ul));
+            bitBoard1.WhiteKingCheck = false;
+            bitBoard1.WhiteKnights = ((ulong)(0ul));
+            bitBoard1.WhitePawns = ((ulong)(0ul));
+            bitBoard1.WhitePieces = ((ulong)(0ul));
+            bitBoard1.WhiteQueens = ((ulong)(0ul));
+            bitBoard1.WhiteRooks = ((ulong)(0ul));
+            moveGenerator1.CurrentGameState = bitBoard1;
+            moveGenerator1.GameRunning = false;
+            gameHistory1.MoveGenerator = moveGenerator1;
+            moveGenerator1.History = gameHistory1;
+            this.gameBoard.MoveGenerator = moveGenerator1;
+            this.gameBoard.Name = "gameBoard";
+            this.gameBoard.OffsetX = 5;
+            this.gameBoard.OffsetY = 5;
+            this.gameBoard.Selected = false;
+            this.gameBoard.SelectedFigure = null;
+            this.gameBoard.SelectedX = -1;
+            this.gameBoard.SelectedY = -1;
+            this.gameBoard.Size = new System.Drawing.Size(760, 523);
+            this.gameBoard.TabIndex = 1;
             // 
             // ChessMainForm
             // 
@@ -175,5 +201,7 @@
         private GameBoard gameBoard;
         private System.Windows.Forms.ToolStripMenuItem optionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem debugViewToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem actionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem revertMoveToolStripMenuItem;
     }
 }
