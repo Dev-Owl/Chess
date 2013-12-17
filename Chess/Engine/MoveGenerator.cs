@@ -129,7 +129,7 @@ namespace Chess.Engine
             this.history.AddGame(NewGame);
             this.UpdateHelperBoards();
         }
-        
+       
         /// <summary>
         /// Update all helper boards that are used for the calculation
         /// </summary>
@@ -243,14 +243,15 @@ namespace Chess.Engine
             UInt64 protectedFields = 0;
             bool myKingInCheck = false;
             UInt64 myKingPosition = 0;
-
+            short myKingPositionShort = 0;
             if (FigureToCheck.Color == Defaults.WHITE)
             {
                 enemyOrEmpty |= this.currentGameState.BlackPieces;
                 enemy = this.currentGameState.BlackPieces;
                 enemyAttacked = this.currentGameState.AttackedByBlack;
                 myKingInCheck = this.currentGameState.WhiteKingCheck;
-                myKingPosition = this.currentGameState.WhiteKing;
+                myKingPosition = this.currentGameState.WhiteKing; 
+                myKingPositionShort = (short)Tools.BitOperations.MostSigExponent(myKingPosition);
             }
             else
             {
@@ -259,6 +260,7 @@ namespace Chess.Engine
                 enemyAttacked = this.currentGameState.AttackedByWhite;
                 myKingInCheck = this.currentGameState.BlackKingCheck;
                 myKingPosition = this.currentGameState.BlackKing;
+                myKingPositionShort = (short)Tools.BitOperations.MostSigExponent(myKingPosition);
             }
             if (FigureToCheck.Type != EFigures.Rook || FigureToCheck.Type != EFigures.Bishop || FigureToCheck.Type != EFigures.Queen)
             {
@@ -305,23 +307,22 @@ namespace Chess.Engine
                     break;
 
             }
-            
             //If current figure color king is under attack
-            if (myKingInCheck)
+            if (myKingInCheck && FigureToCheck.Type != EFigures.King)
             {
                 //Get all attacking Figures for this king
-                List<Figure> kingAttacks = this.currentGameState.AttackedBy[myKingPosition];
+                List<Figure> kingAttacks = this.currentGameState.AttackedBy[myKingPosition].Where<Figure>(f => f.Color != FigureToCheck.Color).ToList<Figure>();
                 //Temp storage for moves that are still valid
                 UInt64 tmpMoves = 0;
                 //Helper variable to store the figure directions
-                UInt64 tmpKingDirection=0;
+                UInt64 tmpKingDirection = 0;
                 UInt64 tmpMatchingDirection = 0;
                 foreach (Figure fig in kingAttacks)
                 {
                     //Pawns have diffrent move and attack fields so we need the if here
                     if (FigureToCheck.Type == EFigures.Pawn)
                     {
-                        if ((this.attackDatabase.BuildPawnAttack(Position, FigureToCheck.Color) & fig.Position) >0)
+                        if ((this.attackDatabase.BuildPawnAttack(Position, FigureToCheck.Color) & fig.Position) > 0)
                         {
                             tmpMoves |= fig.Position;
                         }
@@ -335,13 +336,25 @@ namespace Chess.Engine
                         }
                     }
                     //Now we need to check if the way to the king could be blocked instead of an attack
-                    if (fig.Type == (EFigures.Rook | EFigures.Queen | EFigures.Bishop))
-                    { 
-                        //Get the direction for the attacking figure 
+                    if (fig.Type == EFigures.Rook || fig.Type == EFigures.Queen || fig.Type == EFigures.Bishop)
+                    {
+                        //The mappend short positions 
+                        short attackingPosition = (short)Tools.BitOperations.MostSigExponent(fig.Position);
                         //Pin the King position on the Board
-                        tmpKingDirection = PinPosition((short)Tools.BitOperations.MostSigExponent(myKingPosition));
+                        tmpKingDirection = PinPosition(myKingPositionShort, fig.Type);
                         //Only get the matching part of the two pined positions
-                        tmpMatchingDirection = tmpKingDirection & PinPosition( (short)Tools.BitOperations.MostSigExponent(fig.Position));
+                        tmpMatchingDirection = tmpKingDirection & PinPosition(attackingPosition, fig.Type);
+                        //If the king is blow the attacking figure remove the fields behind the king and above the figure
+                        if (myKingPositionShort < attackingPosition)
+                        {
+                            tmpMatchingDirection &= (~this.FillToPositionFromBottom(myKingPositionShort));
+                            tmpMatchingDirection &= (~this.FillToPositionFromTop(attackingPosition));
+                        }
+                        else if (myKingPositionShort > attackingPosition)
+                        {   //If it is the other way remove the fields above the king and below the attacking figure
+                            tmpMatchingDirection &= (~this.FillToPositionFromBottom(attackingPosition));
+                            tmpMatchingDirection &= (~this.FillToPositionFromTop(myKingPositionShort));
+                        }
                         //Add the blocking moves to the already checked attack move
                         tmpMoves = tmpMoves | (legalMoves & tmpMatchingDirection);
                     }
@@ -349,9 +362,47 @@ namespace Chess.Engine
                 }
                 //Override the normal moves with the king in check calculations
                 legalMoves = tmpMoves;
-                
-            }
 
+            }
+            else if( (PinPosition(myKingPositionShort) & FigureToCheck.Position) > 0) //if we are on the same line as our king
+            { 
+                //If the king is not in check make sure if you would move that the king gets in check
+                //if this figure is attacked by queen,rook or bishop we have to check it
+                List<Figure> attackers = this.currentGameState.AttackedBy[FigureToCheck.Position].Where<Figure>(f => f.Color != FigureToCheck.Color 
+                                         && (f.Type == EFigures.Rook || f.Type == EFigures.Queen || f.Type == EFigures.Bishop) ).ToList<Figure>();
+                //If we have attackers go on 
+                if (attackers.Count > 0)
+                {
+                    //Helper for storing the matching fields between the attacking figure and the king
+                    UInt64 tmpMatchingDirection = 0;
+                    short attackingPosition = 0;
+                    foreach (Figure fig in attackers)
+                    {
+                          //Get the attacking figure position in the 1 to 63 code
+                          attackingPosition = (short)Tools.BitOperations.MostSigExponent(fig.Position);
+                          //Based on the figure type check if we found matching fields
+                          tmpMatchingDirection = PinPosition(attackingPosition, fig.Type) & PinPosition(myKingPositionShort, fig.Type);
+                          //If any thing was found go on 
+                          if (tmpMatchingDirection > 0)
+                          {
+                              //Remove the rubbish filds behind or in front of the figures (king and attacker)
+                              if (myKingPositionShort < attackingPosition)
+                              {
+                                  tmpMatchingDirection &= (~this.FillToPositionFromBottom(myKingPositionShort));
+                                  tmpMatchingDirection &= (~this.FillToPositionFromTop(attackingPosition));
+                              }
+                              else if (myKingPositionShort > attackingPosition)
+                              {   //If it is the other way remove the fields above the king and below the attacking figure
+                                  tmpMatchingDirection &= (~this.FillToPositionFromBottom(attackingPosition));
+                                  tmpMatchingDirection &= (~this.FillToPositionFromTop(myKingPositionShort));
+                              }
+                              //Only allow moves that match the fields we found ( between the king and the attacker)
+                              legalMoves = (legalMoves & tmpMatchingDirection);
+                          }
+                    }
+                }
+            }
+            //Return the final moves for the figure at the given position
             return legalMoves;
         }
 
@@ -366,8 +417,53 @@ namespace Chess.Engine
                     this.attackDatabase.GetFieldsDownLeft(Position) |
                     this.attackDatabase.GetFieldsDownRight(Position) |
                     this.attackDatabase.GetFieldsLeft(Position) |
-                    this.attackDatabase.GetFieldsRight(Position));
-        
+                    this.attackDatabase.GetFieldsRight(Position) |
+                    this.attackDatabase.GetFieldsUpLeft(Position) |
+                    this.attackDatabase.GetFieldsUpRight(Position) |
+                    this.attackDatabase.GetFieldsUP(Position));       
+        }
+
+        /// <summary>
+        /// Sets all bits on the depending figure type
+        /// </summary>
+        /// <param name="Position">Position that is used as the center</param>
+        /// <param name="Type">FigureType for movment</param>
+        /// <returns>The resulting bitboard</returns>
+        private UInt64 PinPosition(short Position,EFigures Type)
+        {
+            switch (Type)
+            {
+                case EFigures.Rook:
+                    {
+                        return (this.attackDatabase.GetFieldsDown(Position) |
+                                this.attackDatabase.GetFieldsLeft(Position) |
+                                this.attackDatabase.GetFieldsRight(Position) |
+                                this.attackDatabase.GetFieldsUP(Position));
+                    }break;
+                case EFigures.Bishop:
+                    {
+                        return (this.attackDatabase.GetFieldsDownLeft(Position) |
+                                    this.attackDatabase.GetFieldsDownRight(Position) |
+                                    this.attackDatabase.GetFieldsUpLeft(Position) |
+                                    this.attackDatabase.GetFieldsUpRight(Position));
+
+                    }break;
+                default:
+                    { 
+                       return (this.attackDatabase.GetFieldsDown(Position) |
+                               this.attackDatabase.GetFieldsDownLeft(Position) |
+                               this.attackDatabase.GetFieldsDownRight(Position) |
+                               this.attackDatabase.GetFieldsLeft(Position) |
+                               this.attackDatabase.GetFieldsRight(Position) |
+                               this.attackDatabase.GetFieldsUpLeft(Position) |
+                               this.attackDatabase.GetFieldsUpRight(Position) |
+                               this.attackDatabase.GetFieldsUP(Position));       
+                    
+                    }break;
+            }
+            
+            
+
         }
 
         /// <summary>
@@ -548,6 +644,24 @@ namespace Chess.Engine
                             this.currentGameState.BlackRooks ^= FigureToMove.Position;
                             //Set the new position
                             this.currentGameState.BlackRooks |= calculationBoard;
+                        }
+                    }
+                    break;
+                case EFigures.King:
+                    {
+                        if (FigureToMove.Color == Defaults.WHITE)
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.WhiteKing ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.WhiteKing |= calculationBoard;
+                        }
+                        else
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.BlackKing ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.BlackKing |= calculationBoard;
                         }
                     }
                     break;
@@ -849,6 +963,41 @@ namespace Chess.Engine
             }
             
             return result;
+        }
+
+        /// <summary>
+        /// Sets all bits to 1 until it reachs the stop position starting at 0
+        /// </summary>
+        /// <param name="StopPosition">Position to stop 1 to 64</param>
+        /// <param name="includePosition">If true the stopposition will be set 1 also</param>
+        /// <returns>Filled bitboard based on the provided Position</returns>
+        public UInt64 FillToPositionFromBottom(Int16 StopPosition, bool includePosition = false)
+        {
+            UInt64 returnValue = 0;
+            StopPosition += (short)(includePosition ? 1 : 0);
+            for (Int16 index = 0; index < StopPosition; ++index)
+            {
+                returnValue |= (UInt64)Math.Pow(2, index);
+            }
+            return returnValue;
+        }
+
+
+        /// <summary>
+        /// Sets all bits to 1 until it reachs the stop position starting at 63
+        /// </summary>
+        /// <param name="StopPosition">Position to stop 1 to 64</param>
+        /// <param name="includePosition">If true the stopposition will be set 1 also</param>
+        /// <returns>Filled bitboard based on the provided Position</returns>
+        public UInt64 FillToPositionFromTop(Int16 StopPosition, bool includePosition = false)
+        {
+            UInt64 returnValue = 0;
+            StopPosition -= (short)(includePosition ? 1 : 0);
+            for (Int16 index = 63; index > StopPosition; --index)
+            {
+                returnValue |= (UInt64)Math.Pow(2, index);
+            }
+            return returnValue;
         }
     }
 }
