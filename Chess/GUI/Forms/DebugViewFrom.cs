@@ -60,6 +60,10 @@ namespace Chess.GUI.Forms
                     {
                         this.textBoxDataView.Text = BitOperations.CreateHumanString(this.board.MoveGenerator.CurrentGameState.SquarsBlocked);
                     }break;
+                case "Game loaded":
+                    {
+                        this.textBoxDataView.Text = BitOperations.CreateHumanString((UInt64)e.EventData);
+                    }break;
             }
         }
 
