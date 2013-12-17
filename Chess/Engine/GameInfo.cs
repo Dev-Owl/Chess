@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
 namespace Chess.Engine
 {
+    [Serializable]
     public class GameInfo
     {
         /// <summary>
@@ -36,6 +39,8 @@ namespace Chess.Engine
         /// Starting time for the game (UNIX-Timestamp)
         /// </summary>
         public UInt64 StartingTime { get; set; }
+
+     
         
     }
 }
