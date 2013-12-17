@@ -25,6 +25,8 @@ namespace Chess.GUI.Forms
             StartMongoDB();
             this.FormClosing += MainForm_FormClosing;
             debugView = new DebugViewFrom(this.gameBoard);
+            saveFileDialogSave.SupportMultiDottedExtensions = true;
+            openFileDialogSave.CheckFileExists = true;
         }
 
         void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -71,10 +73,7 @@ namespace Chess.GUI.Forms
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (MessageBox.Show("Are you sure to quite the game ?", "Warning", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
-            {
-                this.Close();
-            }
+            this.Close();
         }
 
         private void revertMoveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -88,6 +87,22 @@ namespace Chess.GUI.Forms
         private void debugViewToolStripMenuItem_Click(object sender, EventArgs e)
         {
             debugView.Show(this);
+        }
+
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (openFileDialogSave.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                this.gameBoard.LoadGame(openFileDialogSave.FileName);
+            }
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (saveFileDialogSave.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
+            {
+                this.gameBoard.SaveGame(saveFileDialogSave.FileName);
+            }
         }
     }
 }
