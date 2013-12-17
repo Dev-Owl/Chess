@@ -77,7 +77,8 @@ namespace Chess.GUI
         public UInt64 SelectedMask=0;
 
         public Figure SelectedFigure { get; set; }
-        
+
+        private bool imagesLoaded = false;
         #endregion
 
         private Dictionary<EFigures, Image> whiteFigureFiles;
@@ -194,21 +195,25 @@ namespace Chess.GUI
 
         public void LoadResources()
         {
-            if ((whiteFigureFiles.Count + blackFigureFiles.Count) == 0)
+            if (!imagesLoaded)
             {
-                Size imageSize = new System.Drawing.Size(this.FieldSizeX, this.FieldSizeY);
-                whiteFigureFiles.Add(EFigures.Pawn, resizeImage(Image.FromFile(@"Graphics\PawnWhite.png"), imageSize));
-                whiteFigureFiles.Add(EFigures.Queen, resizeImage(Image.FromFile(@"Graphics\QueenWhite.png"), imageSize));
-                whiteFigureFiles.Add(EFigures.Rook, resizeImage(Image.FromFile(@"Graphics\RookWhite.png"), imageSize));
-                whiteFigureFiles.Add(EFigures.Knight, resizeImage(Image.FromFile(@"Graphics\KnightWhite.png"), imageSize));
-                whiteFigureFiles.Add(EFigures.Bishop, resizeImage(Image.FromFile(@"Graphics\BishopWhite.png"), imageSize));
-                whiteFigureFiles.Add(EFigures.King, resizeImage(Image.FromFile(@"Graphics\KingWhite.png"), imageSize));
-                blackFigureFiles.Add(EFigures.Pawn, resizeImage(Image.FromFile(@"Graphics\PawnBlack.png"), imageSize));
-                blackFigureFiles.Add(EFigures.Queen, resizeImage(Image.FromFile(@"Graphics\QueenBlack.png"), imageSize));
-                blackFigureFiles.Add(EFigures.Rook, resizeImage(Image.FromFile(@"Graphics\RookBlack.png"), imageSize));
-                blackFigureFiles.Add(EFigures.Knight, resizeImage(Image.FromFile(@"Graphics\KnightBlack.png"), imageSize));
-                blackFigureFiles.Add(EFigures.Bishop, resizeImage(Image.FromFile(@"Graphics\BishopBlack.png"), imageSize));
-                blackFigureFiles.Add(EFigures.King, resizeImage(Image.FromFile(@"Graphics\KingBlack.png"), imageSize));
+                if ((whiteFigureFiles.Count + blackFigureFiles.Count) == 0)
+                {
+                    Size imageSize = new System.Drawing.Size(this.FieldSizeX, this.FieldSizeY);
+                    whiteFigureFiles.Add(EFigures.Pawn, resizeImage(Image.FromFile(@"Graphics\PawnWhite.png"), imageSize));
+                    whiteFigureFiles.Add(EFigures.Queen, resizeImage(Image.FromFile(@"Graphics\QueenWhite.png"), imageSize));
+                    whiteFigureFiles.Add(EFigures.Rook, resizeImage(Image.FromFile(@"Graphics\RookWhite.png"), imageSize));
+                    whiteFigureFiles.Add(EFigures.Knight, resizeImage(Image.FromFile(@"Graphics\KnightWhite.png"), imageSize));
+                    whiteFigureFiles.Add(EFigures.Bishop, resizeImage(Image.FromFile(@"Graphics\BishopWhite.png"), imageSize));
+                    whiteFigureFiles.Add(EFigures.King, resizeImage(Image.FromFile(@"Graphics\KingWhite.png"), imageSize));
+                    blackFigureFiles.Add(EFigures.Pawn, resizeImage(Image.FromFile(@"Graphics\PawnBlack.png"), imageSize));
+                    blackFigureFiles.Add(EFigures.Queen, resizeImage(Image.FromFile(@"Graphics\QueenBlack.png"), imageSize));
+                    blackFigureFiles.Add(EFigures.Rook, resizeImage(Image.FromFile(@"Graphics\RookBlack.png"), imageSize));
+                    blackFigureFiles.Add(EFigures.Knight, resizeImage(Image.FromFile(@"Graphics\KnightBlack.png"), imageSize));
+                    blackFigureFiles.Add(EFigures.Bishop, resizeImage(Image.FromFile(@"Graphics\BishopBlack.png"), imageSize));
+                    blackFigureFiles.Add(EFigures.King, resizeImage(Image.FromFile(@"Graphics\KingBlack.png"), imageSize));
+                    imagesLoaded = true;
+                }
             }
         }
         #endregion
@@ -232,7 +237,7 @@ namespace Chess.GUI
                     if (fig != null)
                     {
                         //Get valid moves for the selected figures
-                        SelectedMask = this.moveGenerator.GetMoveForFigure(fig, (Int16)((7 - selectedX) + ((7 - selectedY) * 8)));
+                        SelectedMask = this.moveGenerator.GetMoveForFigure(fig,GetShortPosition(selectedX,selectedY));
                         this.SelectedFigure = fig;
                         FireChangeEvent("Figure selected", SelectedMask);
                     }
@@ -242,6 +247,11 @@ namespace Chess.GUI
                 }
                 this.Invalidate();
             }
+        }
+
+        private short GetShortPosition(int x, int y)
+        {
+            return Math.Abs((Int16)((7 - x) + ((7 - y) * 8)));
         }
 
         private bool ClickedMarkedField()
@@ -255,7 +265,7 @@ namespace Chess.GUI
                 if ((SelectedMask & bitBoardPosition) > 0 && this.ActiveColor == this.SelectedFigure.Color)
                 {
                     //The figure that should be move ( current selected one) and the position in the  1 to 64 matrix
-                    this.moveGenerator.MakeAMove(this.SelectedFigure, (short)(((7 - selectedY) * 8) + (7 - SelectedX)));
+                    this.moveGenerator.MakeAMove(this.SelectedFigure, GetShortPosition(selectedX, selectedY));
                     //Change the color of the active player
                     this.ActiveColor *= -1;
                     //Show the calling function that the move is done
@@ -293,9 +303,44 @@ namespace Chess.GUI
             this.Invalidate();
         }
 
+        public void SaveGame(string Path)
+        {
+            if (gameRunning)
+            {
+                this.moveGenerator.History.SaveHistoryToDisk(this.moveGenerator.CurrentGame, Path);
+                FireChangeEvent("Game saved");
+            }
+        }
+
+        public void LoadGame(string Path)
+        {
+            GameHistory history = new GameHistory();
+
+            if (history.LoadHistoryFromDisk(Path))
+            {
+                GameInfo info = history.History.Keys.First<GameInfo>();
+                this.moveGenerator.NewGame(info);
+                history.MoveGenerator = this.moveGenerator;
+                this.moveGenerator.History = history;
+                this.moveGenerator.CurrentGameState = history.History[info][history.History[info].Count-1];
+                this.gameRunning = true;
+                this.moveGenerator.GameRunning = true;
+                LoadResources();
+                this.ActiveColor = history.ActiveColor;
+                FireChangeEvent("Game loaded", this.moveGenerator.CurrentGameState.SquarsBlocked);
+                this.Invalidate();
+            }
+            else
+            {
+                MessageBox.Show("Loading failed");
+            }
+
+            
+        }
+
         private void FireChangeEvent(string Event ="",object data=null)
         {
-               if (PropertyChange != null)
+            if (PropertyChange != null)
             {
                 PropertyChange(Event, new ChangedEventArgs( data));
             }
