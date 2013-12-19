@@ -387,7 +387,6 @@ namespace Chess.Engine
                                     //left means set bit i + 6 for up and i - 6 for down
                                     //right means set bit i + 10 for up and i - 10 for down
                                     UInt64 tmpResult = i;
-
                                     #region Up
                                     tmpResult =tmpResult+ 15;
                                     if (tmpResult <= 63 && i % 8 != 0)
@@ -407,22 +406,22 @@ namespace Chess.Engine
                                     #region down
                                     tmpResult = i;
                                     tmpResult =tmpResult- 15;
-                                    if (tmpResult >= 0 && i % 8 != 0 && i >=15)
+                                    if (tmpResult >= 0 && (i+1) % 8 != 0 && i >=15)
                                     {
                                         movingMask |= (UInt64)Math.Pow(2, tmpResult);
                                        
                                     }
                                     tmpResult = i;
                                     tmpResult = tmpResult -17;
-                                    if (tmpResult >= 0 && (i + 1) % 8 != 0 && i >= 17)
+                                    if (tmpResult >= 0 && i % 8 != 0 && i >= 17)
                                     {
                                         movingMask |= (UInt64)Math.Pow(2, tmpResult);
                                     }
                                     #endregion
                                     tmpResult = 0;
                                     #region left
-                                    //we can not move left we are already on the left edge 
-                                    if ((i + 2) % 8 != 0)
+                                    //we can not move left we are already on the left edge we need at least a distance of 3 fields
+                                    if ((i + 2) % 8 != 0 && (i+1) % 8 != 0)
                                     {
 
                                         tmpResult = i;
@@ -430,7 +429,6 @@ namespace Chess.Engine
                                         if (tmpResult <= 63)
                                         {
                                             movingMask |= (UInt64)Math.Pow(2, tmpResult);
-
                                         }
                                         tmpResult = i;
                                         tmpResult = tmpResult - 6;
@@ -444,7 +442,7 @@ namespace Chess.Engine
                                     tmpResult = 0;
                                     #region right
                                     
-                                    if ((i-1) % 8 != 0 && i %8 !=0)
+                                    if ((i-1) % 8 != 0 && i %8 !=0 && (i-3) % 8 !=0)
                                     {
                                         tmpResult = i;
                                         tmpResult = tmpResult + 6;
