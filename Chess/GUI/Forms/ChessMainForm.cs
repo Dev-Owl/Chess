@@ -109,6 +109,7 @@ namespace Chess.GUI.Forms
             if (openFileDialogSave.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 this.gameBoard.LoadGame(openFileDialogSave.FileName);
+                this.gameBoard_PropertyChange("New Game", null);
             }
         }
 
