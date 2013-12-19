@@ -18,7 +18,13 @@ namespace Chess.Engine
         public Dictionary<GameInfo, List<BitBoard>> History
         {
             get { return history; }
-            set { history = value; }
+            set {
+                //Prevent passing null values issue related to the designer
+                if (value != null)
+                {
+                    history = value;
+                }
+            }
         }
 
         private int activeColor;
