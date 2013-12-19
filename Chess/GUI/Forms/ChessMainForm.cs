@@ -27,6 +27,22 @@ namespace Chess.GUI.Forms
             debugView = new DebugViewFrom(this.gameBoard);
             saveFileDialogSave.SupportMultiDottedExtensions = true;
             openFileDialogSave.CheckFileExists = true;
+            this.gameBoard.PropertyChange += gameBoard_PropertyChange;
+            this.saveToolStripMenuItem.Enabled = false;
+            this.debugViewToolStripMenuItem.Enabled = false;
+            this.Text = Program.VERSION;
+        }
+
+        void gameBoard_PropertyChange(string Event, ChangedEventArgs e)
+        {
+            switch (Event)
+            {
+                case "New Game": {
+                    this.debugViewToolStripMenuItem.Enabled = true;
+                    this.saveToolStripMenuItem.Enabled = true;
+                    this.revertMoveToolStripMenuItem.Enabled = true;
+                } break;
+            }
         }
 
         void MainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -49,7 +65,6 @@ namespace Chess.GUI.Forms
         public void StartNewGame(GameInfo NewGame)
         {
             this.gameBoard.StartNewGame(NewGame);
-            this.revertMoveToolStripMenuItem.Enabled = true;
         }
 
         private void StartMongoDB()
