@@ -104,5 +104,11 @@ namespace Chess.GUI.Forms
                 this.gameBoard.SaveGame(saveFileDialogSave.FileName);
             }
         }
+
+        private void buildAttackDBToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AttackDatabase attackDB = new AttackDatabase();
+            attackDB.BuildAttackboard();
+        }
     }
 }

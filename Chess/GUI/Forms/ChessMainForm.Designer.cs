@@ -32,6 +32,7 @@
             Chess.Engine.AttackDatabase attackDatabase1 = new Chess.Engine.AttackDatabase();
             Chess.Engine.BitBoard bitBoard1 = new Chess.Engine.BitBoard();
             Chess.Engine.GameHistory gameHistory1 = new Chess.Engine.GameHistory();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ChessMainForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.gameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -45,6 +46,7 @@
             this.gameBoard = new Chess.GUI.GameBoard();
             this.openFileDialogSave = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialogSave = new System.Windows.Forms.SaveFileDialog();
+            this.buildAttackDBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -74,35 +76,36 @@
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
             // loadToolStripMenuItem
             // 
             this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            this.loadToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.loadToolStripMenuItem.Text = "Load";
             this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // optionToolStripMenuItem
             // 
             this.optionToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.debugViewToolStripMenuItem});
+            this.debugViewToolStripMenuItem,
+            this.buildAttackDBToolStripMenuItem});
             this.optionToolStripMenuItem.Name = "optionToolStripMenuItem";
             this.optionToolStripMenuItem.Size = new System.Drawing.Size(56, 20);
             this.optionToolStripMenuItem.Text = "Option";
@@ -110,7 +113,7 @@
             // debugViewToolStripMenuItem
             // 
             this.debugViewToolStripMenuItem.Name = "debugViewToolStripMenuItem";
-            this.debugViewToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.debugViewToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
             this.debugViewToolStripMenuItem.Text = "Debug view";
             this.debugViewToolStripMenuItem.Click += new System.EventHandler(this.debugViewToolStripMenuItem_Click);
             // 
@@ -161,6 +164,8 @@
             bitBoard1.WhiteRooks = ((ulong)(0ul));
             moveGenerator1.CurrentGameState = bitBoard1;
             moveGenerator1.GameRunning = false;
+            gameHistory1.ActiveColor = 1;
+            gameHistory1.History = ((System.Collections.Generic.Dictionary<Chess.Engine.GameInfo, System.Collections.Generic.List<Chess.Engine.BitBoard>>)(resources.GetObject("gameHistory1.History")));
             gameHistory1.MoveGenerator = moveGenerator1;
             moveGenerator1.History = gameHistory1;
             this.gameBoard.MoveGenerator = moveGenerator1;
@@ -177,6 +182,13 @@
             // openFileDialogSave
             // 
             this.openFileDialogSave.FileName = "openFileDialog1";
+            // 
+            // buildAttackDBToolStripMenuItem
+            // 
+            this.buildAttackDBToolStripMenuItem.Name = "buildAttackDBToolStripMenuItem";
+            this.buildAttackDBToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            this.buildAttackDBToolStripMenuItem.Text = "Build Attack DB";
+            this.buildAttackDBToolStripMenuItem.Click += new System.EventHandler(this.buildAttackDBToolStripMenuItem_Click);
             // 
             // ChessMainForm
             // 
@@ -211,5 +223,6 @@
         private System.Windows.Forms.ToolStripMenuItem revertMoveToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialogSave;
         private System.Windows.Forms.SaveFileDialog saveFileDialogSave;
+        private System.Windows.Forms.ToolStripMenuItem buildAttackDBToolStripMenuItem;
     }
 }
