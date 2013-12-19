@@ -300,6 +300,14 @@ namespace Chess.Engine
                         legalMoves &= ~enemyAttacked;
                         //Do not attack protected Figures
                         legalMoves &= ~this.IsProtected(legalMoves, FigureToCheck.Color * -1);
+                        //If we are in check we can also not walk on a field that is attacked behind us
+                        if (myKingInCheck)
+                        {
+                            foreach (Figure fig in this.currentGameState.AttackedBy[myKingPosition].Where<Figure>(f => f.Color != FigureToCheck.Color).ToList<Figure>())
+                            { 
+                                legalMoves &= ~attackDatabase.GetMoveMask( (short)Tools.BitOperations.MostSigExponent(fig.Position),fig);
+                            }
+                        }
                     }
                     break;
 
@@ -361,7 +369,7 @@ namespace Chess.Engine
                 legalMoves = tmpMoves;
 
             }
-            else if( (PinPosition(myKingPositionShort) & FigureToCheck.Position) > 0) //if we are on the same line as our king
+            else if ((PinPosition(myKingPositionShort) & FigureToCheck.Position) > 0 && FigureToCheck.Type != EFigures.King) //if we are on the same line as our king
             { 
                 //If the king is not in check make sure if you would move that the king gets in check
                 //if this figure is attacked by queen,rook or bishop we have to check it
@@ -386,7 +394,7 @@ namespace Chess.Engine
                               //Make sure that the figure will put the king in check without a move
 
                               
-                              if (myKingPositionShort < attackingPosition)
+                              if (myKingPositionShort > attackingPosition)
                               {
                                   if (fig.Type == EFigures.Rook && ((attackDatabase.GetFieldsDown(myKingPositionShort) | attackDatabase.GetFieldsRight(myKingPositionShort)) & fig.Position) > 0)
                                   {
@@ -423,7 +431,7 @@ namespace Chess.Engine
 
                                   
                               }
-                              else if (myKingPositionShort > attackingPosition)
+                              else if (myKingPositionShort < attackingPosition)
                               {   
                                   if (fig.Type == EFigures.Rook && ((attackDatabase.GetFieldsUP(myKingPositionShort)| attackDatabase.GetFieldsLeft(myKingPositionShort)) & myKingPosition) >0 )
                                   {
