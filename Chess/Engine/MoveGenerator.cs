@@ -272,10 +272,7 @@ namespace Chess.Engine
                 case EFigures.Pawn:
                     {
                         //Check if pawn is blocked by any other figure in fornt of him
-                        if ((GetPositionFromPosition(Position, (Int16)(8 * FigureToCheck.Color)) & this.currentGameState.SquarsBlocked) > 0)
-                        {
-                            legalMoves = 0;
-                        }
+                        legalMoves &= this.currentGameState.EmptySquares;
                         //Check if an attack is possible use attack datbase BuildPawnAttack function
                         legalMoves |= enemy & attackDatabase.BuildPawnAttack(Position, FigureToCheck.Color);
                     } break;
@@ -376,6 +373,7 @@ namespace Chess.Engine
                     //Helper for storing the matching fields between the attacking figure and the king
                     UInt64 tmpMatchingDirection = 0;
                     short attackingPosition = 0;
+                    bool kingInDanger = false;
                     foreach (Figure fig in attackers)
                     {
                           //Get the attacking figure position in the 1 to 63 code
@@ -385,19 +383,90 @@ namespace Chess.Engine
                           //If any thing was found go on 
                           if (tmpMatchingDirection > 0)
                           {
-                              //Remove the rubbish filds behind or in front of the figures (king and attacker)
+                              //Make sure that the figure will put the king in check without a move
+
+                              
                               if (myKingPositionShort < attackingPosition)
                               {
-                                  tmpMatchingDirection &= (~this.FillToPositionFromBottom(myKingPositionShort));
-                                  tmpMatchingDirection &= (~this.FillToPositionFromTop(attackingPosition));
+                                  if (fig.Type == EFigures.Rook && ((attackDatabase.GetFieldsDown(myKingPositionShort) | attackDatabase.GetFieldsRight(myKingPositionShort)) & fig.Position) > 0)
+                                  {
+                                     //Kind would be in direct contact with this figure 
+                                      kingInDanger = true;
+                                  }
+                                  else if (fig.Type == EFigures.Bishop)
+                                  {
+
+                                      if (((attackDatabase.GetFieldsDownLeft(myKingPositionShort) | attackDatabase.GetFieldsDownRight(myKingPositionShort)) & fig.Position) > 0)
+                                      {
+                                          //King is in direct contact with this figure 
+                                          kingInDanger = true;
+                                      }
+                                  }
+                                  else
+                                  { 
+                                    //queen is attacker we have to build the movment 
+                                    UInt64 queenLower = (attackDatabase.GetFieldsDownLeft(myKingPositionShort) | attackDatabase.GetFieldsDownRight(myKingPositionShort) |
+                                                         attackDatabase.GetFieldsDown(myKingPositionShort) | attackDatabase.GetFieldsRight(myKingPositionShort));
+                                    if ((queenLower & fig.Position) > 0)
+                                    {
+                                         //King is in direct contact with this figure 
+                                          kingInDanger = true;
+                                    }
+                                  }
+                                  if (kingInDanger)
+                                  {
+                                      //Remove the rubbish filds behind or in front of the figures (king and attacker)
+                                      tmpMatchingDirection &= (~this.FillToPositionFromBottom(myKingPositionShort));
+                                      tmpMatchingDirection &= (~this.FillToPositionFromTop(attackingPosition));
+                                  }
+
+
+                                  
                               }
                               else if (myKingPositionShort > attackingPosition)
-                              {   //If it is the other way remove the fields above the king and below the attacking figure
-                                  tmpMatchingDirection &= (~this.FillToPositionFromBottom(attackingPosition));
-                                  tmpMatchingDirection &= (~this.FillToPositionFromTop(myKingPositionShort));
+                              {   
+                                  if (fig.Type == EFigures.Rook && ((attackDatabase.GetFieldsUP(myKingPositionShort)| attackDatabase.GetFieldsLeft(myKingPositionShort)) & myKingPosition) >0 )
+                                  {
+                                     //Kind would be in direct contact with this figure 
+                                      kingInDanger = true;
+                                  }
+                                  else if (fig.Type == EFigures.Bishop)
+                                  {
+                                      //Build the move for a bishop
+                                      if (((attackDatabase.GetFieldsUpLeft(myKingPositionShort) | attackDatabase.GetFieldsUpRight(myKingPositionShort)) & fig.Position) > 0)
+                                      {
+                                          //King is in direct contact with this figure 
+                                          kingInDanger = true;
+                                      }
+                                  }
+                                  else
+                                  { 
+                                    //queen is attacker we have to build the movment 
+                                    UInt64 queenLower = (attackDatabase.GetFieldsUpLeft(myKingPositionShort) | attackDatabase.GetFieldsUpRight(myKingPositionShort) |
+                                                         attackDatabase.GetFieldsUP(myKingPositionShort)| attackDatabase.GetFieldsLeft(myKingPositionShort));
+                                    if ((queenLower & fig.Position) > 0)
+                                    {
+                                         //King is in direct contact with this figure 
+                                          kingInDanger = true;
+                                    }
+                                  }
+                                  if (kingInDanger)
+                                  {
+                                       //If it is the other way remove the fields above the king and below the attacking figure
+                                       tmpMatchingDirection &= (~this.FillToPositionFromBottom(attackingPosition));
+                                       tmpMatchingDirection &= (~this.FillToPositionFromTop(myKingPositionShort));
+                                  }
+
+                                  
+                                
                               }
-                              //Only allow moves that match the fields we found ( between the king and the attacker)
-                              legalMoves = (legalMoves & tmpMatchingDirection);
+                              
+
+                              if (kingInDanger)
+                              {
+                                  //Only allow moves that match the fields we found ( between the king and the attacker)
+                                  legalMoves = (legalMoves & tmpMatchingDirection);
+                              }
                           }
                     }
                 }
