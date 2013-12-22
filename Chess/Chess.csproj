@@ -81,6 +81,7 @@
     <Compile Include="Engine\EFigures.cs" />
     <Compile Include="Engine\GameHistory.cs" />
     <Compile Include="Engine\GameInfo.cs" />
+    <Compile Include="Engine\IPromotion.cs" />
     <Compile Include="Engine\MoveGenerator.cs" />
     <Compile Include="GUI\ChangedEventArgs.cs" />
     <Compile Include="GUI\DrawHelper.cs" />
@@ -95,6 +96,12 @@
     </Compile>
     <Compile Include="GUI\Forms\DebugViewFrom.Designer.cs">
       <DependentUpon>DebugViewFrom.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Forms\PromotionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Forms\PromotionForm.Designer.cs">
+      <DependentUpon>PromotionForm.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\Forms\StartNewGameFrom.cs">
       <SubType>Form</SubType>
@@ -132,6 +139,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Forms\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Forms\PromotionForm.resx">
+      <DependentUpon>PromotionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Forms\StartNewGameFrom.resx">
       <DependentUpon>StartNewGameFrom.cs</DependentUpon>
