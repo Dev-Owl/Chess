@@ -44,18 +44,11 @@ namespace Chess.Engine
         public const UInt64 Rotated90ClockWise_WhitePawn = 0x4040404040404040;
         public const UInt64 Rotated90ClockWise_WhitePieces = 0xC0C0C0C0C0C0C0C0;
 
+        //First column of the board ( from the view of the white player)
+        public const UInt64 WhitePromotionRank = 0xFF;
+        //Last column of the board ( from the view of the white player)
+        public const UInt64 BlackPromotionRank = 0xFF00000000000000;
 
-        public const int ROTATED_KING = 0;
-        public const int ROTATED_QUEEN = 1;
-        public const int ROTATED_BISHOPS = 2;
-        public const int ROTATED_KNIGHT = 3;
-        public const int ROTATED_ROOKS = 4;
-        public const int ROTATED_PAWN = 5;
-        public const int ROTATED_ALL = 6;
-
-        public const int ROTATED90CLOCKWISE = 0;
-        public const int ROTATED45CLOCKWISE = 1;
-        public const int ROTATED45ANTICLOCKWISE = 2;
     }
 }
 
