@@ -41,12 +41,12 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugViewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.buildAttackDBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.actionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.revertMoveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gameBoard = new Chess.GUI.GameBoard();
             this.openFileDialogSave = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialogSave = new System.Windows.Forms.SaveFileDialog();
-            this.buildAttackDBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -117,6 +117,13 @@
             this.debugViewToolStripMenuItem.Text = "Debug view";
             this.debugViewToolStripMenuItem.Click += new System.EventHandler(this.debugViewToolStripMenuItem_Click);
             // 
+            // buildAttackDBToolStripMenuItem
+            // 
+            this.buildAttackDBToolStripMenuItem.Name = "buildAttackDBToolStripMenuItem";
+            this.buildAttackDBToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
+            this.buildAttackDBToolStripMenuItem.Text = "Build Attack DB";
+            this.buildAttackDBToolStripMenuItem.Click += new System.EventHandler(this.buildAttackDBToolStripMenuItem_Click);
+            // 
             // actionsToolStripMenuItem
             // 
             this.actionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -183,13 +190,6 @@
             // 
             this.openFileDialogSave.FileName = "openFileDialog1";
             // 
-            // buildAttackDBToolStripMenuItem
-            // 
-            this.buildAttackDBToolStripMenuItem.Name = "buildAttackDBToolStripMenuItem";
-            this.buildAttackDBToolStripMenuItem.Size = new System.Drawing.Size(156, 22);
-            this.buildAttackDBToolStripMenuItem.Text = "Build Attack DB";
-            this.buildAttackDBToolStripMenuItem.Click += new System.EventHandler(this.buildAttackDBToolStripMenuItem_Click);
-            // 
             // ChessMainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -197,6 +197,7 @@
             this.ClientSize = new System.Drawing.Size(784, 562);
             this.Controls.Add(this.gameBoard);
             this.Controls.Add(this.menuStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "ChessMainForm";
