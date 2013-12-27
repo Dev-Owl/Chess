@@ -7,19 +7,20 @@ using System.Drawing.Drawing2D;
 using System.Drawing;
 using Chess.Tools;
 using Chess.Engine;
+using Chess.GUI.Forms;
 
 namespace Chess.GUI
 {
     //TODO: Add documentaion for the class below
 
-    public class GameBoard  : Panel
+    public class GameBoard  : Panel, IPromotion
     {
 
         MoveGenerator moveGenerator;        
         public MoveGenerator MoveGenerator
         {
             get { return moveGenerator; }
-            set { moveGenerator = value; }
+            set { moveGenerator = value; this.moveGenerator.PromotionHandler = this; }
         }
 
         #region Draw and Colors
@@ -104,6 +105,7 @@ namespace Chess.GUI
             blackFigureFiles = new Dictionary<EFigures, Image>();
             base.DoubleBuffered = true;
             this.moveGenerator = new MoveGenerator();
+            this.moveGenerator.PromotionHandler = this;
             this.ActiveColor = Defaults.WHITE;
         }      
 
@@ -347,5 +349,12 @@ namespace Chess.GUI
         }
 
         #endregion
+
+        public EFigures GetDecision()
+        {
+            PromotionForm form = new PromotionForm();
+            form.ShowDialog(this.Parent);
+            return form.Result;
+        }
     }
 }

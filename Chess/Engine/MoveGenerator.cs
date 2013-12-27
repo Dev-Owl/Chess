@@ -12,6 +12,21 @@ namespace Chess.Engine
     public class MoveGenerator
     {
         /// <summary>
+        /// In case of a Pawn promotion the engine will request the decision of the player with this interface
+        /// </summary>
+        IPromotion promotionHandler;
+        public IPromotion PromotionHandler
+        {
+            get { return this.promotionHandler; }
+            set {
+                if (value != null)
+                {
+                    this.promotionHandler = value;
+                }
+            }
+        }
+        
+        /// <summary>
         /// Contains information about the current game
         /// </summary>
         GameInfo currentGame;
@@ -607,10 +622,122 @@ namespace Chess.Engine
 
             //Add the current Bitboard object to a history to offer the possibility to revert a move
             this.history.AddHistory(this.currentGame, this.currentGameState);
-            //Change the related bitboards
-            this.MoveFigure(FigureToMove, TargetPosition);
+            if (HandleSpecialMoves(FigureToMove, TargetPosition))
+            {
+                //Change the related bitboards
+                this.MoveFigure(FigureToMove, TargetPosition);
+            }
             //Refresh the helper boards
             this.UpdateHelperBoards();
+        }
+
+        /// <summary>
+        /// This function takes care of pawn promotion , Castling and En passant
+        /// </summary>
+        /// <param name="FigureToMove">The figure that should be moved</param>
+        /// <param name="TargetPosition">The target field in the short form 0-63</param>
+        /// <returns>True if the bitboard needs to be updates, false if everything is done</returns>
+        private bool HandleSpecialMoves(Figure FigureToMove, Int16 TargetPosition)
+        {
+            //True means no calculation was done the normal update can do his work
+            bool updateBitboard = true;
+            UInt64 targetPositionLong = (ulong)Math.Pow(2, TargetPosition);
+            //Special moves are only realted to kings and pawns
+            switch (FigureToMove.Type)
+            {
+                case EFigures.Pawn: { 
+                    
+                    //Pawns can use promotion or en passant
+                    
+                    //Check the promotion case
+                    if ((FigureToMove.Color == Defaults.BLACK && (targetPositionLong & Defaults.WhitePromotionRank) > 0) |
+                        (FigureToMove.Color == Defaults.WHITE && (targetPositionLong & Defaults.BlackPromotionRank) > 0))
+                    {
+                        EFigures newFigureType = EFigures.NAN;
+                        //The selected pawn will be promoted check if we have an handler 
+                        if (this.promotionHandler != null)
+                        {
+                            newFigureType = this.promotionHandler.GetDecision();
+                        }
+                        else { 
+                            //No handler menas we take the queen
+                            newFigureType = EFigures.Queen;
+                        }
+                        
+                        //Remove the pawn and set the selected figure
+                        if (FigureToMove.Color == Defaults.WHITE)
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.WhitePawns ^= FigureToMove.Position;
+                        }
+                        else
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.BlackPawns ^= FigureToMove.Position;
+                        }
+                        switch (newFigureType)
+                        {
+                            case EFigures.Rook:
+                                {
+                                    if (FigureToMove.Color == Defaults.WHITE)
+                                    {
+                                        //Set/Create the new figure
+                                        this.currentGameState.WhiteRooks |= targetPositionLong;
+                                    }
+                                    else
+                                    {
+                                        //Remove the current position from the bitboard
+                                        this.currentGameState.BlackRooks |= targetPositionLong;
+                                    }
+                                }break;
+                            case EFigures.Bishop:
+                                {
+                                    if (FigureToMove.Color == Defaults.WHITE)
+                                    {
+                                        //Set/Create the new figure
+                                        this.currentGameState.WhiteBishops |= targetPositionLong;
+                                    }
+                                    else
+                                    {
+                                        //Set/Create the new figure
+                                        this.currentGameState.Blackbishops |= targetPositionLong;
+                                    }
+                                } break;
+                            case EFigures.Knight:
+                                {
+                                    if (FigureToMove.Color == Defaults.WHITE)
+                                    {
+                                        //Set/Create the new figure
+                                        this.currentGameState.WhiteKnights |= targetPositionLong;
+                                    }
+                                    else
+                                    {
+                                        //Set/Create the new figure
+                                        this.currentGameState.BlackKnights |= targetPositionLong;
+                                    }
+                                } break;
+                            case EFigures.Queen:
+                                {
+                                    if (FigureToMove.Color == Defaults.WHITE)
+                                    {
+                                        //Set/Create the new figure
+                                        this.currentGameState.WhiteQueens |= targetPositionLong;
+                                    }
+                                    else
+                                    {
+                                        //Set/Create the new figure
+                                        this.currentGameState.BlackQueens |= targetPositionLong;
+                                    }
+                                } break;
+                            
+
+                        }
+                        updateBitboard = false;
+                    }
+                }break;
+            }
+
+            return updateBitboard;       
         }
 
         /// <summary>
