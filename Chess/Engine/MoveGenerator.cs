@@ -531,7 +531,8 @@ namespace Chess.Engine
                                 this.attackDatabase.GetFieldsLeft(Position) |
                                 this.attackDatabase.GetFieldsRight(Position) |
                                 this.attackDatabase.GetFieldsUP(Position));
-                    }break;
+                    }
+                    break;
                 case EFigures.Bishop:
                     {
                         return (this.attackDatabase.GetFieldsDownLeft(Position) |
@@ -539,7 +540,8 @@ namespace Chess.Engine
                                     this.attackDatabase.GetFieldsUpLeft(Position) |
                                     this.attackDatabase.GetFieldsUpRight(Position));
 
-                    }break;
+                    }
+                    break;
                 default:
                     { 
                        return (this.attackDatabase.GetFieldsDown(Position) |
@@ -551,7 +553,8 @@ namespace Chess.Engine
                                this.attackDatabase.GetFieldsUpRight(Position) |
                                this.attackDatabase.GetFieldsUP(Position));       
                     
-                    }break;
+                    }
+                    break;
             }
             
             
