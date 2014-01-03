@@ -12,6 +12,11 @@ namespace Chess.Engine
     public class MoveGenerator
     {
         /// <summary>
+        /// Event handler that is fired when the game ends because a player has won the game 
+        /// </summary>
+        public event EventHandler<GameEndedEventArgs> GameEnded;
+        
+        /// <summary>
         /// In case of a Pawn promotion the engine will request the decision of the player with this interface
         /// </summary>
         IPromotion promotionHandler;
@@ -625,6 +630,7 @@ namespace Chess.Engine
 
             //Add the current Bitboard object to a history to offer the possibility to revert a move
             this.history.AddHistory(this.currentGame, this.currentGameState);
+            //If the bitboard is update inside the special move function no update is needed 
             if (HandleSpecialMoves(FigureToMove, TargetPosition))
             {
                 //Change the related bitboards
@@ -632,7 +638,45 @@ namespace Chess.Engine
             }
             //Refresh the helper boards
             this.UpdateHelperBoards();
+            //Check if a king is checkmate 
+            if (CheckmateCheck())
+            {
+                this.GameRunning = false;
+            }
         }
+
+        /// <summary>
+        /// This functions checks if a king is in checkmate and ends the game
+        /// </summary>
+        /// <returns>True if the game is over</returns>
+        private bool CheckmateCheck()
+        {
+            bool result = false;
+            UInt64 kingMoves = this.attackDatabase.GetMoveMask((short)Tools.BitOperations.MostSigExponent(this.currentGameState.WhiteKing),
+                                                               this.GetFigureAtPosition(this.currentGameState.WhiteKing));
+            if ((kingMoves & this.currentGameState.AttackedByBlack) == kingMoves)
+            {
+                result = true;
+                if (GameEnded != null)
+                {
+                    GameEnded.Invoke(this, new GameEndedEventArgs(Defaults.BLACK));
+                }
+                return result;
+            }
+            kingMoves = this.attackDatabase.GetMoveMask((short)Tools.BitOperations.MostSigExponent(this.currentGameState.BlackKing),
+                                                               this.GetFigureAtPosition(this.currentGameState.BlackKing));
+            if ((kingMoves & this.currentGameState.AttackedByWhite) == kingMoves)
+            {
+                result = true;
+                if (GameEnded != null)
+                {
+                    GameEnded.Invoke(this, new GameEndedEventArgs(Defaults.WHITE));
+                }
+                return result;
+            }
+            return result;
+        }
+
 
         /// <summary>
         /// This function takes care of pawn promotion , Castling and En passant

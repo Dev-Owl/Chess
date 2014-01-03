@@ -20,8 +20,10 @@ namespace Chess.GUI
         public MoveGenerator MoveGenerator
         {
             get { return moveGenerator; }
-            set { moveGenerator = value; this.moveGenerator.PromotionHandler = this; }
+            set { moveGenerator = value; this.moveGenerator.PromotionHandler = this; this.moveGenerator.GameEnded += moveGenerator_GameEnded; }
         }
+
+        
 
         #region Draw and Colors
         int selectedX = -1;
@@ -346,6 +348,19 @@ namespace Chess.GUI
             {
                 PropertyChange(Event, new ChangedEventArgs( data));
             }
+        }
+
+        void moveGenerator_GameEnded(object sender, GameEndedEventArgs e)
+        {
+            if (e.Winner == Defaults.WHITE)
+            {
+                MessageBox.Show("The White player wins the game.", "Game over");
+            }
+            else
+            {
+                MessageBox.Show("The Black player wins the game.", "Game over");
+            }
+            this.GameRunning = false;
         }
 
         #endregion
