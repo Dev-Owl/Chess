@@ -30,7 +30,7 @@ namespace Chess.GUI.Forms
             this.gameBoard.PropertyChange += gameBoard_PropertyChange;
             this.saveToolStripMenuItem.Enabled = false;
             this.debugViewToolStripMenuItem.Enabled = false;
-            this.Text = Program.VERSION;
+            this.Text =string.Format("Chess Version {0}", Program.VERSION);
         }
 
         void gameBoard_PropertyChange(string Event, ChangedEventArgs e)
@@ -73,7 +73,7 @@ namespace Chess.GUI.Forms
 
             this.mongoProcess.StartInfo.Arguments = "--dbpath \"" + Path.Combine(Environment.CurrentDirectory, @"data\db").Replace("\\", "\\") + "\"";
             this.mongoProcess.StartInfo.UseShellExecute = false;
-            this.mongoProcess.StartInfo.CreateNoWindow = false;
+            this.mongoProcess.StartInfo.CreateNoWindow = true;
             this.mongoProcess.StartInfo.FileName = @"data\mongod.exe ";
             this.mongoProcess.Start();
         }
