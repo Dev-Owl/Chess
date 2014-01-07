@@ -722,6 +722,14 @@ namespace Chess.Engine
                             //Remove the current position from the bitboard
                             this.currentGameState.BlackPawns ^= FigureToMove.Position;
                         }
+                    
+                        //Check if we have to remove a figure at this position
+                        if ((this.currentGameState.BlackPieces & targetPositionLong) > 0 || (this.currentGameState.WhitePieces & targetPositionLong) > 0)
+                        {
+                            //Remove the figure that is located at the new position
+                            this.MakeAMove(this.GetFigureAtPosition((ulong)Math.Pow(2, TargetPosition)), -1);
+                        }
+
                         switch (newFigureType)
                         {
                             case EFigures.Rook:
