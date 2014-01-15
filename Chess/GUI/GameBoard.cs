@@ -327,6 +327,7 @@ namespace Chess.GUI
                 history.MoveGenerator = this.moveGenerator;
                 this.moveGenerator.History = history;
                 this.moveGenerator.CurrentGameState = history.History[info][history.History[info].Count-1];
+                history.History[info].Remove(this.moveGenerator.CurrentGameState);
                 this.gameRunning = true;
                 this.moveGenerator.GameRunning = true;
                 LoadResources();

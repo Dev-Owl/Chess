@@ -93,6 +93,20 @@ namespace Chess.Engine
                         sw.WriteLine(board.BlackPawns.ToString());
                     }
                     sw.WriteLine(this.activeColor);
+                    //Save current state also
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.WhiteKing.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.WhiteQueens.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.WhiteRooks.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.WhiteBishops.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.WhiteKnights.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.WhitePawns.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.BlackKing.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.BlackQueens.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.BlackRooks.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.Blackbishops.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.BlackKnights.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.BlackPawns.ToString());
+                    
                 }
             }
         }
@@ -132,6 +146,21 @@ namespace Chess.Engine
                                 this.history[info].Add(BitBoard.CopyFigureValues(board));
                             }
                             this.activeColor = int.Parse(sr.ReadLine());
+                            //Current state
+                            board.WhiteKing = UInt64.Parse(sr.ReadLine());
+                            board.WhiteQueens = UInt64.Parse(sr.ReadLine());
+                            board.WhiteRooks = UInt64.Parse(sr.ReadLine());
+                            board.WhiteBishops = UInt64.Parse(sr.ReadLine());
+                            board.WhiteKnights = UInt64.Parse(sr.ReadLine());
+                            board.WhitePawns = UInt64.Parse(sr.ReadLine());
+                            board.BlackKing = UInt64.Parse(sr.ReadLine());
+                            board.BlackQueens = UInt64.Parse(sr.ReadLine());
+                            board.BlackRooks = UInt64.Parse(sr.ReadLine());
+                            board.Blackbishops = UInt64.Parse(sr.ReadLine());
+                            board.BlackKnights = UInt64.Parse(sr.ReadLine());
+                            board.BlackPawns = UInt64.Parse(sr.ReadLine());
+                            this.history[info].Add(BitBoard.CopyFigureValues(board));
+
                             result = true;
                         }
                         else
