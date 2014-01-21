@@ -9,7 +9,7 @@ namespace Chess
 {
     static class Program
     {
-        public static string VERSION = "0.003";
+        public static string VERSION = "0.004";
 
         /// <summary>
         /// The main entry point for the application.

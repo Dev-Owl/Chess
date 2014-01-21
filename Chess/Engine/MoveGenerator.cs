@@ -261,6 +261,7 @@ namespace Chess.Engine
             UInt64 enemy = 0; //All figs of the current enemy color
             UInt64 enemyAttacked = 0;
             UInt64 protectedFields = 0;
+            UInt64 enemyEnPassant = 0;
             bool myKingInCheck = false;
             UInt64 myKingPosition = 0;
             short myKingPositionShort = 0;
@@ -272,6 +273,7 @@ namespace Chess.Engine
                 myKingInCheck = this.currentGameState.WhiteKingCheck;
                 myKingPosition = this.currentGameState.WhiteKing; 
                 myKingPositionShort = (short)Tools.BitOperations.MostSigExponent(myKingPosition);
+                enemyEnPassant = this.currentGameState.EnPassantBlack;
             }
             else
             {
@@ -281,6 +283,7 @@ namespace Chess.Engine
                 myKingInCheck = this.currentGameState.BlackKingCheck;
                 myKingPosition = this.currentGameState.BlackKing;
                 myKingPositionShort = (short)Tools.BitOperations.MostSigExponent(myKingPosition);
+                enemyEnPassant = this.currentGameState.EnPassantWhite;
             }
             if (FigureToCheck.Type != EFigures.Rook || FigureToCheck.Type != EFigures.Bishop || FigureToCheck.Type != EFigures.Queen)
             {
@@ -294,7 +297,9 @@ namespace Chess.Engine
                         //Check if pawn is blocked by any other figure in fornt of him
                         legalMoves &= this.currentGameState.EmptySquares;
                         //Check if an attack is possible use attack datbase BuildPawnAttack function
-                        legalMoves |= enemy & attackDatabase.BuildPawnAttack(Position, FigureToCheck.Color);
+                        legalMoves |= (enemy & attackDatabase.BuildPawnAttack(Position, FigureToCheck.Color)) | (attackDatabase.BuildPawnAttack(Position, FigureToCheck.Color) & enemyEnPassant);
+
+
                     } break;
                 case EFigures.Rook:
                     {
@@ -688,14 +693,77 @@ namespace Chess.Engine
         {
             //True means no calculation was done the normal update can do his work
             bool updateBitboard = true;
+            //The target position of the moving figure in the "bitboard style"
             UInt64 targetPositionLong = (ulong)Math.Pow(2, TargetPosition);
+            //Get current pawn position in short style
+            short currentPos=(short)Tools.BitOperations.MostSigExponent(FigureToMove.Position);
             //Special moves are only realted to kings and pawns
             switch (FigureToMove.Type)
             {
-                case EFigures.Pawn: { 
-                    
+                case EFigures.Pawn: {
                     //Pawns can use promotion or en passant
+
+                   
                     
+                    //Check if en passant was used by a pawn
+                    if ((FigureToMove.Color == Defaults.WHITE ? this.currentGameState.EnPassantBlack & targetPositionLong : this.currentGameState.EnPassantWhite & targetPositionLong) > 0)
+                    { 
+                        //The Pawn moved on one of the fields block the normal update
+                        updateBitboard = false;
+                        //Set the pawn to the moved field
+                        if (FigureToMove.Color == Defaults.WHITE)
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.WhitePawns ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.WhitePawns |= targetPositionLong;
+                            //Remove the enemy pawn
+                            this.currentGameState.BlackPawns ^= (UInt64)Math.Pow(2, TargetPosition - 8);
+
+                        }
+                        else
+                        {
+                            //Remove the current position from the bitboard
+                            this.currentGameState.BlackPawns ^= FigureToMove.Position;
+                            //Set the new position
+                            this.currentGameState.BlackPawns |= targetPositionLong;
+                            //Remove the enemy pawn
+                            this.currentGameState.WhitePawns ^= (UInt64)Math.Pow(2, TargetPosition + 8);
+                        }
+
+                    }
+                    
+                    //Check if pawn moved 2 fields from his starting position
+                    if (Math.Abs(TargetPosition - currentPos) == 16)
+                    {
+                        //Pawn moved two fields so set the en passant bit for it
+                        if (FigureToMove.Color == Defaults.WHITE)
+                        {
+                            //set the field that could be attacked in the next turn by a pawn
+                            this.currentGameState.EnPassantWhite = (UInt64)Math.Pow(2, TargetPosition - 8);
+                        }
+                        else
+                        {
+                            //set the field that could be attacked in the next turn by a pawn
+                            this.currentGameState.EnPassantBlack = (UInt64)Math.Pow(2, TargetPosition + 8);
+                        }
+                    }
+                    else {
+                        //Reset the field of the other color
+                        if (FigureToMove.Color == Defaults.WHITE)
+                        {
+                            //set the field that could be attacked in the next turn by a pawn
+                            this.currentGameState.EnPassantBlack = 0;
+                        }
+                        else
+                        {
+                            //set the field that could be attacked in the next turn by a pawn
+                            this.currentGameState.EnPassantWhite = 0;
+                        }
+                    }
+
+
+                    #region Promotion
                     //Check the promotion case
                     if ((FigureToMove.Color == Defaults.BLACK && (targetPositionLong & Defaults.WhitePromotionRank) > 0) |
                         (FigureToMove.Color == Defaults.WHITE && (targetPositionLong & Defaults.BlackPromotionRank) > 0))
@@ -789,6 +857,8 @@ namespace Chess.Engine
                         }
                         updateBitboard = false;
                     }
+#endregion
+
                 }break;
             }
 

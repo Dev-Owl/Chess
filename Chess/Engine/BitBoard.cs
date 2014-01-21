@@ -150,6 +150,10 @@ namespace Chess.Engine
             get { return attackedBy; }
             set { attackedBy = value; }
         }
+
+        public UInt64 EnPassantWhite { get; set; }
+        
+        public UInt64 EnPassantBlack { get; set; }
         #endregion
 
        public BitBoard()
