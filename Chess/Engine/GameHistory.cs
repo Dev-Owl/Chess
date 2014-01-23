@@ -85,12 +85,14 @@ namespace Chess.Engine
                         sw.WriteLine(board.WhiteBishops.ToString());
                         sw.WriteLine(board.WhiteKnights.ToString());
                         sw.WriteLine(board.WhitePawns.ToString());
+                        sw.WriteLine(board.EnPassantWhite.ToString());
                         sw.WriteLine(board.BlackKing.ToString());
                         sw.WriteLine(board.BlackQueens.ToString());
                         sw.WriteLine(board.BlackRooks.ToString());
                         sw.WriteLine(board.Blackbishops.ToString());
                         sw.WriteLine(board.BlackKnights.ToString());
                         sw.WriteLine(board.BlackPawns.ToString());
+                        sw.WriteLine(board.EnPassantBlack.ToString());
                     }
                     sw.WriteLine(this.activeColor);
                     //Save current state also
@@ -100,12 +102,14 @@ namespace Chess.Engine
                     sw.WriteLine(this.moveGenerator.CurrentGameState.WhiteBishops.ToString());
                     sw.WriteLine(this.moveGenerator.CurrentGameState.WhiteKnights.ToString());
                     sw.WriteLine(this.moveGenerator.CurrentGameState.WhitePawns.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.EnPassantWhite.ToString());
                     sw.WriteLine(this.moveGenerator.CurrentGameState.BlackKing.ToString());
                     sw.WriteLine(this.moveGenerator.CurrentGameState.BlackQueens.ToString());
                     sw.WriteLine(this.moveGenerator.CurrentGameState.BlackRooks.ToString());
                     sw.WriteLine(this.moveGenerator.CurrentGameState.Blackbishops.ToString());
                     sw.WriteLine(this.moveGenerator.CurrentGameState.BlackKnights.ToString());
                     sw.WriteLine(this.moveGenerator.CurrentGameState.BlackPawns.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.EnPassantBlack.ToString());
                     
                 }
             }
@@ -137,12 +141,14 @@ namespace Chess.Engine
                                 board.WhiteBishops = UInt64.Parse(sr.ReadLine());
                                 board.WhiteKnights = UInt64.Parse(sr.ReadLine());
                                 board.WhitePawns = UInt64.Parse(sr.ReadLine());
+                                board.EnPassantWhite = UInt64.Parse(sr.ReadLine());
                                 board.BlackKing = UInt64.Parse(sr.ReadLine());
                                 board.BlackQueens = UInt64.Parse(sr.ReadLine());
                                 board.BlackRooks = UInt64.Parse(sr.ReadLine());
                                 board.Blackbishops = UInt64.Parse(sr.ReadLine());
                                 board.BlackKnights = UInt64.Parse(sr.ReadLine());
                                 board.BlackPawns = UInt64.Parse(sr.ReadLine());
+                                board.EnPassantBlack = UInt64.Parse(sr.ReadLine());
                                 this.history[info].Add(BitBoard.CopyFigureValues(board));
                             }
                             this.activeColor = int.Parse(sr.ReadLine());
@@ -153,12 +159,14 @@ namespace Chess.Engine
                             board.WhiteBishops = UInt64.Parse(sr.ReadLine());
                             board.WhiteKnights = UInt64.Parse(sr.ReadLine());
                             board.WhitePawns = UInt64.Parse(sr.ReadLine());
+                            board.EnPassantWhite = UInt64.Parse(sr.ReadLine());
                             board.BlackKing = UInt64.Parse(sr.ReadLine());
                             board.BlackQueens = UInt64.Parse(sr.ReadLine());
                             board.BlackRooks = UInt64.Parse(sr.ReadLine());
                             board.Blackbishops = UInt64.Parse(sr.ReadLine());
                             board.BlackKnights = UInt64.Parse(sr.ReadLine());
                             board.BlackPawns = UInt64.Parse(sr.ReadLine());
+                            board.EnPassantBlack = UInt64.Parse(sr.ReadLine());
                             this.history[info].Add(BitBoard.CopyFigureValues(board));
 
                             result = true;

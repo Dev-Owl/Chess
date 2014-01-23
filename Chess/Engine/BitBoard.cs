@@ -216,6 +216,8 @@ namespace Chess.Engine
            newBoard.Blackbishops = BoardToCopy.Blackbishops;
            newBoard.BlackKnights = BoardToCopy.BlackKnights;
            newBoard.BlackPawns = BoardToCopy.BlackPawns;
+           newBoard.EnPassantBlack = BoardToCopy.EnPassantBlack;
+           newBoard.EnPassantWhite = BoardToCopy.EnPassantWhite;
            return newBoard;
        }
 
