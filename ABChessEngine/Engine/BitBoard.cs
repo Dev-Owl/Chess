@@ -153,6 +153,17 @@ namespace ABChess.Engine
         public UInt64 EnPassantWhite { get; set; }
         
         public UInt64 EnPassantBlack { get; set; }
+
+        public bool WhiteKingMoved { get; set; }
+
+        public bool BalckKingMoved { get; set; }
+
+        public bool WhiteLeftRookMoved { get; set; }
+        public bool WhiteRightRookMoved { get; set; }
+
+        public bool BlackLeftRookMoved { get; set; }
+        public bool BlackRightRookMoved { get; set; }
+
         #endregion
 
        public BitBoard()
@@ -217,6 +228,12 @@ namespace ABChess.Engine
            newBoard.BlackPawns = BoardToCopy.BlackPawns;
            newBoard.EnPassantBlack = BoardToCopy.EnPassantBlack;
            newBoard.EnPassantWhite = BoardToCopy.EnPassantWhite;
+           newBoard.WhiteKingMoved = BoardToCopy.WhiteKingMoved;
+           newBoard.BalckKingMoved = BoardToCopy.BalckKingMoved;
+           newBoard.BlackLeftRookMoved = BoardToCopy.BlackLeftRookMoved;
+           newBoard.BlackRightRookMoved = BoardToCopy.BlackRightRookMoved;
+           newBoard.WhiteLeftRookMoved = BoardToCopy.WhiteLeftRookMoved;
+           newBoard.WhiteLeftRookMoved = BoardToCopy.WhiteLeftRookMoved;
            return newBoard;
        }
 
