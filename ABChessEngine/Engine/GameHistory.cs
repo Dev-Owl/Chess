@@ -93,6 +93,12 @@ namespace ABChess.Engine
                         sw.WriteLine(board.BlackKnights.ToString());
                         sw.WriteLine(board.BlackPawns.ToString());
                         sw.WriteLine(board.EnPassantBlack.ToString());
+                        sw.WriteLine(board.BlackKingCheck ? "1" : "0");
+                        sw.WriteLine(board.WhiteKingMoved ? "1" : "0");
+                        sw.WriteLine(board.BlackLeftRookMoved ? "1" : "0");
+                        sw.WriteLine(board.BlackRightRookMoved ? "1" : "0");
+                        sw.WriteLine(board.WhiteLeftRookMoved ? "1" : "0");
+                        sw.WriteLine(board.WhiteRightRookMoved ? "1" : "0");
                     }
                     sw.WriteLine(this.activeColor);
                     //Save current state also
@@ -110,6 +116,12 @@ namespace ABChess.Engine
                     sw.WriteLine(this.moveGenerator.CurrentGameState.BlackKnights.ToString());
                     sw.WriteLine(this.moveGenerator.CurrentGameState.BlackPawns.ToString());
                     sw.WriteLine(this.moveGenerator.CurrentGameState.EnPassantBlack.ToString());
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.BlackKingCheck ? "1" : "0");
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.WhiteKingMoved ? "1" : "0");
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.BlackLeftRookMoved ? "1" : "0");
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.BlackRightRookMoved ? "1" : "0");
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.WhiteLeftRookMoved ? "1" : "0");
+                    sw.WriteLine(this.moveGenerator.CurrentGameState.WhiteRightRookMoved ? "1" : "0");
                     
                 }
             }
@@ -149,6 +161,12 @@ namespace ABChess.Engine
                                 board.BlackKnights = UInt64.Parse(sr.ReadLine());
                                 board.BlackPawns = UInt64.Parse(sr.ReadLine());
                                 board.EnPassantBlack = UInt64.Parse(sr.ReadLine());
+                                board.BalckKingMoved = sr.ReadLine() == "1" ? true : false;
+                                board.WhiteKingMoved = sr.ReadLine() == "1" ? true : false;
+                                board.BlackLeftRookMoved = sr.ReadLine() == "1" ? true : false;
+                                board.BlackRightRookMoved= sr.ReadLine() == "1" ? true : false;
+                                board.WhiteLeftRookMoved = sr.ReadLine() == "1" ? true : false;
+                                board.WhiteRightRookMoved = sr.ReadLine() == "1" ? true : false;
                                 this.history[info].Add(BitBoard.CopyFigureValues(board));
                             }
                             this.activeColor = int.Parse(sr.ReadLine());
@@ -167,6 +185,12 @@ namespace ABChess.Engine
                             board.BlackKnights = UInt64.Parse(sr.ReadLine());
                             board.BlackPawns = UInt64.Parse(sr.ReadLine());
                             board.EnPassantBlack = UInt64.Parse(sr.ReadLine());
+                            board.BalckKingMoved = sr.ReadLine() == "1" ? true : false;
+                            board.WhiteKingMoved = sr.ReadLine() == "1" ? true : false;
+                            board.BlackLeftRookMoved = sr.ReadLine() == "1" ? true : false;
+                            board.BlackRightRookMoved = sr.ReadLine() == "1" ? true : false;
+                            board.WhiteLeftRookMoved = sr.ReadLine() == "1" ? true : false;
+                            board.WhiteRightRookMoved = sr.ReadLine() == "1" ? true : false;
                             this.history[info].Add(BitBoard.CopyFigureValues(board));
 
                             result = true;
