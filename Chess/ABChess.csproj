@@ -57,17 +57,10 @@
     <StartupObject>Chess.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MongoDB.Bson">
-      <HintPath>C:\Program Files (x86)\MongoDB\CSharpDriver 1.8.3\MongoDB.Bson.dll</HintPath>
-    </Reference>
-    <Reference Include="MongoDB.Driver">
-      <HintPath>C:\Program Files (x86)\MongoDB\CSharpDriver 1.8.3\MongoDB.Driver.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
@@ -75,15 +68,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Engine\BitBoard.cs" />
-    <Compile Include="Engine\Figure.cs" />
-    <Compile Include="Engine\Defaults.cs" />
-    <Compile Include="Engine\EFigures.cs" />
-    <Compile Include="Engine\GameEndedEventArgs.cs" />
-    <Compile Include="Engine\GameHistory.cs" />
-    <Compile Include="Engine\GameInfo.cs" />
-    <Compile Include="Engine\IPromotion.cs" />
-    <Compile Include="Engine\MoveGenerator.cs" />
     <Compile Include="GUI\ChangedEventArgs.cs" />
     <Compile Include="GUI\DrawHelper.cs" />
     <Compile Include="GUI\Forms\ChessMainForm.cs">
@@ -114,12 +98,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Log\Log.cs" />
-    <Compile Include="GUI\Forms\MainForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="GUI\Forms\MainForm.Designer.cs">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GUI\Forms\Thinking.cs">
@@ -128,8 +106,6 @@
     <Compile Include="GUI\Forms\Thinking.Designer.cs">
       <DependentUpon>Thinking.cs</DependentUpon>
     </Compile>
-    <Compile Include="Engine\AttackDatabase.cs" />
-    <Compile Include="Tools\BitOperations.cs" />
     <Compile Include="Tools\INI.cs" />
     <EmbeddedResource Include="GUI\Forms\ChessMainForm.resx">
       <DependentUpon>ChessMainForm.cs</DependentUpon>
@@ -137,9 +113,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Forms\DebugViewFrom.resx">
       <DependentUpon>DebugViewFrom.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="GUI\Forms\MainForm.resx">
-      <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Forms\PromotionForm.resx">
       <DependentUpon>PromotionForm.cs</DependentUpon>
@@ -236,7 +209,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\ABChessEngine\ABChessEngine.csproj">
+      <Project>{f1964689-e782-464c-bf32-cdaed7de9641}</Project>
+      <Name>ABChessEngine</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

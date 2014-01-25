@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace Chess.Engine
+namespace ABChess.Engine
 {
 
     //TODO:Add documentation below

@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Chess.Tools
+namespace ABChess.Tools
 {
-    class BitOperations
+    public class BitOperations
     {
         public static int NumberOfSetBits(ulong i)
         {

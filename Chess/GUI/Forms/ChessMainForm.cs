@@ -8,7 +8,7 @@ using Chess.Tools;
 using System.Diagnostics;
 using System.IO;
 using Chess.GUI;
-using Chess.Engine;
+using ABChess.Engine;
 
 namespace Chess.GUI.Forms
 {
@@ -30,7 +30,7 @@ namespace Chess.GUI.Forms
             this.gameBoard.PropertyChange += gameBoard_PropertyChange;
             this.saveToolStripMenuItem.Enabled = false;
             this.debugViewToolStripMenuItem.Enabled = false;
-            this.Text =string.Format("Chess Version {0}", Program.VERSION);
+            this.Text =string.Format("ABChess Version {0}", Program.VERSION);
         }
 
         void gameBoard_PropertyChange(string Event, ChangedEventArgs e)
@@ -123,8 +123,13 @@ namespace Chess.GUI.Forms
 
         private void buildAttackDBToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            AttackDatabase attackDB = new AttackDatabase();
+            AttackDatabase attackDB = new AttackDatabase( new Thinking());
             attackDB.BuildAttackboard();
+        }
+
+        private void ChessMainForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

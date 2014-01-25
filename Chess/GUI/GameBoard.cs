@@ -6,7 +6,7 @@ using System.Windows.Forms;
 using System.Drawing.Drawing2D;
 using System.Drawing;
 using Chess.Tools;
-using Chess.Engine;
+using ABChess.Engine;
 using Chess.GUI.Forms;
 
 namespace Chess.GUI

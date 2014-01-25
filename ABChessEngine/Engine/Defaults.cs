@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Chess.Engine
+namespace ABChess.Engine
 {   
-    class Defaults
+    public class Defaults
     {
         //Default value for each starting bitboard
 

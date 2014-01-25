@@ -10,15 +10,15 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver.Builders;
 
-namespace Chess.Engine
+namespace ABChess.Engine
 {
     /// <summary>
     /// This class is able to provide accses to a attack database or build a new database
     /// </summary>
-    public class AttackDatabase : IDisposable
+    public class AttackDatabase
     {
         //Class interna
-        Thinking thinking;
+        IThinking thinking;
         Thread createThread;
         
         //Monog DB related
@@ -37,10 +37,10 @@ namespace Chess.Engine
         Dictionary<Int16, UInt64> downRightFields;
         Dictionary<Int16, UInt64> downLeftFields;
         
-        public AttackDatabase()
+        public AttackDatabase(IThinking ThinkingObject)
         {   
             //Create forn object to show a progress
-            thinking = new Thinking();
+            thinking = ThinkingObject;
             //get the client object for the mongo db
             var server = new MongoClient(this.mongoConnection).GetServer();
             //Get the attack database
@@ -217,7 +217,7 @@ namespace Chess.Engine
             //Show the form and start the worker thread
             createThread = new Thread(BuildAttackDatabase);
             createThread.IsBackground = true;
-            thinking.Show();
+            this.ShowThinking();
             createThread.Start();
         }
 
@@ -225,7 +225,7 @@ namespace Chess.Engine
         {
             attacks.RemoveAll();
             //StreamWriter sw = new StreamWriter("resultCurrentFig.txt", false);
-            thinking.SetMessage("Starting with database, take a seat and drink a coffee");
+            this.SetMessage("Starting with database, take a seat and drink a coffee");
             UInt64 currentIndex = 1;
            
                 //For each possible figure on this square
@@ -236,7 +236,7 @@ namespace Chess.Engine
                         //Depending on the current active index create the moving mask of this figure and store it in the database
                         case EFigures.King:
                             {
-                                thinking.SetMessage("Working on the king figure at the moment");
+                                this.SetMessage("Working on the king figure at the moment");
                                 #region King
                                 UInt64 movingMask=0;
                                 //For each square on the board 
@@ -300,7 +300,7 @@ namespace Chess.Engine
                             break;
                         case EFigures.Rook:
                             {
-                                 thinking.SetMessage("Working on the Rooks now");
+                                this.SetMessage("Working on the Rooks now");
                                  UInt64 movingMask=0;
                                  #region Rook
                                  //For each square on the board 
@@ -375,7 +375,7 @@ namespace Chess.Engine
                             break;
                         case EFigures.Knight:
                             {
-                                thinking.SetMessage("Now taking care of the Knight");
+                                this.SetMessage("Now taking care of the Knight");
                                 UInt64 movingMask = 0;
                                 #region Knight
                                 //For each square on the board 
@@ -473,7 +473,7 @@ namespace Chess.Engine
                             } break;
                         case EFigures.Bishop:
                             {
-                                thinking.SetMessage("Taking care of the Bishop");
+                                this.SetMessage("Taking care of the Bishop");
                                 UInt64 movingMask = 0;
                                 //Up left is plus 9 and up right 7
                                 //Down left is -7 and right -9
@@ -583,7 +583,7 @@ namespace Chess.Engine
                             }break;
                         case EFigures.Queen:
                             {
-                                thinking.SetMessage("Taking care of the queens");
+                                this.SetMessage("Taking care of the queens");
                                 UInt64 movingMask = 0;
                                 #region Queen
                                 for (UInt64 i = 0; i < 64; i++)
@@ -738,7 +738,7 @@ namespace Chess.Engine
                             }break;
                         case EFigures.PawnBlack:
                             {
-                                thinking.SetMessage("Working on the Pawns starting with the black ones");
+                                this.SetMessage("Working on the Pawns starting with the black ones");
                                 UInt64 movingMask = 0;
                                 //Set position Index to the start
                                 currentIndex |= (UInt64)Math.Pow(2, 8);
@@ -763,7 +763,7 @@ namespace Chess.Engine
                             }break;
                         case EFigures.PawnWhite:
                             {
-                                thinking.SetMessage("Now taking care of the white pawns ");
+                                this.SetMessage("Now taking care of the white pawns ");
                                 UInt64 movingMask = 0;
                                 //Set position Index to the start
                                 currentIndex |= (UInt64)Math.Pow(2, 8);
@@ -792,7 +792,7 @@ namespace Chess.Engine
               
             }
                 //sw.Close();
-            thinking.Close();
+                this.HideThinking();
         }
 
         private void SaveInMongo(Int32 Position, EFigures Type, UInt64 MoveMask)
@@ -916,6 +916,30 @@ namespace Chess.Engine
             }
         }
 
+        private void ShowThinking()
+        {
+            if (this.thinking != null)
+            {
+                this.thinking.Show();
+            }
+        }
+
+        private void HideThinking() 
+        {
+            if (this.thinking != null)
+            {
+                this.thinking.Close();
+            }
+        }
+
+        private void SetMessage(string Message)
+        {
+            if (this.thinking != null)
+            {
+                this.thinking.SetMessage(Message);
+            }
+        }
+
         /// <summary>
         /// Single attack position in the database
         /// </summary>
@@ -936,15 +960,6 @@ namespace Chess.Engine
             public UInt64 M;
             [BsonId]
             ObjectId _id { get; set; }
-        }
-
-
-        public void Dispose()
-        {
-            if (thinking != null)
-            {
-                thinking.Dispose();
-            }
         }
     }
 }

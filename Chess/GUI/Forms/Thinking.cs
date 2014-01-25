@@ -6,10 +6,11 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using ABChess.Engine;
 
 namespace Chess
 {
-    public partial class Thinking : Form
+    public partial class Thinking : Form , IThinking
     {
         public Thinking()
         {

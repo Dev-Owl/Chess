@@ -28,10 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            Chess.Engine.MoveGenerator moveGenerator1 = new Chess.Engine.MoveGenerator();
-            Chess.Engine.AttackDatabase attackDatabase1 = new Chess.Engine.AttackDatabase();
-            Chess.Engine.BitBoard bitBoard1 = new Chess.Engine.BitBoard();
-            Chess.Engine.GameHistory gameHistory1 = new Chess.Engine.GameHistory();
+            ABChess.Engine.MoveGenerator moveGenerator1 = new ABChess.Engine.MoveGenerator();
+            ABChess.Engine.BitBoard bitBoard1 = new ABChess.Engine.BitBoard();
+            ABChess.Engine.GameHistory gameHistory1 = new ABChess.Engine.GameHistory();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ChessMainForm));
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.gameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -145,7 +144,6 @@
             this.gameBoard.ActiveColor = 1;
             this.gameBoard.GameRunning = false;
             this.gameBoard.Location = new System.Drawing.Point(12, 27);
-            moveGenerator1.AttackDatabase = attackDatabase1;
             moveGenerator1.CurrentGame = null;
             bitBoard1.AttackedBy = null;
             bitBoard1.AttackedByBlack = ((ulong)(0ul));
@@ -159,6 +157,8 @@
             bitBoard1.BlackQueens = ((ulong)(0ul));
             bitBoard1.BlackRooks = ((ulong)(0ul));
             bitBoard1.EmptySquares = ((ulong)(0ul));
+            bitBoard1.EnPassantBlack = ((ulong)(0ul));
+            bitBoard1.EnPassantWhite = ((ulong)(0ul));
             bitBoard1.ProtecteddBy = null;
             bitBoard1.SquarsBlocked = ((ulong)(0ul));
             bitBoard1.WhiteBishops = ((ulong)(0ul));
@@ -172,9 +172,10 @@
             moveGenerator1.CurrentGameState = bitBoard1;
             moveGenerator1.GameRunning = false;
             gameHistory1.ActiveColor = 1;
-            gameHistory1.History = ((System.Collections.Generic.Dictionary<Chess.Engine.GameInfo, System.Collections.Generic.List<Chess.Engine.BitBoard>>)(resources.GetObject("gameHistory1.History")));
+            gameHistory1.History = ((System.Collections.Generic.Dictionary<ABChess.Engine.GameInfo, System.Collections.Generic.List<ABChess.Engine.BitBoard>>)(resources.GetObject("gameHistory1.History")));
             gameHistory1.MoveGenerator = moveGenerator1;
             moveGenerator1.History = gameHistory1;
+            moveGenerator1.PromotionHandler = this.gameBoard;
             this.gameBoard.MoveGenerator = moveGenerator1;
             this.gameBoard.Name = "gameBoard";
             this.gameBoard.OffsetX = 5;
@@ -201,7 +202,8 @@
             this.MainMenuStrip = this.menuStrip1;
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "ChessMainForm";
-            this.Text = "Chess 1.0";
+            this.Text = "ABChess 1.0";
+            this.Load += new System.EventHandler(this.ChessMainForm_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);

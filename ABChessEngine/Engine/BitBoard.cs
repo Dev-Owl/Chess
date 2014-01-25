@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Chess.Tools;
-using System.Drawing;
 
-namespace Chess.Engine
+
+namespace ABChess.Engine
 {
     //TODO: Add documentation for this class
 

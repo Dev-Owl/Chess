@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Chess.Engine
+namespace ABChess.Engine
 {
    
     /// <summary>
@@ -117,7 +117,7 @@ namespace Chess.Engine
         /// </summary>
         private void initClass()
         {
-            this.attackDatabase = new AttackDatabase();
+            this.attackDatabase = new AttackDatabase(null);
             this.currentGameState = new BitBoard();
             this.history = new GameHistory();
             this.history.MoveGenerator = this;

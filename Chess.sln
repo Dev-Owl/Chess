@@ -1,7 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chess", "Chess\Chess.csproj", "{F81B554F-4B07-4238-A8C3-63AC571B2718}"
+# Visual Studio Express 2012 for Windows Desktop
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABChess", "Chess\ABChess.csproj", "{F81B554F-4B07-4238-A8C3-63AC571B2718}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABChessEngine", "ABChessEngine\ABChessEngine.csproj", "{F1964689-E782-464C-BF32-CDAED7DE9641}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +15,10 @@ Global
 		{F81B554F-4B07-4238-A8C3-63AC571B2718}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F81B554F-4B07-4238-A8C3-63AC571B2718}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F81B554F-4B07-4238-A8C3-63AC571B2718}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1964689-E782-464C-BF32-CDAED7DE9641}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1964689-E782-464C-BF32-CDAED7DE9641}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1964689-E782-464C-BF32-CDAED7DE9641}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1964689-E782-464C-BF32-CDAED7DE9641}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -40,8 +40,8 @@ namespace Chess.GUI
         }
 
         public static UInt64 FromDrawingPoint(int X, int Y)
-        {            
-            return BitOperations.SetBit(X+(Y*8));
+        {
+            return ABChess.Tools.BitOperations.SetBit(X + (Y * 8));
         }
 
 

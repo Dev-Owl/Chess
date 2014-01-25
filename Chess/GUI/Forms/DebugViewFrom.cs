@@ -8,7 +8,8 @@ using Chess.Tools;
 using System.Diagnostics;
 using System.IO;
 using Chess.GUI;
-using Chess.Engine;
+using ABChess.Engine;
+using ABChess.Tools;
 
 
 namespace Chess.GUI.Forms

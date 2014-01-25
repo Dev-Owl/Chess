@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
-namespace Chess.Engine
+namespace ABChess.Engine
 {
     [Serializable]
     public class GameInfo
