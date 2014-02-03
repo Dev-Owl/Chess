@@ -43,12 +43,18 @@ namespace ABChess.Engine
         public const UInt64 Rotated90ClockWise_WhiteKnights = 0x80000000008000;
         public const UInt64 Rotated90ClockWise_WhitePawn = 0x4040404040404040;
         public const UInt64 Rotated90ClockWise_WhitePieces = 0xC0C0C0C0C0C0C0C0;
-
+        //Startpostions for the rooks used in casteling moves
         public const UInt64 WhiteLeftRookStartPosition = 0x80;
         public const UInt64 WhiteRightRookStartPosition = 0x1;
-
+        
         public const UInt64 BlackLeftRookStartPosition = 0x8000000000000000;
         public const UInt64 BlackRightRookStartPosition = 0x100000000000000;
+        
+        //Casteling positions
+        public const UInt64 CastelingWhiteRight = 0x2;
+        public const UInt64 CastelingWhiteLeft = 0x20;
+        public const UInt64 CastelingBlackRight = 0x2000000000000000;
+        public const UInt64 CastelingBlackLeft =  0x200000000000000;
         //0x100000000000000
         //First column of the board ( from the view of the white player)
         public const UInt64 WhitePromotionRank = 0xFF;

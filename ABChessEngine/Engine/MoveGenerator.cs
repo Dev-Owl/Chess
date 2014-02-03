@@ -265,6 +265,9 @@ namespace ABChess.Engine
             bool myKingInCheck = false;
             UInt64 myKingPosition = 0;
             short myKingPositionShort = 0;
+            bool myKingMoved = false;
+            bool myLeftRookMoved = false;
+            bool myRightRookMoved = false;
             if (FigureToCheck.Color == Defaults.WHITE)
             {
                 enemyOrEmpty |= this.currentGameState.BlackPieces;
@@ -274,6 +277,9 @@ namespace ABChess.Engine
                 myKingPosition = this.currentGameState.WhiteKing; 
                 myKingPositionShort = (short)Tools.BitOperations.MostSigExponent(myKingPosition);
                 enemyEnPassant = this.currentGameState.EnPassantBlack;
+                myKingMoved = this.currentGameState.WhiteKingMoved;
+                myLeftRookMoved = this.currentGameState.WhiteLeftRookMoved;
+                myRightRookMoved = this.currentGameState.WhiteRightRookMoved;
             }
             else
             {
@@ -284,6 +290,9 @@ namespace ABChess.Engine
                 myKingPosition = this.currentGameState.BlackKing;
                 myKingPositionShort = (short)Tools.BitOperations.MostSigExponent(myKingPosition);
                 enemyEnPassant = this.currentGameState.EnPassantWhite;
+                myKingMoved = this.currentGameState.BalckKingMoved;
+                myLeftRookMoved = this.currentGameState.BlackLeftRookMoved;
+                myRightRookMoved = this.currentGameState.BlackRightRookMoved;
             }
             if (FigureToCheck.Type != EFigures.Rook || FigureToCheck.Type != EFigures.Bishop || FigureToCheck.Type != EFigures.Queen)
             {
@@ -329,8 +338,17 @@ namespace ABChess.Engine
                         if (myKingInCheck)
                         {
                             foreach (Figure fig in this.currentGameState.AttackedBy[myKingPosition].Where<Figure>(f => f.Color != FigureToCheck.Color).ToList<Figure>())
-                            { 
-                                legalMoves &= ~attackDatabase.GetMoveMask( (short)Tools.BitOperations.MostSigExponent(fig.Position),fig);
+                            {
+                                legalMoves &= ~attackDatabase.GetMoveMask((short)Tools.BitOperations.MostSigExponent(fig.Position), fig);
+                            }
+                        }
+                        else {
+                            //If the king was not moved and at least one rook too we can castel
+                            if (!myKingMoved && (!myLeftRookMoved || !myRightRookMoved))
+                            {
+                                //TODO: Go from here !!!!
+                                //check for the right rook and at the moves to the legal moves if the fields are not under attack
+                                //and not blockecd by any figure
                             }
                         }
                     }
@@ -702,9 +720,7 @@ namespace ABChess.Engine
             {
                 case EFigures.Pawn: {
                     //Pawns can use promotion or en passant
-
-                   
-                    
+                    #region En Passant
                     //Check if en passant was used by a pawn
                     if ((FigureToMove.Color == Defaults.WHITE ? this.currentGameState.EnPassantBlack & targetPositionLong : this.currentGameState.EnPassantWhite & targetPositionLong) > 0)
                     { 
@@ -761,7 +777,7 @@ namespace ABChess.Engine
                             this.currentGameState.EnPassantWhite = 0;
                         }
                     }
-
+                    #endregion
 
                     #region Promotion
                     //Check the promotion case
@@ -859,7 +875,75 @@ namespace ABChess.Engine
                     }
 #endregion
 
-                }break;
+                }
+                break;
+                case EFigures.King:
+                {
+                    if (FigureToMove.Color == Defaults.WHITE)
+                    {
+                        this.currentGameState.WhiteKingMoved = true;
+                        if( (FigureToMove.Position & Defaults.CastelingWhiteLeft)  > 0 || (Defaults.CastelingWhiteRight & FigureToMove.Position) > 0)
+                        {
+                            //The king moved on a casteling field also move the related rook
+                            //Check for the right rook to move 
+                            if ((FigureToMove.Position & Defaults.CastelingWhiteLeft) > 0)
+                            {
+                                MoveFigure(this.GetFigureAtPosition(Defaults.CastelingWhiteLeft), 5);
+                            }
+                            else
+                            {
+                                MoveFigure(this.GetFigureAtPosition(Defaults.CastelingBlackRight), 3);
+                            }
+                         }
+                    }
+                    else
+                    {
+                        this.currentGameState.BalckKingMoved = true;
+                        if ((FigureToMove.Position & Defaults.CastelingBlackLeft) > 0 || (Defaults.CastelingBlackRight & FigureToMove.Position) > 0)
+                        {
+                            //The king moved on a casteling field also move the related rook
+                            if ((FigureToMove.Position & Defaults.CastelingBlackLeft) > 0)
+                            {
+                                //Move the rook to the position
+                                MoveFigure(this.GetFigureAtPosition(Defaults.CastelingBlackLeft), 62);
+                            }
+                            else
+                            {
+                                MoveFigure(this.GetFigureAtPosition(Defaults.CastelingBlackRight), 85);
+                            }
+                            
+                        }
+                    }
+                    
+
+                }
+                break;
+                case EFigures.Rook:
+                {
+                    if (FigureToMove.Color == Defaults.WHITE)
+                    {
+                        if (FigureToMove.Position & Defaults.WhiteRightRookStartPosition > 0)
+                        {
+                            this.currentGameState.WhiteRightRookMoved = true;
+                        }
+                        else {
+                            this.currentGameState.WhiteLeftRookMoved = true;    
+                        }
+                    }
+                    else
+                    {
+                        if (FigureToMove.Position & Defaults.BlackRightRookStartPosition > 0)
+                        {
+                            this.currentGameState.BlackRightRookMoved = true;
+                        }
+                        else
+                        {
+                            this.currentGameState.BlackLeftRookMoved = true;
+                        }
+
+                    }                                        
+                }
+                break;
             }
 
             return updateBitboard;       
