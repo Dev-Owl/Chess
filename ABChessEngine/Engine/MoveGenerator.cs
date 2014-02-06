@@ -268,6 +268,8 @@ namespace ABChess.Engine
             bool myKingMoved = false;
             bool myLeftRookMoved = false;
             bool myRightRookMoved = false;
+            UInt64 myLeftRook =0;
+            UInt64 myRightRook =0;
             if (FigureToCheck.Color == Defaults.WHITE)
             {
                 enemyOrEmpty |= this.currentGameState.BlackPieces;
@@ -280,6 +282,8 @@ namespace ABChess.Engine
                 myKingMoved = this.currentGameState.WhiteKingMoved;
                 myLeftRookMoved = this.currentGameState.WhiteLeftRookMoved;
                 myRightRookMoved = this.currentGameState.WhiteRightRookMoved;
+                myLeftRook = Defaults.BlackLeftRookStartPosition;
+                myRightRook = Defaults.BlackRightRookStartPosition;
             }
             else
             {
@@ -293,6 +297,8 @@ namespace ABChess.Engine
                 myKingMoved = this.currentGameState.BalckKingMoved;
                 myLeftRookMoved = this.currentGameState.BlackLeftRookMoved;
                 myRightRookMoved = this.currentGameState.BlackRightRookMoved;
+                myLeftRook = Defaults.WhiteLeftRookStartPosition;
+                myRightRook = Defaults.WhiteRightRookStartPosition;
             }
             if (FigureToCheck.Type != EFigures.Rook || FigureToCheck.Type != EFigures.Bishop || FigureToCheck.Type != EFigures.Queen)
             {
@@ -346,9 +352,15 @@ namespace ABChess.Engine
                             //If the king was not moved and at least one rook too we can castel
                             if (!myKingMoved && (!myLeftRookMoved || !myRightRookMoved))
                             {
-                                //TODO: Go from here !!!!
-                                //check for the right rook and at the moves to the legal moves if the fields are not under attack
-                                //and not blockecd by any figure
+                               
+                                if (!myLeftRookMoved)
+                                {
+                                    legalMoves |= CastelingCheck(myLeftRook, Position);
+                                }
+                                else if(!myRightRookMoved) 
+                                {
+                                    legalMoves |= CastelingCheck(myRightRook, Position);
+                                }
                             }
                         }
                     }
@@ -524,6 +536,28 @@ namespace ABChess.Engine
             }
             //Return the final moves for the figure at the given position
             return legalMoves;
+        }
+        /// <summary>
+        /// Calculates the Casteling moves for a King
+        /// </summary>
+        /// <param name="RookPosition">The position of the rool we would like to check</param>
+        /// <param name="KingPosition">The position of the king we would like to check</param>
+        /// <returns>The possible moves for casteling or zero</returns>
+        private UInt64 CastelingCheck(UInt64 RookPosition,short KingPosition)
+        {
+            //TODO: GO FROM HERE !!!
+            //check for the right rook and at the moves to the legal moves if the fields are not under attack
+            //and not blockecd by any figure
+
+            //Get all fields on the left of the king
+            UInt64 workingBoard = this.attackDatabase.GetFieldsLeft(Position);
+            //No figures except the rook on my left
+            if ((workingBoard & this.currentGameState.SquarsBlocked) == myLeftRook)
+            {
+                //Now we have to check if the king squares are under attack
+
+            }
+            return 0;
         }
 
         /// <summary>
