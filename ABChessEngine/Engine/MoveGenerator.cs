@@ -270,6 +270,10 @@ namespace ABChess.Engine
             bool myRightRookMoved = false;
             UInt64 myLeftRook =0;
             UInt64 myRightRook =0;
+            UInt64 CastlingLeft = 0;
+            UInt64 CastlingRight = 0;
+            UInt64 CastlingKingFieldsLeft =0;
+            UInt64 CastlingKingFieldsRight =0;
             if (FigureToCheck.Color == Defaults.WHITE)
             {
                 enemyOrEmpty |= this.currentGameState.BlackPieces;
@@ -282,8 +286,12 @@ namespace ABChess.Engine
                 myKingMoved = this.currentGameState.WhiteKingMoved;
                 myLeftRookMoved = this.currentGameState.WhiteLeftRookMoved;
                 myRightRookMoved = this.currentGameState.WhiteRightRookMoved;
-                myLeftRook = Defaults.BlackLeftRookStartPosition;
-                myRightRook = Defaults.BlackRightRookStartPosition;
+                myLeftRook = Defaults.WhiteLeftRookStartPosition;
+                myRightRook = Defaults.WhiteRightRookStartPosition;
+                CastlingLeft = Defaults.CastlingWhiteLeft;
+                CastlingRight = Defaults.CastlingWhiteRight;
+                CastlingKingFieldsLeft = Defaults.CastlingWhiteKingFieldsLeft;
+                CastlingKingFieldsRight = Defaults.CastlingWhiteKingFieldsRight;
             }
             else
             {
@@ -297,8 +305,12 @@ namespace ABChess.Engine
                 myKingMoved = this.currentGameState.BalckKingMoved;
                 myLeftRookMoved = this.currentGameState.BlackLeftRookMoved;
                 myRightRookMoved = this.currentGameState.BlackRightRookMoved;
-                myLeftRook = Defaults.WhiteLeftRookStartPosition;
-                myRightRook = Defaults.WhiteRightRookStartPosition;
+                myLeftRook = Defaults.BlackLeftRookStartPosition;
+                myRightRook = Defaults.BlackRightRookStartPosition;
+                CastlingLeft = Defaults.CastlingBlackLeft;
+                CastlingRight = Defaults.CastlingBlackRight;
+                CastlingKingFieldsLeft = Defaults.CastlingBlackKingFieldsLeft;
+                CastlingKingFieldsRight = Defaults.CastlingBlackKingFieldsRight;
             }
             if (FigureToCheck.Type != EFigures.Rook || FigureToCheck.Type != EFigures.Bishop || FigureToCheck.Type != EFigures.Queen)
             {
@@ -355,11 +367,11 @@ namespace ABChess.Engine
                                
                                 if (!myLeftRookMoved)
                                 {
-                                    legalMoves |= CastelingCheck(myLeftRook, Position);
+                                    legalMoves |= CastlingCheck(myLeftRook, Position, enemyAttacked, true, CastlingKingFieldsLeft, CastlingLeft);
                                 }
-                                else if(!myRightRookMoved) 
+                                if(!myRightRookMoved) 
                                 {
-                                    legalMoves |= CastelingCheck(myRightRook, Position);
+                                    legalMoves |= CastlingCheck(myRightRook, Position, enemyAttacked, false, CastlingKingFieldsRight, CastlingRight);
                                 }
                             }
                         }
@@ -537,27 +549,35 @@ namespace ABChess.Engine
             //Return the final moves for the figure at the given position
             return legalMoves;
         }
+        
         /// <summary>
-        /// Calculates the Casteling moves for a King
+        /// Checks if the Castling move is valid for the provided King
         /// </summary>
-        /// <param name="RookPosition">The position of the rool we would like to check</param>
-        /// <param name="KingPosition">The position of the king we would like to check</param>
-        /// <returns>The possible moves for casteling or zero</returns>
-        private UInt64 CastelingCheck(UInt64 RookPosition,short KingPosition)
+        /// <param name="RookPosition">Rook that should be used for Castling</param>
+        /// <param name="KingPosition">The Position of the King</param>
+        /// <param name="AttackedByEnemy">All Fields attacked by the enemy player</param>
+        /// <param name="Left">Is it the left or the right Rook</param>
+        /// <param name="KingFields">The fields the king has to move to castel</param>
+        /// <param name="CastlingTarget">The Target field for the king</param>
+        /// <returns>Move mask in 64bit for the king or 0</returns>
+        private UInt64 CastlingCheck(UInt64 RookPosition,short KingPosition,UInt64 AttackedByEnemy ,bool Left,UInt64 KingFields,UInt64 CastlingTarget)
         {
-            //TODO: GO FROM HERE !!!
+            UInt64 result = 0;
             //check for the right rook and at the moves to the legal moves if the fields are not under attack
             //and not blockecd by any figure
 
             //Get all fields on the left of the king
-            UInt64 workingBoard = this.attackDatabase.GetFieldsLeft(Position);
+            UInt64 workingBoard = Left ? this.attackDatabase.GetFieldsLeft(KingPosition) : this.attackDatabase.GetFieldsRight(KingPosition);
             //No figures except the rook on my left
-            if ((workingBoard & this.currentGameState.SquarsBlocked) == myLeftRook)
+            if ((workingBoard & this.currentGameState.SquarsBlocked) == RookPosition)
             {
                 //Now we have to check if the king squares are under attack
-
+                if ((AttackedByEnemy & KingFields) == 0)
+                {
+                    result |= CastlingTarget;
+                }
             }
-            return 0;
+            return result;
         }
 
         /// <summary>
@@ -913,37 +933,38 @@ namespace ABChess.Engine
                 break;
                 case EFigures.King:
                 {
+                    UInt64 targetPosition = (UInt64)Math.Pow(2, TargetPosition);
                     if (FigureToMove.Color == Defaults.WHITE)
                     {
                         this.currentGameState.WhiteKingMoved = true;
-                        if( (FigureToMove.Position & Defaults.CastelingWhiteLeft)  > 0 || (Defaults.CastelingWhiteRight & FigureToMove.Position) > 0)
+                        if ((targetPosition & Defaults.CastlingWhiteLeft) > 0 || (Defaults.CastlingWhiteRight & targetPosition) > 0)
                         {
                             //The king moved on a casteling field also move the related rook
                             //Check for the right rook to move 
-                            if ((FigureToMove.Position & Defaults.CastelingWhiteLeft) > 0)
+                            if ((targetPosition & Defaults.CastlingWhiteLeft) > 0)
                             {
-                                MoveFigure(this.GetFigureAtPosition(Defaults.CastelingWhiteLeft), 5);
+                                MoveFigure(this.GetFigureAtPosition(Defaults.WhiteLeftRookStartPosition), 4);
                             }
                             else
                             {
-                                MoveFigure(this.GetFigureAtPosition(Defaults.CastelingBlackRight), 3);
+                                MoveFigure(this.GetFigureAtPosition(Defaults.WhiteRightRookStartPosition),2);
                             }
                          }
                     }
                     else
                     {
                         this.currentGameState.BalckKingMoved = true;
-                        if ((FigureToMove.Position & Defaults.CastelingBlackLeft) > 0 || (Defaults.CastelingBlackRight & FigureToMove.Position) > 0)
+                        if ((targetPosition & Defaults.CastlingBlackLeft) > 0 || (Defaults.CastlingBlackRight & targetPosition) > 0)
                         {
                             //The king moved on a casteling field also move the related rook
-                            if ((FigureToMove.Position & Defaults.CastelingBlackLeft) > 0)
+                            if ((targetPosition & Defaults.CastlingBlackLeft) > 0)
                             {
                                 //Move the rook to the position
-                                MoveFigure(this.GetFigureAtPosition(Defaults.CastelingBlackLeft), 62);
+                                MoveFigure(this.GetFigureAtPosition(Defaults.BlackLeftRookStartPosition),60 );
                             }
                             else
                             {
-                                MoveFigure(this.GetFigureAtPosition(Defaults.CastelingBlackRight), 85);
+                                MoveFigure(this.GetFigureAtPosition(Defaults.BlackRightRookStartPosition),58 );
                             }
                             
                         }
@@ -956,7 +977,7 @@ namespace ABChess.Engine
                 {
                     if (FigureToMove.Color == Defaults.WHITE)
                     {
-                        if (FigureToMove.Position & Defaults.WhiteRightRookStartPosition > 0)
+                        if ((FigureToMove.Position & Defaults.WhiteRightRookStartPosition) > 0)
                         {
                             this.currentGameState.WhiteRightRookMoved = true;
                         }
@@ -966,7 +987,7 @@ namespace ABChess.Engine
                     }
                     else
                     {
-                        if (FigureToMove.Position & Defaults.BlackRightRookStartPosition > 0)
+                        if ((FigureToMove.Position & Defaults.BlackRightRookStartPosition) > 0)
                         {
                             this.currentGameState.BlackRightRookMoved = true;
                         }

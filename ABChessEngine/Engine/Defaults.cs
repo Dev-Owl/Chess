@@ -50,11 +50,15 @@ namespace ABChess.Engine
         public const UInt64 BlackLeftRookStartPosition = 0x8000000000000000;
         public const UInt64 BlackRightRookStartPosition = 0x100000000000000;
         
-        //Casteling positions
-        public const UInt64 CastelingWhiteRight = 0x2;
-        public const UInt64 CastelingWhiteLeft = 0x20;
-        public const UInt64 CastelingBlackRight = 0x2000000000000000;
-        public const UInt64 CastelingBlackLeft =  0x200000000000000;
+        //Castling positions
+        public const UInt64 CastlingWhiteRight = 0x2;
+        public const UInt64 CastlingWhiteLeft = 0x20;
+        public const UInt64 CastlingBlackLeft = 0x2000000000000000;
+        public const UInt64 CastlingBlackRight = 0x200000000000000;
+        public const UInt64 CastlingWhiteKingFieldsRight = 0x6;
+        public const UInt64 CastlingWhiteKingFieldsLeft = 0x30;
+        public const UInt64 CastlingBlackKingFieldsRight = 0x600000000000000;
+        public const UInt64 CastlingBlackKingFieldsLeft = 0x3000000000000000;
         //0x100000000000000
         //First column of the board ( from the view of the white player)
         public const UInt64 WhitePromotionRank = 0xFF;
