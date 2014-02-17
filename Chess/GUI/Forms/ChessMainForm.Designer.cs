@@ -32,6 +32,7 @@
             ABChess.Engine.BitBoard bitBoard1 = new ABChess.Engine.BitBoard();
             ABChess.Engine.GameHistory gameHistory1 = new ABChess.Engine.GameHistory();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ChessMainForm));
+            this.gameBoard = new Chess.GUI.GameBoard();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.gameToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -43,11 +44,64 @@
             this.buildAttackDBToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.actionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.revertMoveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.gameBoard = new Chess.GUI.GameBoard();
             this.openFileDialogSave = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialogSave = new System.Windows.Forms.SaveFileDialog();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // gameBoard
+            // 
+            this.gameBoard.ActiveColor = 1;
+            this.gameBoard.GameRunning = false;
+            this.gameBoard.Location = new System.Drawing.Point(12, 27);
+            moveGenerator1.CurrentGame = null;
+            bitBoard1.AttackedBy = null;
+            bitBoard1.AttackedByBlack = ((ulong)(0ul));
+            bitBoard1.AttackedByWhite = ((ulong)(0ul));
+            bitBoard1.BalckKingMoved = false;
+            bitBoard1.Blackbishops = ((ulong)(0ul));
+            bitBoard1.BlackKing = ((ulong)(0ul));
+            bitBoard1.BlackKingCheck = false;
+            bitBoard1.BlackKnights = ((ulong)(0ul));
+            bitBoard1.BlackLeftRookMoved = false;
+            bitBoard1.BlackPawns = ((ulong)(0ul));
+            bitBoard1.BlackPieces = ((ulong)(0ul));
+            bitBoard1.BlackQueens = ((ulong)(0ul));
+            bitBoard1.BlackRightRookMoved = false;
+            bitBoard1.BlackRooks = ((ulong)(0ul));
+            bitBoard1.EmptySquares = ((ulong)(0ul));
+            bitBoard1.EnPassantBlack = ((ulong)(0ul));
+            bitBoard1.EnPassantWhite = ((ulong)(0ul));
+            bitBoard1.ProtecteddBy = null;
+            bitBoard1.SquarsBlocked = ((ulong)(0ul));
+            bitBoard1.WhiteBishops = ((ulong)(0ul));
+            bitBoard1.WhiteKing = ((ulong)(0ul));
+            bitBoard1.WhiteKingCheck = false;
+            bitBoard1.WhiteKingMoved = false;
+            bitBoard1.WhiteKnights = ((ulong)(0ul));
+            bitBoard1.WhiteLeftRookMoved = false;
+            bitBoard1.WhitePawns = ((ulong)(0ul));
+            bitBoard1.WhitePieces = ((ulong)(0ul));
+            bitBoard1.WhiteQueens = ((ulong)(0ul));
+            bitBoard1.WhiteRightRookMoved = false;
+            bitBoard1.WhiteRooks = ((ulong)(0ul));
+            moveGenerator1.CurrentGameState = bitBoard1;
+            moveGenerator1.GameRunning = false;
+            gameHistory1.ActiveColor = 1;
+            gameHistory1.History = ((System.Collections.Generic.Dictionary<ABChess.Engine.GameInfo, System.Collections.Generic.List<ABChess.Engine.BitBoard>>)(resources.GetObject("gameHistory1.History")));
+            gameHistory1.MoveGenerator = moveGenerator1;
+            moveGenerator1.History = gameHistory1;
+            moveGenerator1.PromotionHandler = this.gameBoard;
+            this.gameBoard.MoveGenerator = moveGenerator1;
+            this.gameBoard.Name = "gameBoard";
+            this.gameBoard.OffsetX = 5;
+            this.gameBoard.OffsetY = 5;
+            this.gameBoard.Selected = false;
+            this.gameBoard.SelectedFigure = null;
+            this.gameBoard.SelectedX = -1;
+            this.gameBoard.SelectedY = -1;
+            this.gameBoard.Size = new System.Drawing.Size(760, 523);
+            this.gameBoard.TabIndex = 1;
             // 
             // menuStrip1
             // 
@@ -75,28 +129,28 @@
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
             // loadToolStripMenuItem
             // 
             this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            this.loadToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.loadToolStripMenuItem.Text = "Load";
             this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -139,54 +193,6 @@
             this.revertMoveToolStripMenuItem.Text = "Revert Move";
             this.revertMoveToolStripMenuItem.Click += new System.EventHandler(this.revertMoveToolStripMenuItem_Click);
             // 
-            // gameBoard
-            // 
-            this.gameBoard.ActiveColor = 1;
-            this.gameBoard.GameRunning = false;
-            this.gameBoard.Location = new System.Drawing.Point(12, 27);
-            moveGenerator1.CurrentGame = null;
-            bitBoard1.AttackedBy = null;
-            bitBoard1.AttackedByBlack = ((ulong)(0ul));
-            bitBoard1.AttackedByWhite = ((ulong)(0ul));
-            bitBoard1.Blackbishops = ((ulong)(0ul));
-            bitBoard1.BlackKing = ((ulong)(0ul));
-            bitBoard1.BlackKingCheck = false;
-            bitBoard1.BlackKnights = ((ulong)(0ul));
-            bitBoard1.BlackPawns = ((ulong)(0ul));
-            bitBoard1.BlackPieces = ((ulong)(0ul));
-            bitBoard1.BlackQueens = ((ulong)(0ul));
-            bitBoard1.BlackRooks = ((ulong)(0ul));
-            bitBoard1.EmptySquares = ((ulong)(0ul));
-            bitBoard1.EnPassantBlack = ((ulong)(0ul));
-            bitBoard1.EnPassantWhite = ((ulong)(0ul));
-            bitBoard1.ProtecteddBy = null;
-            bitBoard1.SquarsBlocked = ((ulong)(0ul));
-            bitBoard1.WhiteBishops = ((ulong)(0ul));
-            bitBoard1.WhiteKing = ((ulong)(0ul));
-            bitBoard1.WhiteKingCheck = false;
-            bitBoard1.WhiteKnights = ((ulong)(0ul));
-            bitBoard1.WhitePawns = ((ulong)(0ul));
-            bitBoard1.WhitePieces = ((ulong)(0ul));
-            bitBoard1.WhiteQueens = ((ulong)(0ul));
-            bitBoard1.WhiteRooks = ((ulong)(0ul));
-            moveGenerator1.CurrentGameState = bitBoard1;
-            moveGenerator1.GameRunning = false;
-            gameHistory1.ActiveColor = 1;
-            gameHistory1.History = ((System.Collections.Generic.Dictionary<ABChess.Engine.GameInfo, System.Collections.Generic.List<ABChess.Engine.BitBoard>>)(resources.GetObject("gameHistory1.History")));
-            gameHistory1.MoveGenerator = moveGenerator1;
-            moveGenerator1.History = gameHistory1;
-            moveGenerator1.PromotionHandler = this.gameBoard;
-            this.gameBoard.MoveGenerator = moveGenerator1;
-            this.gameBoard.Name = "gameBoard";
-            this.gameBoard.OffsetX = 5;
-            this.gameBoard.OffsetY = 5;
-            this.gameBoard.Selected = false;
-            this.gameBoard.SelectedFigure = null;
-            this.gameBoard.SelectedX = -1;
-            this.gameBoard.SelectedY = -1;
-            this.gameBoard.Size = new System.Drawing.Size(760, 523);
-            this.gameBoard.TabIndex = 1;
-            // 
             // openFileDialogSave
             // 
             this.openFileDialogSave.FileName = "openFileDialog1";
@@ -202,6 +208,7 @@
             this.MainMenuStrip = this.menuStrip1;
             this.MinimumSize = new System.Drawing.Size(800, 600);
             this.Name = "ChessMainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ABChess 1.0";
             this.Load += new System.EventHandler(this.ChessMainForm_Load);
             this.menuStrip1.ResumeLayout(false);

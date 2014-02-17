@@ -17,6 +17,8 @@ namespace Chess.GUI.Forms
 
         Process mongoProcess;
         DebugViewFrom debugView;
+        string DEFAULT_FILTER = "Chess saves (*.chess)|*.chess";
+
 
         public ChessMainForm()
         {
@@ -26,7 +28,11 @@ namespace Chess.GUI.Forms
             this.FormClosing += MainForm_FormClosing;
             debugView = new DebugViewFrom(this.gameBoard);
             saveFileDialogSave.SupportMultiDottedExtensions = true;
+            saveFileDialogSave.Filter = DEFAULT_FILTER;
+            saveFileDialogSave.FileName = "";
             openFileDialogSave.CheckFileExists = true;
+            openFileDialogSave.Filter = DEFAULT_FILTER;
+            openFileDialogSave.FileName = "";
             this.gameBoard.PropertyChange += gameBoard_PropertyChange;
             this.saveToolStripMenuItem.Enabled = false;
             this.debugViewToolStripMenuItem.Enabled = false;
