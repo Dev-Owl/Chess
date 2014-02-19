@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading;
 using System.Collections;
 using System.IO;
-using MongoDB.Driver;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Driver.Builders;
+//using MongoDB.Driver;
+//using MongoDB.Bson;
+//using MongoDB.Bson.Serialization.Attributes;
+//using MongoDB.Driver.Builders;
 
 namespace ABChess.Engine
 {
@@ -22,9 +22,17 @@ namespace ABChess.Engine
         Thread createThread;
         
         //Monog DB related
-        string mongoConnection = @"mongodb://localhost/?safe=true";
-        MongoDatabase attackBoard;
-        MongoCollection<AttackDocument> attacks;
+        string dbPath = @"data\db\attack.db";
+
+        public string DbPath
+        {
+            get { return dbPath; }
+            set { dbPath = value; }
+        }
+        //MongoDatabase attackBoard;
+        //MongoCollection<AttackDocument> attacks;
+
+        Dictionary<string, UInt64> attackData;
 
         //Helper Boards for Rooks
         Dictionary<Int16, UInt64> rightFields;
@@ -36,18 +44,19 @@ namespace ABChess.Engine
         Dictionary<Int16, UInt64> upLeftFields;
         Dictionary<Int16, UInt64> downRightFields;
         Dictionary<Int16, UInt64> downLeftFields;
-        
+                
         public AttackDatabase(IThinking ThinkingObject)
         {   
             //Create forn object to show a progress
             thinking = ThinkingObject;
             //get the client object for the mongo db
-            var server = new MongoClient(this.mongoConnection).GetServer();
-            //Get the attack database
-            attackBoard = server.GetDatabase("attackBoard");
-            //Lookup our main collection for attacks
-            attacks = attackBoard.GetCollection<AttackDocument>("attacks");
+            //var server = new MongoClient(this.mongoConnection).GetServer();
+            ////Get the attack database
+            //attackBoard = server.GetDatabase("attackBoard");
+            ////Lookup our main collection for attacks
+            //attacks = attackBoard.GetCollection<AttackDocument>("attacks");
             BuildHelperBoards();
+            attackData = new Dictionary<string, ulong>();
         }
 
         private void BuildHelperBoards()
@@ -223,7 +232,8 @@ namespace ABChess.Engine
 
         private void BuildAttackDatabase()
         {
-            attacks.RemoveAll();
+            //attacks.RemoveAll();
+            attackData.Clear();
             //StreamWriter sw = new StreamWriter("resultCurrentFig.txt", false);
             this.SetMessage("Starting with database, take a seat and drink a coffee");
             UInt64 currentIndex = 1;
@@ -289,7 +299,7 @@ namespace ABChess.Engine
 
                                     
 
-                                    SaveInMongo((Int32)i, figtype, movingMask);    
+                                    SaveInDB((Int32)i, figtype, movingMask);    
                                     //Jump to the next index
                                     currentIndex = currentIndex << 1;
                                     //Reset movingMask for the next square
@@ -364,7 +374,7 @@ namespace ABChess.Engine
                                      //sw.WriteLine(movingMask.ToString());
 
                                      //Save 
-                                     SaveInMongo((Int32)i, figtype, movingMask);    
+                                     SaveInDB((Int32)i, figtype, movingMask);    
                                      //Jump to the next index
                                      currentIndex = currentIndex << 1;
                                      //Reset movingMask for the next square
@@ -463,7 +473,7 @@ namespace ABChess.Engine
                                     tmpResult = 0;
                                     //sw.WriteLine(movingMask.ToString());
                                     //Save 
-                                    SaveInMongo((Int32)i, figtype, movingMask);
+                                    SaveInDB((Int32)i, figtype, movingMask);
                                     //Jump to the next index
                                     currentIndex = currentIndex << 1;
                                     //Reset movingMask for the next square
@@ -570,7 +580,7 @@ namespace ABChess.Engine
 
                                     //sw.WriteLine(movingMask.ToString());
                                     //Save 
-                                    SaveInMongo((Int32)i, figtype, movingMask);
+                                    SaveInDB((Int32)i, figtype, movingMask);
                                     //Jump to the next index
                                     currentIndex = currentIndex << 1;
                                     //Reset movingMask for the next square
@@ -728,7 +738,7 @@ namespace ABChess.Engine
 
                                     //sw.WriteLine(movingMask.ToString());
                                     //Save 
-                                    SaveInMongo((Int32)i, figtype, movingMask);
+                                    SaveInDB((Int32)i, figtype, movingMask);
                                     //Jump to the next index
                                     currentIndex = currentIndex << 1;
                                     //Reset movingMask for the next square
@@ -752,7 +762,7 @@ namespace ABChess.Engine
                                     }
                                     //sw.WriteLine(movingMask.ToString());
                                     //Save 
-                                    SaveInMongo((Int32)i, figtype, movingMask);
+                                    SaveInDB((Int32)i, figtype, movingMask);
                                     //Jump to the next index
                                     currentIndex = currentIndex << 1;
                                     //Reset movingMask for the next square
@@ -777,7 +787,7 @@ namespace ABChess.Engine
                                     }
                                     //sw.WriteLine(movingMask.ToString());
                                     //Save 
-                                    SaveInMongo((Int32)i, figtype, movingMask);
+                                    SaveInDB((Int32)i, figtype, movingMask);
                                     //Jump to the next index
                                     currentIndex = currentIndex << 1;
                                     //Reset movingMask for the next square
@@ -793,37 +803,61 @@ namespace ABChess.Engine
             }
                 //sw.Close();
                 this.HideThinking();
+                WriteDatabaseToDisk();
         }
 
-        private void SaveInMongo(Int32 Position, EFigures Type, UInt64 MoveMask)
+        private void SaveInDB(Int32 Position, EFigures Type, UInt64 MoveMask)
         {
             //Insert the new position in the datbase 
-            attacks.Insert(new AttackDocument() { F = (int)Type, M = MoveMask, P = Position });
+            //attacks.Insert(new AttackDocument() { F = (int)Type, M = MoveMask, P = Position });
+            attackData.Add(BuildAttackKey(Type, Position), MoveMask);
         }
-       
+
+        private string BuildAttackKey(EFigures Type, Int32 Position)
+        {
+            return string.Format("{0}:{1}", (int)Type, Position);
+        }
        
         public UInt64 GetMoveMask(Int16 Position, Figure Figure)
         {
-            //Depending on the figure set the search creteria 
             UInt64 returnValue = 0;
             EFigures searchType = Figure.Type;
             if (Figure.Type == EFigures.Pawn && Figure.Color == Defaults.BLACK)
             {
                 searchType = EFigures.PawnBlack;
             }
-            else if(Figure.Type == EFigures.Pawn)  {
+            else if (Figure.Type == EFigures.Pawn)
+            {
                 searchType = EFigures.PawnWhite;
             }
-            //Create the search document
-            QueryDocument doc = new QueryDocument();
-            doc.Add("F",(int)searchType);
-            doc.Add("P", Position);
-            var result = attacks.Find(doc);
-            //If we found something in the database return the first result
-            if (result.Count() > 0)
+            if (this.attackData.Count == 0)
             {
-                returnValue = result.ElementAt(0).M;
+                if (!ReadDatabaseFromDisk())
+                {
+                    BuildAttackDatabase();
+                }
             }
+            returnValue = this.attackData[BuildAttackKey(searchType, Position)];
+            //Depending on the figure set the search creteria 
+            //UInt64 returnValue = 0;
+            //EFigures searchType = Figure.Type;
+            //if (Figure.Type == EFigures.Pawn && Figure.Color == Defaults.BLACK)
+            //{
+            //    searchType = EFigures.PawnBlack;
+            //}
+            //else if(Figure.Type == EFigures.Pawn)  {
+            //    searchType = EFigures.PawnWhite;
+            //}
+            ////Create the search document
+            //QueryDocument doc = new QueryDocument();
+            //doc.Add("F",(int)searchType);
+            //doc.Add("P", Position);
+            //var result = attacks.Find(doc);
+            ////If we found something in the database return the first result
+            //if (result.Count() > 0)
+            //{
+            //    returnValue = result.ElementAt(0).M;
+            //}
             return returnValue;
         }
 
@@ -869,8 +903,7 @@ namespace ABChess.Engine
         }
 
         #endregion 
-       
-       
+         
         public UInt64 BuildPawnAttack(Int16 Position, int Color)
         {
             UInt64 result = 0;
@@ -932,6 +965,34 @@ namespace ABChess.Engine
             }
         }
 
+        private bool ReadDatabaseFromDisk()
+        {
+            bool result = false;
+            if (File.Exists(this.dbPath))
+            {
+                attackData.Clear();
+                string[] tmpValue = new string[1];
+                using (StreamReader sr = new StreamReader(this.dbPath))
+                {
+                    tmpValue = sr.ReadLine().Split(new char[] { '~' });
+                    attackData.Add(tmpValue[0], Convert.ToUInt64(tmpValue[1]));
+                }
+                result = true;
+            }
+            return result;
+        }
+    
+        private void WriteDatabaseToDisk()
+        {
+            using (StreamWriter sw = new StreamWriter(this.dbPath, false))
+            {
+                foreach (KeyValuePair<string, ulong> kv in attackData)
+                {
+                    sw.WriteLine(string.Format("{0}~{1}", kv.Key, kv.Value));
+                }
+            }
+        }
+
         private void SetMessage(string Message)
         {
             if (this.thinking != null)
@@ -940,26 +1001,26 @@ namespace ABChess.Engine
             }
         }
 
-        /// <summary>
-        /// Single attack position in the database
-        /// </summary>
-        private class AttackDocument
-        {
-            /// <summary>
-            /// This is needed because mongodb ( or the .net driver) do not support uint64
-            /// </summary>
-            //[BsonRepresentation(BsonType.Int64, AllowOverflow = true)] 
-            public Int32 P;
+        ///// <summary>
+        ///// Single attack position in the database
+        ///// </summary>
+        //private class AttackDocument
+        //{
+        //    /// <summary>
+        //    /// This is needed because mongodb ( or the .net driver) do not support uint64
+        //    /// </summary>
+        //    //[BsonRepresentation(BsonType.Int64, AllowOverflow = true)] 
+        //    public Int32 P;
            
-            public Int32 F;
+        //    public Int32 F;
 
-            /// <summary>
-            /// This is needed because mongodb ( or the .net driver) do not support uint64
-            /// </summary>
-            [BsonRepresentation(BsonType.Int64, AllowOverflow = true)] 
-            public UInt64 M;
-            [BsonId]
-            ObjectId _id { get; set; }
-        }
+        //    /// <summary>
+        //    /// This is needed because mongodb ( or the .net driver) do not support uint64
+        //    /// </summary>
+        //    [BsonRepresentation(BsonType.Int64, AllowOverflow = true)] 
+        //    public UInt64 M;
+        //    [BsonId]
+        //    ObjectId _id { get; set; }
+        //}
     }
 }

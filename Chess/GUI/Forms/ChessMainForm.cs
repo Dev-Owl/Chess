@@ -24,7 +24,7 @@ namespace Chess.GUI.Forms
         {
             InitializeComponent();
             Directory.CreateDirectory(@"data\db\");
-            StartMongoDB();
+            //StartMongoDB();
             this.FormClosing += MainForm_FormClosing;
             debugView = new DebugViewFrom(this.gameBoard);
             saveFileDialogSave.SupportMultiDottedExtensions = true;
@@ -53,11 +53,9 @@ namespace Chess.GUI.Forms
 
         void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (MessageBox.Show("Are you sure to quite the game ?", "Warning", MessageBoxButtons.YesNo) == System.Windows.Forms.DialogResult.Yes)
+            if (MessageBox.Show("Are you sure to quite the game ?", "Warning", MessageBoxButtons.YesNo) != System.Windows.Forms.DialogResult.Yes)
             {
-                StopMongoDB();
-            }
-            else {
+                //StopMongoDB();
                 e.Cancel = true;
             }
         }
@@ -73,24 +71,24 @@ namespace Chess.GUI.Forms
             this.gameBoard.StartNewGame(NewGame);
         }
 
-        private void StartMongoDB()
-        {
-            this.mongoProcess = new Process();
+        //private void StartMongoDB()
+        //{
+        //    this.mongoProcess = new Process();
 
-            this.mongoProcess.StartInfo.Arguments = "--dbpath \"" + Path.Combine(Environment.CurrentDirectory, @"data\db").Replace("\\", "\\") + "\"";
-            this.mongoProcess.StartInfo.UseShellExecute = false;
-            this.mongoProcess.StartInfo.CreateNoWindow = true;
-            this.mongoProcess.StartInfo.FileName = @"data\mongod.exe ";
-            this.mongoProcess.Start();
-        }
+        //    this.mongoProcess.StartInfo.Arguments = "--dbpath \"" + Path.Combine(Environment.CurrentDirectory, @"data\db").Replace("\\", "\\") + "\"";
+        //    this.mongoProcess.StartInfo.UseShellExecute = false;
+        //    this.mongoProcess.StartInfo.CreateNoWindow = true;
+        //    this.mongoProcess.StartInfo.FileName = @"data\mongod.exe ";
+        //    this.mongoProcess.Start();
+        //}
 
-        private void StopMongoDB()
-        {
-            if (!this.mongoProcess.HasExited)
-            {
-                this.mongoProcess.Kill();
-            }
-        }
+        //private void StopMongoDB()
+        //{
+        //    if (!this.mongoProcess.HasExited)
+        //    {
+        //        this.mongoProcess.Kill();
+        //    }
+        //}
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {

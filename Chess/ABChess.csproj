@@ -169,8 +169,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Data\mongod.exe">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <Content Include="Data\PLACEHOLDER.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Graphics\BishopBlack.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
