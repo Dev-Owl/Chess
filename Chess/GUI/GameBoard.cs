@@ -20,7 +20,7 @@ namespace Chess.GUI
         public MoveGenerator MoveGenerator
         {
             get { return moveGenerator; }
-            set { moveGenerator = value; this.moveGenerator.PromotionHandler = this; this.moveGenerator.GameEnded += moveGenerator_GameEnded; }
+            set { moveGenerator = value; this.moveGenerator.PromotionHandlerWhite = this; this.moveGenerator.PromotionHandlerBlack = this; this.moveGenerator.GameEnded += moveGenerator_GameEnded; }
         }
 
         
@@ -107,7 +107,8 @@ namespace Chess.GUI
             blackFigureFiles = new Dictionary<EFigures, Image>();
             base.DoubleBuffered = true;
             this.moveGenerator = new MoveGenerator();
-            this.moveGenerator.PromotionHandler = this;
+            this.moveGenerator.PromotionHandlerWhite = this;
+            this.moveGenerator.PromotionHandlerBlack = this;
             this.ActiveColor = Defaults.WHITE;
         }      
 

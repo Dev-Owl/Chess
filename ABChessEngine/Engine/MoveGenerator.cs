@@ -19,18 +19,34 @@ namespace ABChess.Engine
         /// <summary>
         /// In case of a Pawn promotion the engine will request the decision of the player with this interface
         /// </summary>
-        IPromotion promotionHandler;
-        public IPromotion PromotionHandler
+        IPromotion promotionHandlerWhite;
+        public IPromotion PromotionHandlerWhite
         {
-            get { return this.promotionHandler; }
+            get { return this.promotionHandlerWhite; }
             set {
                 if (value != null)
                 {
-                    this.promotionHandler = value;
+                    this.promotionHandlerWhite = value;
                 }
             }
         }
-        
+
+        /// <summary>
+        /// In case of a Pawn promotion the engine will request the decision of the player with this interface
+        /// </summary>
+        IPromotion promotionHandlerBlack;
+        public IPromotion PromotionHandlerBlack
+        {
+            get { return this.promotionHandlerBlack; }
+            set
+            {
+                if (value != null)
+                {
+                    this.promotionHandlerBlack = value;
+                }
+            }
+        }
+
         /// <summary>
         /// Contains information about the current game
         /// </summary>
@@ -940,11 +956,21 @@ namespace ABChess.Engine
                     {
                         EFigures newFigureType = EFigures.NAN;
                         //The selected pawn will be promoted check if we have an handler 
-                        if (this.promotionHandler != null)
+                        if (FigureToMove.Color == Defaults.WHITE && this.promotionHandlerWhite != null)
                         {
-                            newFigureType = this.promotionHandler.GetDecision();
+                            newFigureType = this.promotionHandlerWhite.GetDecision();
                         }
-                        else { 
+                        else
+                        { 
+                            //No handler menas we take the queen
+                            newFigureType = EFigures.Queen;
+                        }
+                        if (FigureToMove.Color == Defaults.BLACK && this.promotionHandlerBlack != null)
+                        {
+                            newFigureType = this.promotionHandlerBlack.GetDecision();
+                        }
+                        else
+                        {
                             //No handler menas we take the queen
                             newFigureType = EFigures.Queen;
                         }
