@@ -974,8 +974,11 @@ namespace ABChess.Engine
                 string[] tmpValue = new string[1];
                 using (StreamReader sr = new StreamReader(this.dbPath))
                 {
-                    tmpValue = sr.ReadLine().Split(new char[] { '~' });
-                    attackData.Add(tmpValue[0], Convert.ToUInt64(tmpValue[1]));
+                    while (!sr.EndOfStream)
+                    {
+                        tmpValue = sr.ReadLine().Split(new char[] { '~' });
+                        attackData.Add(tmpValue[0], Convert.ToUInt64(tmpValue[1]));
+                    }
                 }
                 result = true;
             }
