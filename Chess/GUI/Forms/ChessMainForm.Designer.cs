@@ -91,7 +91,8 @@
             gameHistory1.History = ((System.Collections.Generic.Dictionary<ABChess.Engine.GameInfo, System.Collections.Generic.List<ABChess.Engine.BitBoard>>)(resources.GetObject("gameHistory1.History")));
             gameHistory1.MoveGenerator = moveGenerator1;
             moveGenerator1.History = gameHistory1;
-            moveGenerator1.PromotionHandler = this.gameBoard;
+            moveGenerator1.PromotionHandlerBlack = this.gameBoard;
+            moveGenerator1.PromotionHandlerWhite = this.gameBoard;
             this.gameBoard.MoveGenerator = moveGenerator1;
             this.gameBoard.Name = "gameBoard";
             this.gameBoard.OffsetX = 5;

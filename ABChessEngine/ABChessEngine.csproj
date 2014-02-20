@@ -49,6 +49,7 @@
     <Compile Include="Engine\GameEndedEventArgs.cs" />
     <Compile Include="Engine\GameHistory.cs" />
     <Compile Include="Engine\GameInfo.cs" />
+    <Compile Include="Engine\IAI.cs" />
     <Compile Include="Engine\IPromotion.cs" />
     <Compile Include="Engine\IThinking.cs" />
     <Compile Include="Engine\MoveGenerator.cs" />
