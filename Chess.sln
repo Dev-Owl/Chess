@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABChess", "Chess\ABChess.cs
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABChessEngine", "ABChessEngine\ABChessEngine.csproj", "{F1964689-E782-464C-BF32-CDAED7DE9641}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RichardRandom", "..\ChessAI\RichardRandom\RichardRandom.csproj", "{D1BE9372-6474-4A76-A900-C2031A0001E5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{F1964689-E782-464C-BF32-CDAED7DE9641}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F1964689-E782-464C-BF32-CDAED7DE9641}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F1964689-E782-464C-BF32-CDAED7DE9641}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1BE9372-6474-4A76-A900-C2031A0001E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1BE9372-6474-4A76-A900-C2031A0001E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1BE9372-6474-4A76-A900-C2031A0001E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1BE9372-6474-4A76-A900-C2031A0001E5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
