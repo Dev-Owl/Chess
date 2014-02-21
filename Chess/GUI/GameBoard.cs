@@ -23,7 +23,7 @@ namespace Chess.GUI
             set { moveGenerator = value; this.moveGenerator.PromotionHandlerWhite = this; this.moveGenerator.PromotionHandlerBlack = this; this.moveGenerator.GameEnded += moveGenerator_GameEnded; }
         }
 
-        
+        public AILoader AILoader { get; set; }
 
         #region Draw and Colors
         int selectedX = -1;

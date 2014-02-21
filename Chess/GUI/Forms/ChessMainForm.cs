@@ -18,12 +18,14 @@ namespace Chess.GUI.Forms
         Process mongoProcess;
         DebugViewFrom debugView;
         string DEFAULT_FILTER = "Chess saves (*.chess)|*.chess";
-
+        string DEFAULT_DB_PATH = @"data\db\";
+        string DEFAULT_AI_PATH = @"data\ai\";
 
         public ChessMainForm()
         {
             InitializeComponent();
-            Directory.CreateDirectory(@"data\db\");
+            Directory.CreateDirectory(DEFAULT_DB_PATH);
+            Directory.CreateDirectory(DEFAULT_AI_PATH);
             //StartMongoDB();
             this.FormClosing += MainForm_FormClosing;
             debugView = new DebugViewFrom(this.gameBoard);
@@ -37,6 +39,9 @@ namespace Chess.GUI.Forms
             this.saveToolStripMenuItem.Enabled = false;
             this.debugViewToolStripMenuItem.Enabled = false;
             this.Text =string.Format("ABChess Version {0}", Program.VERSION);
+            this.gameBoard.AILoader = new AILoader(DEFAULT_AI_PATH);
+            //Load the AI plug ins
+            this.gameBoard.AILoader.Run();
         }
 
         void gameBoard_PropertyChange(string Event, ChangedEventArgs e)
@@ -71,25 +76,6 @@ namespace Chess.GUI.Forms
             this.gameBoard.StartNewGame(NewGame);
             
         }
-
-        //private void StartMongoDB()
-        //{
-        //    this.mongoProcess = new Process();
-
-        //    this.mongoProcess.StartInfo.Arguments = "--dbpath \"" + Path.Combine(Environment.CurrentDirectory, @"data\db").Replace("\\", "\\") + "\"";
-        //    this.mongoProcess.StartInfo.UseShellExecute = false;
-        //    this.mongoProcess.StartInfo.CreateNoWindow = true;
-        //    this.mongoProcess.StartInfo.FileName = @"data\mongod.exe ";
-        //    this.mongoProcess.Start();
-        //}
-
-        //private void StopMongoDB()
-        //{
-        //    if (!this.mongoProcess.HasExited)
-        //    {
-        //        this.mongoProcess.Kill();
-        //    }
-        //}
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -132,9 +118,21 @@ namespace Chess.GUI.Forms
             attackDB.BuildAttackboard();
         }
 
-        private void ChessMainForm_Load(object sender, EventArgs e)
+        private void reloadAIPluginsToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (this.gameBoard.GameRunning)
+            {
+                MessageBox.Show("You can not reload the AI Plugins during a running game!");
+            }
+            else
+            { 
+                //Reload the AI 
+            }
+        }
 
+        public AILoader GetAILoader()
+        {
+            return this.gameBoard.AILoader;
         }
     }
 }

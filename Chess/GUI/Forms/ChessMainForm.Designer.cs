@@ -46,6 +46,7 @@
             this.revertMoveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openFileDialogSave = new System.Windows.Forms.OpenFileDialog();
             this.saveFileDialogSave = new System.Windows.Forms.SaveFileDialog();
+            this.reloadAIPluginsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -130,28 +131,28 @@
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.newToolStripMenuItem.Text = "New";
             this.newToolStripMenuItem.Click += new System.EventHandler(this.newToolStripMenuItem_Click);
             // 
             // loadToolStripMenuItem
             // 
             this.loadToolStripMenuItem.Name = "loadToolStripMenuItem";
-            this.loadToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.loadToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.loadToolStripMenuItem.Text = "Load";
             this.loadToolStripMenuItem.Click += new System.EventHandler(this.loadToolStripMenuItem_Click);
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.saveToolStripMenuItem.Text = "Save";
             this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -181,7 +182,8 @@
             // actionsToolStripMenuItem
             // 
             this.actionsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.revertMoveToolStripMenuItem});
+            this.revertMoveToolStripMenuItem,
+            this.reloadAIPluginsToolStripMenuItem});
             this.actionsToolStripMenuItem.Name = "actionsToolStripMenuItem";
             this.actionsToolStripMenuItem.Size = new System.Drawing.Size(59, 20);
             this.actionsToolStripMenuItem.Text = "Actions";
@@ -190,13 +192,20 @@
             // 
             this.revertMoveToolStripMenuItem.Enabled = false;
             this.revertMoveToolStripMenuItem.Name = "revertMoveToolStripMenuItem";
-            this.revertMoveToolStripMenuItem.Size = new System.Drawing.Size(140, 22);
+            this.revertMoveToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
             this.revertMoveToolStripMenuItem.Text = "Revert Move";
             this.revertMoveToolStripMenuItem.Click += new System.EventHandler(this.revertMoveToolStripMenuItem_Click);
             // 
             // openFileDialogSave
             // 
             this.openFileDialogSave.FileName = "openFileDialog1";
+            // 
+            // reloadAIPluginsToolStripMenuItem
+            // 
+            this.reloadAIPluginsToolStripMenuItem.Name = "reloadAIPluginsToolStripMenuItem";
+            this.reloadAIPluginsToolStripMenuItem.Size = new System.Drawing.Size(166, 22);
+            this.reloadAIPluginsToolStripMenuItem.Text = "Reload AI Plugins";
+            this.reloadAIPluginsToolStripMenuItem.Click += new System.EventHandler(this.reloadAIPluginsToolStripMenuItem_Click);
             // 
             // ChessMainForm
             // 
@@ -211,7 +220,6 @@
             this.Name = "ChessMainForm";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ABChess 1.0";
-            this.Load += new System.EventHandler(this.ChessMainForm_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -235,5 +243,6 @@
         private System.Windows.Forms.OpenFileDialog openFileDialogSave;
         private System.Windows.Forms.SaveFileDialog saveFileDialogSave;
         private System.Windows.Forms.ToolStripMenuItem buildAttackDBToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem reloadAIPluginsToolStripMenuItem;
     }
 }

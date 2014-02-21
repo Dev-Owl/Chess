@@ -13,11 +13,13 @@ namespace Chess.GUI.Forms
     public partial class StartNewGameFrom : Form
     {
         ChessMainForm mainForm = null;
+        AILoader mainLoader;
 
         public StartNewGameFrom( ChessMainForm MainForm)
         {
             this.mainForm = MainForm;
             InitializeComponent();
+            this.mainLoader = this.mainForm.GetAILoader();
         }
 
         private void buttonCancle_Click(object sender, EventArgs e)
@@ -27,7 +29,12 @@ namespace Chess.GUI.Forms
 
         private void StartNewGameFrom_Load(object sender, EventArgs e)
         {
-            
+            BuildAIList();
+        }
+
+        private void BuildAIList()
+        { 
+        
         }
 
         private void buttonStart_Click(object sender, EventArgs e)
