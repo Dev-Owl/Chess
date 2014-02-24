@@ -455,7 +455,8 @@ namespace ABChess.Engine
                 legalMoves = tmpMoves;
 
             }
-            else if ((PinPosition(myKingPositionShort) & FigureToCheck.Position) > 0 && FigureToCheck.Type != EFigures.King) //if we are on the same line as our king
+            //We also have to check if this figure is blocking another figure and protecting the king
+            if ((PinPosition(myKingPositionShort) & FigureToCheck.Position) > 0 && FigureToCheck.Type != EFigures.King) //if we are on the same line as our king
             { 
                 //Only check the complete part below if no figure is between me and the king
                 bool needToCheck = true;
