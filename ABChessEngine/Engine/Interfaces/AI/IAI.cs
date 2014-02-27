@@ -8,7 +8,7 @@ namespace ABChess.Engine
 {
     public interface IAI : IPromotion
     {
-        void Init();
+        void Init(MoveGenerator CurrentMoveGenerator);
         
         void YourTurn();
 

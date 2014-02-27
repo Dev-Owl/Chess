@@ -2,6 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+/*
+ * TODO: Replace all currentGameState to a local copy to support virtual moves from the AI
+ * 
+ */
+
 
 namespace ABChess.Engine
 {
@@ -169,7 +174,7 @@ namespace ABChess.Engine
         /// <summary>
         /// Update all helper boards that are used for the calculation
         /// </summary>
-        private void UpdateHelperBoards()
+        private void UpdateHelperBoards(BitBoard WorkingBoard=null)
         {
             //Helper variable and temp. storage
             UInt64 tmpMoves = 0;
@@ -177,24 +182,24 @@ namespace ABChess.Engine
             UInt64 position = 1;
 
             //Reset current attack boards
-            this.currentGameState.AttackedByWhite = 0;
-            this.currentGameState.AttackedByBlack = 0;
+            WorkingBoard.AttackedByWhite = 0;
+            WorkingBoard.AttackedByBlack = 0;
             //Reset the Attack and protected status of the fields
-            foreach (UInt64 key in this.currentGameState.AttackedBy.Keys)
+            foreach (UInt64 key in WorkingBoard.AttackedBy.Keys)
             {
-                this.currentGameState.AttackedBy[key].Clear();
-                this.currentGameState.ProtecteddBy[key].Clear();
+                WorkingBoard.AttackedBy[key].Clear();
+                WorkingBoard.ProtecteddBy[key].Clear();
             }
             //Collect the position of each white figure on the board
-            this.currentGameState.WhitePieces = this.currentGameState.WhiteKing | this.currentGameState.WhiteQueens | this.currentGameState.WhiteRooks | this.currentGameState.WhiteBishops
-                               | this.currentGameState.WhiteKnights | this.currentGameState.WhitePawns;
+            WorkingBoard.WhitePieces = WorkingBoard.WhiteKing | WorkingBoard.WhiteQueens | WorkingBoard.WhiteRooks | WorkingBoard.WhiteBishops
+                               | WorkingBoard.WhiteKnights | WorkingBoard.WhitePawns;
             //Collect the position of each black figure on the board
-            this.currentGameState.BlackPieces = this.currentGameState.BlackKing | this.currentGameState.BlackQueens | this.currentGameState.BlackRooks | this.currentGameState.Blackbishops
-                  | this.currentGameState.BlackKnights | this.currentGameState.BlackPawns;
+            WorkingBoard.BlackPieces = WorkingBoard.BlackKing | WorkingBoard.BlackQueens | WorkingBoard.BlackRooks | WorkingBoard.Blackbishops
+                  | WorkingBoard.BlackKnights | WorkingBoard.BlackPawns;
             //All figures on the boards
-            this.currentGameState.SquarsBlocked = this.currentGameState.WhitePieces | this.currentGameState.BlackPieces;
+            WorkingBoard.SquarsBlocked = WorkingBoard.WhitePieces | WorkingBoard.BlackPieces;
             //All squares without a figure
-            this.currentGameState.EmptySquares = ~this.currentGameState.SquarsBlocked;
+            WorkingBoard.EmptySquares = ~WorkingBoard.SquarsBlocked;
             
             for (UInt16 i = 0; i < 64; ++i)
             {
@@ -212,7 +217,7 @@ namespace ABChess.Engine
                     if (fig.Type != EFigures.Pawn)
                     {
                         //Moves for the figure
-                        tmpMoves = this.GetMoveForFigure(fig, (short)i);
+                        tmpMoves = this.GetMoveForFigure(fig, (short)i,WorkingBoard);
                     }
                     else
                     {
@@ -220,11 +225,11 @@ namespace ABChess.Engine
                         UInt64 enemyAndEmpy = 0;
                         if (fig.Color == Defaults.BLACK)
                         {
-                            enemyAndEmpy = this.currentGameState.WhitePieces | this.currentGameState.EmptySquares;
+                            enemyAndEmpy = WorkingBoard.WhitePieces | WorkingBoard.EmptySquares;
                         }
                         else
                         {
-                            enemyAndEmpy = this.currentGameState.BlackPieces | this.currentGameState.EmptySquares;
+                            enemyAndEmpy = WorkingBoard.BlackPieces | WorkingBoard.EmptySquares;
                         }
                         // Check if the fields are not blocked by a friendly square
                         tmpMoves = enemyAndEmpy & this.attackDatabase.BuildPawnAttack((short)i, fig.Color);
@@ -232,26 +237,26 @@ namespace ABChess.Engine
                     //Update helper boards for the figure color
                     if (fig.Color == Defaults.WHITE)
                     {
-                        this.currentGameState.AttackedByWhite |= tmpMoves;
+                        WorkingBoard.AttackedByWhite |= tmpMoves;
                     }
                     else
                     {
-                        this.currentGameState.AttackedByBlack |= tmpMoves;
+                        WorkingBoard.AttackedByBlack |= tmpMoves;
                     }
                     //Update the attacked by status for the different fields 
-                    foreach (UInt64 key in this.currentGameState.AttackedBy.Keys)
+                    foreach (UInt64 key in WorkingBoard.AttackedBy.Keys)
                     {
                         if ((key & tmpMoves) > 0)
                         {
                             //To get the figure position later faster we store it inside the figure object
                             fig.Position = position;
-                            this.currentGameState.AttackedBy[key].Add(fig);      
+                            WorkingBoard.AttackedBy[key].Add(fig);      
                         }
                         if ((key & protectedFields) > 0)
                         {
                             //This field is protected by the figure
                             fig.Position = position;
-                            this.currentGameState.ProtecteddBy[key].Add(fig);
+                            WorkingBoard.ProtecteddBy[key].Add(fig);
                         }
                     }
                 }
@@ -259,8 +264,8 @@ namespace ABChess.Engine
                 position = (position << 1);
             }
             //Check if a king is in check
-            this.currentGameState.WhiteKingCheck = (this.currentGameState.AttackedByBlack & this.currentGameState.WhiteKing) > 0;
-            this.currentGameState.BlackKingCheck = (this.currentGameState.AttackedByWhite & this.currentGameState.BlackKing) > 0;
+            WorkingBoard.WhiteKingCheck = (WorkingBoard.AttackedByBlack & WorkingBoard.WhiteKing) > 0;
+            WorkingBoard.BlackKingCheck = (WorkingBoard.AttackedByWhite & WorkingBoard.BlackKing) > 0;
         }
         
         /// <summary>
@@ -269,11 +274,12 @@ namespace ABChess.Engine
         /// <param name="FigureToCheck">The Figure that is used for the calculation</param>
         /// <param name="Position">Current Position of the Figure on the Board</param>
         /// <returns>Moves for the selected Figure</returns>
-        public UInt64 GetMoveForFigure(Figure FigureToCheck, Int16 Position)
+        public UInt64 GetMoveForFigure(Figure FigureToCheck, Int16 Position,BitBoard WorkingBoard=null)
         {
+            
             //Get all possible moves for this figure at the givin position
             UInt64 legalMoves = attackDatabase.GetMoveMask(Position, FigureToCheck);
-            UInt64 enemyOrEmpty = this.currentGameState.EmptySquares; //all enemies or empty squares
+            UInt64 enemyOrEmpty = WorkingBoard.EmptySquares; //all enemies or empty squares
             UInt64 enemy = 0; //All figs of the current enemy color
             UInt64 enemyAttacked = 0;
             UInt64 protectedFields = 0;
@@ -293,43 +299,43 @@ namespace ABChess.Engine
             UInt64 myFigures =0;
             if (FigureToCheck.Color == Defaults.WHITE)
             {
-                enemyOrEmpty |= this.currentGameState.BlackPieces;
-                enemy = this.currentGameState.BlackPieces;
-                enemyAttacked = this.currentGameState.AttackedByBlack;
-                myKingInCheck = this.currentGameState.WhiteKingCheck;
-                myKingPosition = this.currentGameState.WhiteKing; 
+                enemyOrEmpty |= WorkingBoard.BlackPieces;
+                enemy = WorkingBoard.BlackPieces;
+                enemyAttacked = WorkingBoard.AttackedByBlack;
+                myKingInCheck = WorkingBoard.WhiteKingCheck;
+                myKingPosition = WorkingBoard.WhiteKing; 
                 myKingPositionShort = (short)Tools.BitOperations.MostSigExponent(myKingPosition);
-                enemyEnPassant = this.currentGameState.EnPassantBlack;
-                myKingMoved = this.currentGameState.WhiteKingMoved;
-                myLeftRookMoved = this.currentGameState.WhiteLeftRookMoved;
-                myRightRookMoved = this.currentGameState.WhiteRightRookMoved;
+                enemyEnPassant = WorkingBoard.EnPassantBlack;
+                myKingMoved = WorkingBoard.WhiteKingMoved;
+                myLeftRookMoved = WorkingBoard.WhiteLeftRookMoved;
+                myRightRookMoved = WorkingBoard.WhiteRightRookMoved;
                 myLeftRook = Defaults.WhiteLeftRookStartPosition;
                 myRightRook = Defaults.WhiteRightRookStartPosition;
                 CastlingLeft = Defaults.CastlingWhiteLeft;
                 CastlingRight = Defaults.CastlingWhiteRight;
                 CastlingKingFieldsLeft = Defaults.CastlingWhiteKingFieldsLeft;
                 CastlingKingFieldsRight = Defaults.CastlingWhiteKingFieldsRight;
-                myFigures = this.currentGameState.WhitePieces;
+                myFigures = WorkingBoard.WhitePieces;
             }
             else
             {
-                enemyOrEmpty |= this.currentGameState.WhitePieces;
-                enemy = this.currentGameState.WhitePieces;
-                enemyAttacked = this.currentGameState.AttackedByWhite;
-                myKingInCheck = this.currentGameState.BlackKingCheck;
-                myKingPosition = this.currentGameState.BlackKing;
+                enemyOrEmpty |= WorkingBoard.WhitePieces;
+                enemy = WorkingBoard.WhitePieces;
+                enemyAttacked = WorkingBoard.AttackedByWhite;
+                myKingInCheck = WorkingBoard.BlackKingCheck;
+                myKingPosition = WorkingBoard.BlackKing;
                 myKingPositionShort = (short)Tools.BitOperations.MostSigExponent(myKingPosition);
-                enemyEnPassant = this.currentGameState.EnPassantWhite;
-                myKingMoved = this.currentGameState.BalckKingMoved;
-                myLeftRookMoved = this.currentGameState.BlackLeftRookMoved;
-                myRightRookMoved = this.currentGameState.BlackRightRookMoved;
+                enemyEnPassant = WorkingBoard.EnPassantWhite;
+                myKingMoved = WorkingBoard.BalckKingMoved;
+                myLeftRookMoved = WorkingBoard.BlackLeftRookMoved;
+                myRightRookMoved = WorkingBoard.BlackRightRookMoved;
                 myLeftRook = Defaults.BlackLeftRookStartPosition;
                 myRightRook = Defaults.BlackRightRookStartPosition;
                 CastlingLeft = Defaults.CastlingBlackLeft;
                 CastlingRight = Defaults.CastlingBlackRight;
                 CastlingKingFieldsLeft = Defaults.CastlingBlackKingFieldsLeft;
                 CastlingKingFieldsRight = Defaults.CastlingBlackKingFieldsRight;
-                myFigures = this.currentGameState.BlackPieces;
+                myFigures = WorkingBoard.BlackPieces;
             }
             if (FigureToCheck.Type != EFigures.Rook || FigureToCheck.Type != EFigures.Bishop || FigureToCheck.Type != EFigures.Queen)
             {
@@ -341,7 +347,7 @@ namespace ABChess.Engine
                 case EFigures.Pawn:
                     {
                         //Check if pawn is blocked by any other figure in fornt of him
-                        legalMoves &= this.currentGameState.EmptySquares;
+                        legalMoves &= WorkingBoard.EmptySquares;
                         //Check if an attack is possible use attack datbase BuildPawnAttack function
                         legalMoves |= (enemy & attackDatabase.BuildPawnAttack(Position, FigureToCheck.Color)) | (attackDatabase.BuildPawnAttack(Position, FigureToCheck.Color) & enemyEnPassant);
 
@@ -374,7 +380,7 @@ namespace ABChess.Engine
                         //If we are in check we can also not walk on a field that is attacked behind us
                         if (myKingInCheck)
                         {
-                            foreach (Figure fig in this.currentGameState.AttackedBy[myKingPosition].Where<Figure>(f => f.Color != FigureToCheck.Color).ToList<Figure>())
+                            foreach (Figure fig in WorkingBoard.AttackedBy[myKingPosition].Where<Figure>(f => f.Color != FigureToCheck.Color).ToList<Figure>())
                             {
                                 legalMoves &= ~attackDatabase.GetMoveMask((short)Tools.BitOperations.MostSigExponent(fig.Position), fig);
                             }
@@ -402,7 +408,7 @@ namespace ABChess.Engine
             if (myKingInCheck && FigureToCheck.Type != EFigures.King)
             {
                 //Get all attacking Figures for this king
-                List<Figure> kingAttacks = this.currentGameState.AttackedBy[myKingPosition].Where<Figure>(f => f.Color != FigureToCheck.Color).ToList<Figure>();
+                List<Figure> kingAttacks = WorkingBoard.AttackedBy[myKingPosition].Where<Figure>(f => f.Color != FigureToCheck.Color).ToList<Figure>();
                 //Temp storage for moves that are still valid
                 UInt64 tmpMoves = 0;
                 //Helper variable to store the figure directions
@@ -556,7 +562,7 @@ namespace ABChess.Engine
                 {
                     //If the king is not in check make sure if you would move that the king gets in check
                     //if this figure is attacked by queen,rook or bishop we have to check it
-                    List<Figure> attackers = this.currentGameState.AttackedBy[FigureToCheck.Position].Where<Figure>(f => f.Color != FigureToCheck.Color
+                    List<Figure> attackers = WorkingBoard.AttackedBy[FigureToCheck.Position].Where<Figure>(f => f.Color != FigureToCheck.Color
                                              && (f.Type == EFigures.Rook || f.Type == EFigures.Queen || f.Type == EFigures.Bishop)).ToList<Figure>();
                     //If we have attackers go on 
                     if (attackers.Count > 0)
@@ -825,13 +831,44 @@ namespace ABChess.Engine
             //Add the current Bitboard object to a history to offer the possibility to revert a move
             this.history.AddHistory(this.currentGame, this.currentGameState);
             //If the bitboard is update inside the special move function no update is needed 
-            if (HandleSpecialMoves(FigureToMove, TargetPosition))
+            if (HandleSpecialMoves(FigureToMove, TargetPosition,this.currentGameState))
             {
                 //Change the related bitboards
-                this.MoveFigure(FigureToMove, TargetPosition);
+                this.MoveFigure(FigureToMove, TargetPosition,this.currentGameState);
             }
             //Refresh the helper boards
-            this.UpdateHelperBoards();
+            this.UpdateHelperBoards(this.currentGameState);
+            //Check if a king is checkmate 
+            if (CheckmateCheck())
+            {
+                this.GameRunning = false;
+            }
+        }
+
+
+        /// <summary>
+        /// Simulate a move with a figure without history or any changes on the game state
+        /// </summary>
+        /// <param name="FigureToMove">The figure that should be moved</param>
+        /// <param name="TargetPosition">The target position for this figure</param>
+        /// <param name="TargetBoard">If needed all calculation will be done on the provided board</param>
+        /// <returns>The resulting Bitboard after the move</returns>
+        public BitBoard SimulateAMove(Figure FigureToMove, Int16 TargetPosition,BitBoard TargetBoard=null)
+        {
+            //If nothing was provided copy over the current board
+            if (TargetBoard == null)
+            {
+                TargetBoard = BitBoard.CopyFigureValues(this.currentGameState);
+            }
+            
+            //If the bitboard is update inside the special move function no update is needed 
+            if (HandleSpecialMoves(FigureToMove, TargetPosition,TargetBoard))
+            {
+                //Change the related bitboards
+                this.MoveFigure(FigureToMove, TargetPosition,TargetBoard);
+            }
+            //Refresh the helper boards
+            this.UpdateHelperBoards(TargetBoard);
             //Check if a king is checkmate 
             if (CheckmateCheck())
             {
@@ -878,7 +915,7 @@ namespace ABChess.Engine
         /// <param name="FigureToMove">The figure that should be moved</param>
         /// <param name="TargetPosition">The target field in the short form 0-63</param>
         /// <returns>True if the bitboard needs to be updates, false if everything is done</returns>
-        private bool HandleSpecialMoves(Figure FigureToMove, Int16 TargetPosition)
+        private bool HandleSpecialMoves(Figure FigureToMove, Int16 TargetPosition,BitBoard WorkingBoard)
         {
             //True means no calculation was done the normal update can do his work
             bool updateBitboard = true;
@@ -893,7 +930,7 @@ namespace ABChess.Engine
                     //Pawns can use promotion or en passant
                     #region En Passant
                     //Check if en passant was used by a pawn
-                    if ((FigureToMove.Color == Defaults.WHITE ? this.currentGameState.EnPassantBlack & targetPositionLong : this.currentGameState.EnPassantWhite & targetPositionLong) > 0)
+                    if ((FigureToMove.Color == Defaults.WHITE ? WorkingBoard.EnPassantBlack & targetPositionLong : WorkingBoard.EnPassantWhite & targetPositionLong) > 0)
                     { 
                         //The Pawn moved on one of the fields block the normal update
                         updateBitboard = false;
@@ -901,21 +938,21 @@ namespace ABChess.Engine
                         if (FigureToMove.Color == Defaults.WHITE)
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.WhitePawns ^= FigureToMove.Position;
+                            WorkingBoard.WhitePawns ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.WhitePawns |= targetPositionLong;
+                            WorkingBoard.WhitePawns |= targetPositionLong;
                             //Remove the enemy pawn
-                            this.currentGameState.BlackPawns ^= (UInt64)Math.Pow(2, TargetPosition - 8);
+                            WorkingBoard.BlackPawns ^= (UInt64)Math.Pow(2, TargetPosition - 8);
 
                         }
                         else
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.BlackPawns ^= FigureToMove.Position;
+                            WorkingBoard.BlackPawns ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.BlackPawns |= targetPositionLong;
+                            WorkingBoard.BlackPawns |= targetPositionLong;
                             //Remove the enemy pawn
-                            this.currentGameState.WhitePawns ^= (UInt64)Math.Pow(2, TargetPosition + 8);
+                            WorkingBoard.WhitePawns ^= (UInt64)Math.Pow(2, TargetPosition + 8);
                         }
 
                     }
@@ -927,12 +964,12 @@ namespace ABChess.Engine
                         if (FigureToMove.Color == Defaults.WHITE)
                         {
                             //set the field that could be attacked in the next turn by a pawn
-                            this.currentGameState.EnPassantWhite = (UInt64)Math.Pow(2, TargetPosition - 8);
+                            WorkingBoard.EnPassantWhite = (UInt64)Math.Pow(2, TargetPosition - 8);
                         }
                         else
                         {
                             //set the field that could be attacked in the next turn by a pawn
-                            this.currentGameState.EnPassantBlack = (UInt64)Math.Pow(2, TargetPosition + 8);
+                            WorkingBoard.EnPassantBlack = (UInt64)Math.Pow(2, TargetPosition + 8);
                         }
                     }
                     else {
@@ -940,12 +977,12 @@ namespace ABChess.Engine
                         if (FigureToMove.Color == Defaults.WHITE)
                         {
                             //set the field that could be attacked in the next turn by a pawn
-                            this.currentGameState.EnPassantBlack = 0;
+                            WorkingBoard.EnPassantBlack = 0;
                         }
                         else
                         {
                             //set the field that could be attacked in the next turn by a pawn
-                            this.currentGameState.EnPassantWhite = 0;
+                            WorkingBoard.EnPassantWhite = 0;
                         }
                     }
                     #endregion
@@ -980,16 +1017,16 @@ namespace ABChess.Engine
                         if (FigureToMove.Color == Defaults.WHITE)
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.WhitePawns ^= FigureToMove.Position;
+                            WorkingBoard.WhitePawns ^= FigureToMove.Position;
                         }
                         else
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.BlackPawns ^= FigureToMove.Position;
+                            WorkingBoard.BlackPawns ^= FigureToMove.Position;
                         }
                     
                         //Check if we have to remove a figure at this position
-                        if ((this.currentGameState.BlackPieces & targetPositionLong) > 0 || (this.currentGameState.WhitePieces & targetPositionLong) > 0)
+                        if ((WorkingBoard.BlackPieces & targetPositionLong) > 0 || (WorkingBoard.WhitePieces & targetPositionLong) > 0)
                         {
                             //Remove the figure that is located at the new position
                             this.MakeAMove(this.GetFigureAtPosition((ulong)Math.Pow(2, TargetPosition)), -1);
@@ -1002,12 +1039,12 @@ namespace ABChess.Engine
                                     if (FigureToMove.Color == Defaults.WHITE)
                                     {
                                         //Set/Create the new figure
-                                        this.currentGameState.WhiteRooks |= targetPositionLong;
+                                        WorkingBoard.WhiteRooks |= targetPositionLong;
                                     }
                                     else
                                     {
                                         //Remove the current position from the bitboard
-                                        this.currentGameState.BlackRooks |= targetPositionLong;
+                                        WorkingBoard.BlackRooks |= targetPositionLong;
                                     }
                                 }break;
                             case EFigures.Bishop:
@@ -1015,12 +1052,12 @@ namespace ABChess.Engine
                                     if (FigureToMove.Color == Defaults.WHITE)
                                     {
                                         //Set/Create the new figure
-                                        this.currentGameState.WhiteBishops |= targetPositionLong;
+                                        WorkingBoard.WhiteBishops |= targetPositionLong;
                                     }
                                     else
                                     {
                                         //Set/Create the new figure
-                                        this.currentGameState.Blackbishops |= targetPositionLong;
+                                        WorkingBoard.Blackbishops |= targetPositionLong;
                                     }
                                 } break;
                             case EFigures.Knight:
@@ -1028,12 +1065,12 @@ namespace ABChess.Engine
                                     if (FigureToMove.Color == Defaults.WHITE)
                                     {
                                         //Set/Create the new figure
-                                        this.currentGameState.WhiteKnights |= targetPositionLong;
+                                        WorkingBoard.WhiteKnights |= targetPositionLong;
                                     }
                                     else
                                     {
                                         //Set/Create the new figure
-                                        this.currentGameState.BlackKnights |= targetPositionLong;
+                                        WorkingBoard.BlackKnights |= targetPositionLong;
                                     }
                                 } break;
                             case EFigures.Queen:
@@ -1041,12 +1078,12 @@ namespace ABChess.Engine
                                     if (FigureToMove.Color == Defaults.WHITE)
                                     {
                                         //Set/Create the new figure
-                                        this.currentGameState.WhiteQueens |= targetPositionLong;
+                                        WorkingBoard.WhiteQueens |= targetPositionLong;
                                     }
                                     else
                                     {
                                         //Set/Create the new figure
-                                        this.currentGameState.BlackQueens |= targetPositionLong;
+                                        WorkingBoard.BlackQueens |= targetPositionLong;
                                     }
                                 } break;
                             
@@ -1063,9 +1100,9 @@ namespace ABChess.Engine
                     UInt64 targetPosition = (UInt64)Math.Pow(2, TargetPosition);
                     if (FigureToMove.Color == Defaults.WHITE)
                     {
-                        if (!this.currentGameState.WhiteKingMoved)
+                        if (!WorkingBoard.WhiteKingMoved)
                         {
-                            this.currentGameState.WhiteKingMoved = true;
+                            WorkingBoard.WhiteKingMoved = true;
 
                             if ((targetPosition & Defaults.CastlingWhiteLeft) > 0 || (Defaults.CastlingWhiteRight & targetPosition) > 0)
                             {
@@ -1073,18 +1110,18 @@ namespace ABChess.Engine
                                 //Check for the right rook to move 
                                 if ((targetPosition & Defaults.CastlingWhiteLeft) > 0)
                                 {
-                                    if (!this.currentGameState.WhiteLeftRookMoved)
+                                    if (!WorkingBoard.WhiteLeftRookMoved)
                                     {
                                         MoveFigure(this.GetFigureAtPosition(Defaults.WhiteLeftRookStartPosition), 4);
-                                        this.currentGameState.WhiteLeftRookMoved = true;  
+                                        WorkingBoard.WhiteLeftRookMoved = true;  
                                     }
                                 }
                                 else
                                 {
-                                    if (!this.currentGameState.WhiteRightRookMoved)
+                                    if (!WorkingBoard.WhiteRightRookMoved)
                                     {
                                         MoveFigure(this.GetFigureAtPosition(Defaults.WhiteRightRookStartPosition), 2);
-                                        this.currentGameState.WhiteRightRookMoved = true;  
+                                        WorkingBoard.WhiteRightRookMoved = true;  
                                     }
                                 }
                             }
@@ -1092,26 +1129,26 @@ namespace ABChess.Engine
                     }
                     else
                     {
-                        if (!this.currentGameState.BalckKingMoved)
+                        if (!WorkingBoard.BalckKingMoved)
                         {
-                            this.currentGameState.BalckKingMoved = true;
+                            WorkingBoard.BalckKingMoved = true;
                             if ((targetPosition & Defaults.CastlingBlackLeft) > 0 || (Defaults.CastlingBlackRight & targetPosition) > 0)
                             {
                                 //The king moved on a casteling field also move the related rook
                                 if ((targetPosition & Defaults.CastlingBlackLeft) > 0)
                                 {
                                     //Move the rook to the position
-                                    if (!this.currentGameState.BlackLeftRookMoved)
+                                    if (!WorkingBoard.BlackLeftRookMoved)
                                     {
-                                        this.currentGameState.BlackLeftRookMoved = true;
+                                        WorkingBoard.BlackLeftRookMoved = true;
                                         MoveFigure(this.GetFigureAtPosition(Defaults.BlackLeftRookStartPosition), 60);
                                     }
                                 }
                                 else
                                 {
-                                    if (!this.currentGameState.BlackRightRookMoved)
+                                    if (!WorkingBoard.BlackRightRookMoved)
                                     {
-                                        this.currentGameState.BlackRightRookMoved = true;
+                                        WorkingBoard.BlackRightRookMoved = true;
                                         MoveFigure(this.GetFigureAtPosition(Defaults.BlackRightRookStartPosition), 58);
                                     }
                                 }
@@ -1129,21 +1166,21 @@ namespace ABChess.Engine
                     {
                         if ((FigureToMove.Position & Defaults.WhiteRightRookStartPosition) > 0)
                         {
-                            this.currentGameState.WhiteRightRookMoved = true;
+                            WorkingBoard.WhiteRightRookMoved = true;
                         }
                         else {
-                            this.currentGameState.WhiteLeftRookMoved = true;    
+                            WorkingBoard.WhiteLeftRookMoved = true;    
                         }
                     }
                     else
                     {
                         if ((FigureToMove.Position & Defaults.BlackRightRookStartPosition) > 0)
                         {
-                            this.currentGameState.BlackRightRookMoved = true;
+                            WorkingBoard.BlackRightRookMoved = true;
                         }
                         else
                         {
-                            this.currentGameState.BlackLeftRookMoved = true;
+                            WorkingBoard.BlackLeftRookMoved = true;
                         }
 
                     }                                        
@@ -1159,7 +1196,7 @@ namespace ABChess.Engine
         /// </summary>
         /// <param name="FigureToMove">Figure that should be moved to a new position</param>
         /// <param name="TargetPosition">The new position of the figure</param>
-        private void MoveFigure(Figure FigureToMove, Int16 TargetPosition)
+        private void MoveFigure(Figure FigureToMove, Int16 TargetPosition,BitBoard WorkingBoard)
         {
             // The target figure is only important if this is not a "remove move" ( TargetPosition > 0)
             Figure targetFigure = null;
@@ -1180,16 +1217,16 @@ namespace ABChess.Engine
                         if (FigureToMove.Color == Defaults.WHITE)
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.WhiteBishops ^= FigureToMove.Position;
+                            WorkingBoard.WhiteBishops ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.WhiteBishops |= calculationBoard; 
+                            WorkingBoard.WhiteBishops |= calculationBoard; 
                         }
                         else 
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.Blackbishops ^= FigureToMove.Position;
+                            WorkingBoard.Blackbishops ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.Blackbishops |= calculationBoard; 
+                            WorkingBoard.Blackbishops |= calculationBoard; 
                         }
                     }
                     break;
@@ -1198,16 +1235,16 @@ namespace ABChess.Engine
                         if (FigureToMove.Color == Defaults.WHITE)
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.WhiteKnights ^= FigureToMove.Position;
+                            WorkingBoard.WhiteKnights ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.WhiteKnights |= calculationBoard;
+                            WorkingBoard.WhiteKnights |= calculationBoard;
                         }
                         else
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.BlackKnights ^= FigureToMove.Position;
+                            WorkingBoard.BlackKnights ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.BlackKnights |= calculationBoard;
+                            WorkingBoard.BlackKnights |= calculationBoard;
                         }
                     }
                     break;
@@ -1216,16 +1253,16 @@ namespace ABChess.Engine
                         if (FigureToMove.Color == Defaults.WHITE)
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.WhitePawns ^= FigureToMove.Position;
+                            WorkingBoard.WhitePawns ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.WhitePawns |= calculationBoard;
+                            WorkingBoard.WhitePawns |= calculationBoard;
                         }
                         else
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.BlackPawns ^= FigureToMove.Position;
+                            WorkingBoard.BlackPawns ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.BlackPawns |= calculationBoard;
+                            WorkingBoard.BlackPawns |= calculationBoard;
                         }
                     }
                     break;
@@ -1234,16 +1271,16 @@ namespace ABChess.Engine
                         if (FigureToMove.Color == Defaults.WHITE)
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.WhiteQueens ^= FigureToMove.Position;
+                            WorkingBoard.WhiteQueens ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.WhiteQueens |= calculationBoard;
+                            WorkingBoard.WhiteQueens |= calculationBoard;
                         }
                         else
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.BlackQueens ^= FigureToMove.Position;
+                            WorkingBoard.BlackQueens ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.BlackQueens |= calculationBoard;
+                            WorkingBoard.BlackQueens |= calculationBoard;
                         }
                     }
                     break;
@@ -1252,16 +1289,16 @@ namespace ABChess.Engine
                         if (FigureToMove.Color == Defaults.WHITE)
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.WhiteRooks ^= FigureToMove.Position;
+                            WorkingBoard.WhiteRooks ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.WhiteRooks |= calculationBoard;
+                            WorkingBoard.WhiteRooks |= calculationBoard;
                         }
                         else
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.BlackRooks ^= FigureToMove.Position;
+                            WorkingBoard.BlackRooks ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.BlackRooks |= calculationBoard;
+                            WorkingBoard.BlackRooks |= calculationBoard;
                         }
                     }
                     break;
@@ -1270,16 +1307,16 @@ namespace ABChess.Engine
                         if (FigureToMove.Color == Defaults.WHITE)
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.WhiteKing ^= FigureToMove.Position;
+                            WorkingBoard.WhiteKing ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.WhiteKing |= calculationBoard;
+                            WorkingBoard.WhiteKing |= calculationBoard;
                         }
                         else
                         {
                             //Remove the current position from the bitboard
-                            this.currentGameState.BlackKing ^= FigureToMove.Position;
+                            WorkingBoard.BlackKing ^= FigureToMove.Position;
                             //Set the new position
-                            this.currentGameState.BlackKing |= calculationBoard;
+                            WorkingBoard.BlackKing |= calculationBoard;
                         }
                     }
                     break;
@@ -1289,7 +1326,7 @@ namespace ABChess.Engine
             if (targetFigure != null)
             {
                 //Call the function again with the target figure to remove it from the board
-                this.MoveFigure(targetFigure, -1);
+                this.MoveFigure(targetFigure, -1,WorkingBoard);
             }
         }
         
