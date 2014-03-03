@@ -683,7 +683,7 @@ namespace ABChess.Engine
         /// <param name="KingFields">The fields the king has to move to castel</param>
         /// <param name="CastlingTarget">The Target field for the king</param>
         /// <returns>Move mask in 64bit for the king or 0</returns>
-        private UInt64 CastlingCheck(UInt64 RookPosition,short KingPosition,UInt64 AttackedByEnemy ,bool Left,UInt64 KingFields,UInt64 CastlingTarget)
+        private UInt64 CastlingCheck(UInt64 RookPosition,short KingPosition,UInt64 AttackedByEnemy ,bool Left,UInt64 KingFields,UInt64 CastlingTarget, BitBoard CurrentBitBoard)
         {
             UInt64 result = 0;
             //check for the right rook and at the moves to the legal moves if the fields are not under attack
@@ -692,7 +692,7 @@ namespace ABChess.Engine
             //Get all fields on the left of the king
             UInt64 workingBoard = Left ? this.attackDatabase.GetFieldsLeft(KingPosition) : this.attackDatabase.GetFieldsRight(KingPosition);
             //No figures except the rook on my left
-            if ((workingBoard & this.currentGameState.SquarsBlocked) == RookPosition)
+            if ((workingBoard & CurrentBitBoard.SquarsBlocked) == RookPosition)
             {
                 //Now we have to check if the king squares are under attack
                 if ((AttackedByEnemy & KingFields) == 0)
@@ -772,18 +772,18 @@ namespace ABChess.Engine
         /// <param name="FigureToCheck">The Figure that is used for the calculation</param>
         /// <param name="Position">Current Position of the Figure on the Board</param>
         /// <returns>Protected Fields by the selected Figure</returns>
-        public UInt64 GetProtectedFields(Figure FigureToCheck, Int16 Position)
+        public UInt64 GetProtectedFields(Figure FigureToCheck, Int16 Position, BitBoard CurrentBoard)
         {
             UInt64 protectedSquares = 0;
             UInt64 friendlyAndEmpty = 0;
             //Get all non enemy squars
             if (FigureToCheck.Color == Defaults.WHITE)
             {
-                friendlyAndEmpty = (this.currentGameState.WhitePieces |  this.currentGameState.EmptySquares);
+                friendlyAndEmpty = (CurrentBoard.WhitePieces | CurrentBoard.EmptySquares);
             }
             else 
             {
-                friendlyAndEmpty = (this.currentGameState.BlackPieces | this.currentGameState.EmptySquares);
+                friendlyAndEmpty = (CurrentBoard.BlackPieces | CurrentBoard.EmptySquares);
             }
             //For sliding figures we need different calculation
             if (FigureToCheck.Type == EFigures.Bishop || FigureToCheck.Type == EFigures.Rook || FigureToCheck.Type == EFigures.Queen)
@@ -824,20 +824,20 @@ namespace ABChess.Engine
         /// </summary>
         /// <param name="FigureToMove">The Figure that should be moved</param>
         /// <param name="TargetPosition">The new position of the figure</param>
-        public void MakeAMove(Figure FigureToMove, Int16 TargetPosition)
+        public void MakeAMove(Figure FigureToMove, Int16 TargetPosition,BitBoard CurrentBoard)
         {
             //IDEA: Fire pre and after move events to hook them elsewhere ( Computer player, other calculations)
 
             //Add the current Bitboard object to a history to offer the possibility to revert a move
-            this.history.AddHistory(this.currentGame, this.currentGameState);
+            this.history.AddHistory(this.currentGame, CurrentBoard);
             //If the bitboard is update inside the special move function no update is needed 
-            if (HandleSpecialMoves(FigureToMove, TargetPosition,this.currentGameState))
+            if (HandleSpecialMoves(FigureToMove, TargetPosition, CurrentBoard))
             {
                 //Change the related bitboards
-                this.MoveFigure(FigureToMove, TargetPosition,this.currentGameState);
+                this.MoveFigure(FigureToMove, TargetPosition, CurrentBoard);
             }
             //Refresh the helper boards
-            this.UpdateHelperBoards(this.currentGameState);
+            this.UpdateHelperBoards(CurrentBoard);
             //Check if a king is checkmate 
             if (CheckmateCheck())
             {
@@ -880,12 +880,12 @@ namespace ABChess.Engine
         /// This functions checks if a king is in checkmate and ends the game
         /// </summary>
         /// <returns>True if the game is over</returns>
-        private bool CheckmateCheck()
+        private bool CheckmateCheck(BitBoard CurrentBoard)
         {
             bool result = false;
-            UInt64 kingMoves = this.attackDatabase.GetMoveMask((short)Tools.BitOperations.MostSigExponent(this.currentGameState.WhiteKing),
-                                                               this.GetFigureAtPosition(this.currentGameState.WhiteKing));
-            if ((kingMoves & this.currentGameState.AttackedByBlack) == kingMoves)
+            UInt64 kingMoves = this.attackDatabase.GetMoveMask((short)Tools.BitOperations.MostSigExponent(CurrentBoard.WhiteKing),
+                                                               this.GetFigureAtPosition(CurrentBoard.WhiteKing));
+            if ((kingMoves & CurrentBoard.AttackedByBlack) == kingMoves)
             {
                 result = true;
                 if (GameEnded != null)
@@ -894,9 +894,9 @@ namespace ABChess.Engine
                 }
                 return result;
             }
-            kingMoves = this.attackDatabase.GetMoveMask((short)Tools.BitOperations.MostSigExponent(this.currentGameState.BlackKing),
-                                                               this.GetFigureAtPosition(this.currentGameState.BlackKing));
-            if ((kingMoves & this.currentGameState.AttackedByWhite) == kingMoves)
+            kingMoves = this.attackDatabase.GetMoveMask((short)Tools.BitOperations.MostSigExponent(CurrentBoard.BlackKing),
+                                                               this.GetFigureAtPosition(CurrentBoard.BlackKing));
+            if ((kingMoves & CurrentBoard.AttackedByWhite) == kingMoves)
             {
                 result = true;
                 if (GameEnded != null)
@@ -1336,13 +1336,13 @@ namespace ABChess.Engine
         /// <param name="Position">Position of the Rook</param>
         /// <param name="EnemyAndEmpty">Representaion of all enemies and empty fields</param>
         /// <returns>Legal Possible moves</returns>
-        private UInt64 GetRookMovesOn(Int16 Position, UInt64 EnemyAndEmpty)
+        private UInt64 GetRookMovesOn(Int16 Position, UInt64 EnemyAndEmpty,BitBoard CurrentBoard)
         {
             UInt64 legalMoves = 0;
             //Get all blocking pices to the right of this figure
             UInt64 currentboard = this.attackDatabase.GetFieldsRight(Position);
             //Set all bits to 1 if a figure on the row (friendly or enemy)
-            UInt64 currentmoves = currentboard & this.currentGameState.SquarsBlocked;
+            UInt64 currentmoves = currentboard & CurrentBoard.SquarsBlocked;
             //shift the bits to set all bits after the figure on the row
             currentmoves = (currentmoves >> 1) | (currentmoves >> 2) | (currentmoves >> 3) | (currentmoves >> 4) | (currentmoves >> 5) | (currentmoves >> 6);
             //remove all over overflowing or left bits
@@ -1356,7 +1356,7 @@ namespace ABChess.Engine
 
             currentboard = this.attackDatabase.GetFieldsLeft(Position);
             //Set all bits to 1 if a figure on the row (friendly or enemy)
-            currentmoves = currentboard & this.currentGameState.SquarsBlocked;
+            currentmoves = currentboard & CurrentBoard.SquarsBlocked;
             //shift the bits to set all bits after the figure on the row
             currentmoves = (currentmoves << 1) | (currentmoves << 2) | (currentmoves << 3) | (currentmoves << 4) | (currentmoves << 5) | (currentmoves << 6);
             //remove all over overflowing or left bits
@@ -1370,7 +1370,7 @@ namespace ABChess.Engine
 
             currentboard = this.attackDatabase.GetFieldsUP(Position);
             //Set all bits to 1 if a figure on the row (friendly or enemy)
-            currentmoves = currentboard & this.currentGameState.SquarsBlocked;
+            currentmoves = currentboard & CurrentBoard.SquarsBlocked;
             //shift the bits to set all bits after the figure on the row
             currentmoves = (currentmoves << 8) | (currentmoves << 16) | (currentmoves << 24) | (currentmoves << 32) | (currentmoves << 40) | (currentmoves << 48);
             //remove all over overflowing or left bits
@@ -1384,7 +1384,7 @@ namespace ABChess.Engine
 
             currentboard = this.attackDatabase.GetFieldsDown(Position);
             //Set all bits to 1 if a figure on the row (friendly or enemy)
-            currentmoves = currentboard & this.currentGameState.SquarsBlocked;
+            currentmoves = currentboard & CurrentBoard.SquarsBlocked;
             //shift the bits to set all bits after the figure on the row
             currentmoves = (currentmoves >> 8) | (currentmoves >> 16) | (currentmoves >> 24) | (currentmoves >> 32) | (currentmoves >> 40) | (currentmoves >> 48);
             //remove all over overflowing or left bits
@@ -1406,13 +1406,13 @@ namespace ABChess.Engine
         /// <param name="Position">Position of the Bishop</param>
         /// <param name="EnemyAndEmpty">Representaion of all enemies and empty fields</param>
         /// <returns>Legal Possible moves</returns>
-        private UInt64 GetBishopMovesOn(Int16 Position, UInt64 EnemyAndEmpty)
+        private UInt64 GetBishopMovesOn(Int16 Position, UInt64 EnemyAndEmpty, BitBoard CurrentBoard)
         {
             UInt64 legalMoves = 0;
             //Get all blocking pices to the right of this figure
             UInt64 currentboard = this.attackDatabase.GetFieldsUpRight(Position);
             //Set all bits to 1 if a figure on the row (friendly or enemy)
-            UInt64 currentmoves = currentboard & this.currentGameState.SquarsBlocked;
+            UInt64 currentmoves = currentboard & CurrentBoard.SquarsBlocked;
             //shift the bits to set all bits after the figure on the row
             currentmoves = (currentmoves << 7) | (currentmoves << 14) | (currentmoves << 21) | (currentmoves << 28) | (currentmoves << 35) | (currentmoves << 42);
             //remove all over overflowing or left bits
@@ -1427,7 +1427,7 @@ namespace ABChess.Engine
             //Get all blocking pices to the right of this figure
             currentboard = this.attackDatabase.GetFieldsDownRight(Position);
             //Set all bits to 1 if a figure on the row (friendly or enemy)
-            currentmoves = currentboard & this.currentGameState.SquarsBlocked;
+            currentmoves = currentboard & CurrentBoard.SquarsBlocked;
             //shift the bits to set all bits after the figure on the row
             currentmoves = (currentmoves >> 9) | (currentmoves >> 18) | (currentmoves >> 27) | (currentmoves >> 36) | (currentmoves >> 45) | (currentmoves >> 54);
             //remove all over overflowing or left bits
@@ -1442,7 +1442,7 @@ namespace ABChess.Engine
             //Get all blocking pices to the right of this figure
             currentboard = this.attackDatabase.GetFieldsDownLeft(Position);
             //Set all bits to 1 if a figure on the row (friendly or enemy)
-            currentmoves = currentboard & this.currentGameState.SquarsBlocked;
+            currentmoves = currentboard & CurrentBoard.SquarsBlocked;
             //shift the bits to set all bits after the figure on the row
             currentmoves = (currentmoves >> 7) | (currentmoves >> 14) | (currentmoves >> 21) | (currentmoves >> 28) | (currentmoves >> 35) | (currentmoves >> 42);//(currentmoves << 9) | (currentmoves << 18) | (currentmoves << 27) | (currentmoves << 36) | (currentmoves << 45) | (currentmoves << 54);
             //remove all over overflowing or left bits
@@ -1457,7 +1457,7 @@ namespace ABChess.Engine
             //Get all blocking pices to the right of this figure
             currentboard = this.attackDatabase.GetFieldsUpLeft(Position);
             //Set all bits to 1 if a figure on the row (friendly or enemy)
-            currentmoves = currentboard & this.currentGameState.SquarsBlocked;
+            currentmoves = currentboard & CurrentBoard.SquarsBlocked;
             //shift the bits to set all bits after the figure on the row
             currentmoves = (currentmoves << 9) | (currentmoves << 18) | (currentmoves << 27) | (currentmoves << 36) | (currentmoves << 45) | (currentmoves << 54);
             //remove all over overflowing or left bits
@@ -1493,39 +1493,39 @@ namespace ABChess.Engine
         /// </summary>
         /// <param name="Position">The Position of the Figure</param>
         /// <returns>Figure object if Figure was found if not null.</returns>
-        public Figure GetFigureAtPosition(UInt64 Position)
+        public Figure GetFigureAtPosition(UInt64 Position, BitBoard CurrentBoard)
         {
             Figure returnValue = null;
             if (gameRunning)
             {
-                UInt64 result = Position & this.currentGameState.SquarsBlocked;
+                UInt64 result = Position & CurrentBoard.SquarsBlocked;
                 if (result != 0)
                 {
-                    result = Position & this.currentGameState.BlackPieces;
+                    result = Position & CurrentBoard.BlackPieces;
                     if (result != 0)
                     {
                         //Black Figure
-                        if ((this.currentGameState.BlackKing & Position) > 0)
+                        if ((CurrentBoard.BlackKing & Position) > 0)
                         {
                             returnValue = new Figure(Defaults.BLACK, EFigures.King);
                         }
-                        if ((this.currentGameState.BlackQueens & Position) > 0)
+                        if ((CurrentBoard.BlackQueens & Position) > 0)
                         {
                             returnValue = new Figure(Defaults.BLACK, EFigures.Queen);
                         }
-                        if ((this.currentGameState.BlackRooks & Position) > 0)
+                        if ((CurrentBoard.BlackRooks & Position) > 0)
                         {
                             returnValue = new Figure(Defaults.BLACK, EFigures.Rook);
                         }
-                        if ((this.currentGameState.Blackbishops & Position) > 0)
+                        if ((CurrentBoard.Blackbishops & Position) > 0)
                         {
                             returnValue = new Figure(Defaults.BLACK, EFigures.Bishop);
                         }
-                        if ((this.currentGameState.BlackKnights & Position) > 0)
+                        if ((CurrentBoard.BlackKnights & Position) > 0)
                         {
                             returnValue = new Figure(Defaults.BLACK, EFigures.Knight);
                         }
-                        if ((this.currentGameState.BlackPawns & Position) > 0)
+                        if ((CurrentBoard.BlackPawns & Position) > 0)
                         {
                             returnValue = new Figure(Defaults.BLACK, EFigures.Pawn);
                         }
@@ -1533,27 +1533,27 @@ namespace ABChess.Engine
                     else
                     {
                         //White Figure
-                        if ((this.currentGameState.WhiteKing & Position) > 0)
+                        if ((CurrentBoard.WhiteKing & Position) > 0)
                         {
                             returnValue = new Figure(Defaults.WHITE, EFigures.King);
                         }
-                        if ((this.currentGameState.WhiteQueens & Position) > 0)
+                        if ((CurrentBoard.WhiteQueens & Position) > 0)
                         {
                             returnValue = new Figure(Defaults.WHITE, EFigures.Queen);
                         }
-                        if ((this.currentGameState.WhiteRooks & Position) > 0)
+                        if ((CurrentBoard.WhiteRooks & Position) > 0)
                         {
                             returnValue = new Figure(Defaults.WHITE, EFigures.Rook);
                         }
-                        if ((this.currentGameState.WhiteBishops & Position) > 0)
+                        if ((CurrentBoard.WhiteBishops & Position) > 0)
                         {
                             returnValue = new Figure(Defaults.WHITE, EFigures.Bishop);
                         }
-                        if ((this.currentGameState.WhiteKnights & Position) > 0)
+                        if ((CurrentBoard.WhiteKnights & Position) > 0)
                         {
                             returnValue = new Figure(Defaults.WHITE, EFigures.Knight);
                         }
-                        if ((this.currentGameState.WhitePawns & Position) > 0)
+                        if ((CurrentBoard.WhitePawns & Position) > 0)
                         {
                             returnValue = new Figure(Defaults.WHITE, EFigures.Pawn);
                         }
@@ -1575,17 +1575,17 @@ namespace ABChess.Engine
         /// <param name="SearchValues">Fields to be checked</param>
         /// <param name="Color">Only this Color will be checked</param>
         /// <returns>Array of Figures that are matching the search creteria</returns>
-        public Figure[] GetProtectingFigures(UInt64 SearchValues, int Color)
+        public Figure[] GetProtectingFigures(UInt64 SearchValues, int Color,BitBoard CurrentBoard)
         {
             //list with figures that protected the passed search mask
             List<Figure> protectors = new List<Figure>();
             //Loop to the protection list
-            foreach (UInt64 Key in this.currentGameState.ProtecteddBy.Keys)
+            foreach (UInt64 Key in CurrentBoard.ProtecteddBy.Keys)
             {
                 if ((Key & SearchValues) > 0)
                 { 
                     //Add the searched figures to our temp. storage
-                    foreach (Figure fig in this.currentGameState.ProtecteddBy[Key].Where(F=>F.Color == Color))
+                    foreach (Figure fig in CurrentBoard.ProtecteddBy[Key].Where(F => F.Color == Color))
                     {
                         protectors.Add(fig);
                     }
@@ -1600,16 +1600,16 @@ namespace ABChess.Engine
         /// <param name="SearchValues">Bits to be checked for protection</param>
         /// <param name="Color">Only check this color</param>
         /// <returns>Protected fields</returns>
-        public UInt64 IsProtected(UInt64 SearchValues, int Color)
+        public UInt64 IsProtected(UInt64 SearchValues, int Color,BitBoard CurrentBoard)
         {
             UInt64 result = 0;
             //Loop to the protection list
-            foreach (UInt64 Key in this.currentGameState.ProtecteddBy.Keys)
+            foreach (UInt64 Key in CurrentBoard.ProtecteddBy.Keys)
             {
                 if ((Key & SearchValues) > 0)
                 {
                     //Set bits if we find figures for the given color
-                    foreach (Figure fig in this.currentGameState.ProtecteddBy[Key].Where(F => F.Color == Color))
+                    foreach (Figure fig in CurrentBoard.ProtecteddBy[Key].Where(F => F.Color == Color))
                     {
                         result |= Key;
                         break;
