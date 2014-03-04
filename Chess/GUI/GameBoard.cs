@@ -182,7 +182,7 @@ namespace Chess.GUI
             UInt64 position = 1;
             for (Int16 i = 0; i < 64; i++)
             {
-                Figure tmp = this.moveGenerator.GetFigureAtPosition(position  );
+                Figure tmp = this.moveGenerator.GetFigureAtPosition(position,this.moveGenerator.CurrentGameState);
                 if (tmp != null)
                 {
                     if (tmp.Color == Defaults.BLACK)
@@ -237,12 +237,12 @@ namespace Chess.GUI
                 {
                     SelectedMask = 0;
                     UInt64 bitBoardPosition = DrawHelper.FromDrawingPoint(7 - selectedX, 7 - selectedY);
-                    Figure fig = this.moveGenerator.GetFigureAtPosition(bitBoardPosition);
+                    Figure fig = this.moveGenerator.GetFigureAtPosition(bitBoardPosition,this.moveGenerator.CurrentGameState);
                     selected = true;
                     if (fig != null)
                     {
                         //Get valid moves for the selected figures
-                        SelectedMask = this.moveGenerator.GetMoveForFigure(fig,GetShortPosition(selectedX,selectedY));
+                        SelectedMask = this.moveGenerator.GetMoveForFigure(fig,GetShortPosition(selectedX,selectedY),this.moveGenerator.CurrentGameState);
                         this.SelectedFigure = fig;
                         FireChangeEvent("Figure selected", SelectedMask);
                     }
@@ -270,7 +270,7 @@ namespace Chess.GUI
                 if ((SelectedMask & bitBoardPosition) > 0 && this.ActiveColor == this.SelectedFigure.Color)
                 {
                     //The figure that should be move ( current selected one) and the position in the  1 to 64 matrix
-                    this.moveGenerator.MakeAMove(this.SelectedFigure, GetShortPosition(selectedX, selectedY));
+                    this.moveGenerator.MakeAMove(this.SelectedFigure, GetShortPosition(selectedX, selectedY),this.moveGenerator.CurrentGameState);
                     //Change the color of the active player
                     this.ActiveColor *= -1;
                     //Show the calling function that the move is done

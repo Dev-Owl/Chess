@@ -90,7 +90,7 @@ namespace ABChess.Engine
                 //When the gamestate was changed reload the helper boards if the game is running
                 if (gameRunning)
                 {
-                    this.UpdateHelperBoards();
+                    this.UpdateHelperBoards(this.currentGameState);
                 }
             }
         }
@@ -168,13 +168,13 @@ namespace ABChess.Engine
             this.currentGameState.BlackPawns = Defaults.BlackPawns;
             this.GameRunning = true;
             this.history.AddGame(NewGame);
-            this.UpdateHelperBoards();
+            this.UpdateHelperBoards(this.currentGameState);
         }
        
         /// <summary>
         /// Update all helper boards that are used for the calculation
         /// </summary>
-        private void UpdateHelperBoards(BitBoard WorkingBoard=null)
+        private void UpdateHelperBoards(BitBoard WorkingBoard)
         {
             //Helper variable and temp. storage
             UInt64 tmpMoves = 0;
@@ -205,14 +205,14 @@ namespace ABChess.Engine
             {
                 tmpMoves = 0;
                 //Get figure on the selected board position
-                Figure fig = this.GetFigureAtPosition(position); 
+                Figure fig = this.GetFigureAtPosition(position,WorkingBoard); 
                 //Get the protected figures squares
 
                 //Only go on if we found a figure
                 if (fig != null)
                 {
 
-                    protectedFields = this.GetProtectedFields(fig,(short)i);
+                    protectedFields = this.GetProtectedFields(fig,(short)i,WorkingBoard);
                     // Pawns moves are not the attacks
                     if (fig.Type != EFigures.Pawn)
                     {
@@ -274,7 +274,7 @@ namespace ABChess.Engine
         /// <param name="FigureToCheck">The Figure that is used for the calculation</param>
         /// <param name="Position">Current Position of the Figure on the Board</param>
         /// <returns>Moves for the selected Figure</returns>
-        public UInt64 GetMoveForFigure(Figure FigureToCheck, Int16 Position,BitBoard WorkingBoard=null)
+        public UInt64 GetMoveForFigure(Figure FigureToCheck, Int16 Position,BitBoard WorkingBoard)
         {
             
             //Get all possible moves for this figure at the givin position
@@ -356,19 +356,19 @@ namespace ABChess.Engine
                 case EFigures.Rook:
                     {
                         //Get all legal moves for the rook
-                        legalMoves = GetRookMovesOn(Position, enemyOrEmpty);
+                        legalMoves = GetRookMovesOn(Position, enemyOrEmpty,WorkingBoard);
                     }
                     break;
                 case EFigures.Bishop:
                     {
                         //Get all legal moves for the bishop
-                        legalMoves = GetBishopMovesOn(Position, enemyOrEmpty);
+                        legalMoves = GetBishopMovesOn(Position, enemyOrEmpty,WorkingBoard);
                     }
                     break;
                 case EFigures.Queen:
                     {
                         //Queen is just rook + bishop
-                        legalMoves = GetRookMovesOn(Position, enemyOrEmpty) | GetBishopMovesOn(Position, enemyOrEmpty);
+                        legalMoves = GetRookMovesOn(Position, enemyOrEmpty,WorkingBoard) | GetBishopMovesOn(Position, enemyOrEmpty,WorkingBoard);
                     }
                     break;
                 case EFigures.King:
@@ -376,7 +376,7 @@ namespace ABChess.Engine
                         //Do not move on attacked fields 
                         legalMoves &= ~enemyAttacked;
                         //Do not attack protected Figures
-                        legalMoves &= ~this.IsProtected(legalMoves, FigureToCheck.Color * -1);
+                        legalMoves &= ~this.IsProtected(legalMoves, FigureToCheck.Color * -1,WorkingBoard);
                         //If we are in check we can also not walk on a field that is attacked behind us
                         if (myKingInCheck)
                         {
@@ -392,11 +392,11 @@ namespace ABChess.Engine
                                
                                 if (!myLeftRookMoved)
                                 {
-                                    legalMoves |= CastlingCheck(myLeftRook, Position, enemyAttacked, true, CastlingKingFieldsLeft, CastlingLeft);
+                                    legalMoves |= CastlingCheck(myLeftRook, Position, enemyAttacked, true, CastlingKingFieldsLeft, CastlingLeft,WorkingBoard);
                                 }
                                 if(!myRightRookMoved) 
                                 {
-                                    legalMoves |= CastlingCheck(myRightRook, Position, enemyAttacked, false, CastlingKingFieldsRight, CastlingRight);
+                                    legalMoves |= CastlingCheck(myRightRook, Position, enemyAttacked, false, CastlingKingFieldsRight, CastlingRight,WorkingBoard);
                                 }
                             }
                         }
@@ -791,15 +791,15 @@ namespace ABChess.Engine
                 //NOTE: use related method for figure and pass the friendlyAndEmpty board to it instead of the enemyAndEmpty ???
                 if (FigureToCheck.Type == EFigures.Bishop)
                 { 
-                    protectedSquares = GetBishopMovesOn(Position,friendlyAndEmpty);
+                    protectedSquares = GetBishopMovesOn(Position,friendlyAndEmpty,CurrentBoard);
                 }
                 else if (FigureToCheck.Type == EFigures.Rook)
                 { 
-                    protectedSquares = GetRookMovesOn(Position,friendlyAndEmpty);
+                    protectedSquares = GetRookMovesOn(Position,friendlyAndEmpty,CurrentBoard);
                 }
                 else
                 {
-                    protectedSquares = (GetRookMovesOn(Position, friendlyAndEmpty) | GetBishopMovesOn(Position, friendlyAndEmpty));
+                    protectedSquares = (GetRookMovesOn(Position, friendlyAndEmpty,CurrentBoard) | GetBishopMovesOn(Position, friendlyAndEmpty,CurrentBoard));
                 }
             }
             else 
@@ -839,7 +839,7 @@ namespace ABChess.Engine
             //Refresh the helper boards
             this.UpdateHelperBoards(CurrentBoard);
             //Check if a king is checkmate 
-            if (CheckmateCheck())
+            if (CheckmateCheck(CurrentBoard))
             {
                 this.GameRunning = false;
             }
@@ -870,10 +870,11 @@ namespace ABChess.Engine
             //Refresh the helper boards
             this.UpdateHelperBoards(TargetBoard);
             //Check if a king is checkmate 
-            if (CheckmateCheck())
+            if (CheckmateCheck(TargetBoard))
             {
                 this.GameRunning = false;
             }
+            return TargetBoard;
         }
 
         /// <summary>
@@ -884,7 +885,7 @@ namespace ABChess.Engine
         {
             bool result = false;
             UInt64 kingMoves = this.attackDatabase.GetMoveMask((short)Tools.BitOperations.MostSigExponent(CurrentBoard.WhiteKing),
-                                                               this.GetFigureAtPosition(CurrentBoard.WhiteKing));
+                                                               this.GetFigureAtPosition(CurrentBoard.WhiteKing,CurrentBoard));
             if ((kingMoves & CurrentBoard.AttackedByBlack) == kingMoves)
             {
                 result = true;
@@ -895,7 +896,7 @@ namespace ABChess.Engine
                 return result;
             }
             kingMoves = this.attackDatabase.GetMoveMask((short)Tools.BitOperations.MostSigExponent(CurrentBoard.BlackKing),
-                                                               this.GetFigureAtPosition(CurrentBoard.BlackKing));
+                                                               this.GetFigureAtPosition(CurrentBoard.BlackKing,CurrentBoard));
             if ((kingMoves & CurrentBoard.AttackedByWhite) == kingMoves)
             {
                 result = true;
@@ -1029,7 +1030,7 @@ namespace ABChess.Engine
                         if ((WorkingBoard.BlackPieces & targetPositionLong) > 0 || (WorkingBoard.WhitePieces & targetPositionLong) > 0)
                         {
                             //Remove the figure that is located at the new position
-                            this.MakeAMove(this.GetFigureAtPosition((ulong)Math.Pow(2, TargetPosition)), -1);
+                            this.MakeAMove(this.GetFigureAtPosition((ulong)Math.Pow(2, TargetPosition),WorkingBoard), -1,WorkingBoard);
                         }
 
                         switch (newFigureType)
@@ -1112,7 +1113,7 @@ namespace ABChess.Engine
                                 {
                                     if (!WorkingBoard.WhiteLeftRookMoved)
                                     {
-                                        MoveFigure(this.GetFigureAtPosition(Defaults.WhiteLeftRookStartPosition), 4);
+                                        MoveFigure(this.GetFigureAtPosition(Defaults.WhiteLeftRookStartPosition,WorkingBoard), 4,WorkingBoard);
                                         WorkingBoard.WhiteLeftRookMoved = true;  
                                     }
                                 }
@@ -1120,7 +1121,7 @@ namespace ABChess.Engine
                                 {
                                     if (!WorkingBoard.WhiteRightRookMoved)
                                     {
-                                        MoveFigure(this.GetFigureAtPosition(Defaults.WhiteRightRookStartPosition), 2);
+                                        MoveFigure(this.GetFigureAtPosition(Defaults.WhiteRightRookStartPosition,WorkingBoard), 2,WorkingBoard);
                                         WorkingBoard.WhiteRightRookMoved = true;  
                                     }
                                 }
@@ -1141,7 +1142,7 @@ namespace ABChess.Engine
                                     if (!WorkingBoard.BlackLeftRookMoved)
                                     {
                                         WorkingBoard.BlackLeftRookMoved = true;
-                                        MoveFigure(this.GetFigureAtPosition(Defaults.BlackLeftRookStartPosition), 60);
+                                        MoveFigure(this.GetFigureAtPosition(Defaults.BlackLeftRookStartPosition,WorkingBoard), 60,WorkingBoard);
                                     }
                                 }
                                 else
@@ -1149,7 +1150,7 @@ namespace ABChess.Engine
                                     if (!WorkingBoard.BlackRightRookMoved)
                                     {
                                         WorkingBoard.BlackRightRookMoved = true;
-                                        MoveFigure(this.GetFigureAtPosition(Defaults.BlackRightRookStartPosition), 58);
+                                        MoveFigure(this.GetFigureAtPosition(Defaults.BlackRightRookStartPosition,WorkingBoard), 58,WorkingBoard);
                                     }
                                 }
 
@@ -1207,7 +1208,7 @@ namespace ABChess.Engine
                 //Set the target bit to 1 so we can use it in our calculation
                 calculationBoard = (ulong)Math.Pow(2, TargetPosition);
                 //Get the figure at the target square 
-                targetFigure = this.GetFigureAtPosition((ulong)Math.Pow(2, TargetPosition)); 
+                targetFigure = this.GetFigureAtPosition((ulong)Math.Pow(2, TargetPosition),WorkingBoard); 
             }
             //Depending on the figure we have to move set the matching bitboard
             switch (FigureToMove.Type)
