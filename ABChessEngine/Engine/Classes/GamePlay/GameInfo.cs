@@ -41,9 +41,14 @@ namespace ABChess.Engine
         public UInt64 StartingTime { get; set; }
 
         /// <summary>
-        /// If the Player is an AI (Network player are also AI) this is the interface to talk to it
+        /// If the Player is an AI (Network players are also AI) this is the interface to talk to it
         /// </summary>
-        public IAI AI { get; set; }
+        public IAI AI1 { get; set; }
+
+        /// <summary>
+        /// If the Player is an AI (Network players are also AI) this is the interface to talk to it
+        /// </summary>
+        public IAI AI2 { get; set; }
         
     }
 }

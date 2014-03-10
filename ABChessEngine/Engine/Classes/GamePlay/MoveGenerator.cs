@@ -20,7 +20,7 @@ namespace ABChess.Engine
         /// Event handler that is fired when the game ends because a player has won the game 
         /// </summary>
         public event EventHandler<GameEndedEventArgs> GameEnded;
-        
+
         /// <summary>
         /// In case of a Pawn promotion the engine will request the decision of the player with this interface
         /// </summary>
@@ -169,8 +169,27 @@ namespace ABChess.Engine
             this.GameRunning = true;
             this.history.AddGame(NewGame);
             this.UpdateHelperBoards(this.currentGameState);
+            //Setup all AI related stuff
+            SetupPlayerConfig();
         }
-       
+        /// <summary>
+        /// Used to setup different conditions for AI,Network or local player based on the GameInfo Object int this.currentGame
+        /// </summary>
+        private void SetupPlayerConfig()
+        {   // Player 1 is white 
+            if (this.currentGame.Player1IsAI)
+            {
+                this.promotionHandlerWhite = this.currentGame.AI1;
+                this.currentGame.AI1.Init(this);
+            }
+            if (this.currentGame.Player2IsAI)
+            {
+                this.promotionHandlerWhite = this.currentGame.AI2;
+                this.currentGame.AI2.Init(this);
+            }
+            
+        }
+
         /// <summary>
         /// Update all helper boards that are used for the calculation
         /// </summary>
@@ -845,6 +864,22 @@ namespace ABChess.Engine
             }
         }
 
+        /// <summary>
+        /// Notify the AI Player that they can start with theire move
+        /// </summary>
+        /// <param name="ActivePlayer">The Color of the active Player</param>
+        private void AfterMove(int ActivePlayer)
+        {
+            if (ActivePlayer == Defaults.WHITE && this.currentGame.Player1IsAI)
+            {
+                this.currentGame.AI1.YourTurn();
+            }
+            if (ActivePlayer == Defaults.BLACK && this.currentGame.Player2IsAI)
+            {
+                this.currentGame.AI2.YourTurn();
+            }
+
+        }
 
         /// <summary>
         /// Simulate a move with a figure without history or any changes on the game state
