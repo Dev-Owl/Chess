@@ -32,9 +32,11 @@
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <ProductVersion>12.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -214,7 +216,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ABChessEngine\ABChessEngine.csproj">
-      <Project>{f1964689-e782-464c-bf32-cdaed7de9641}</Project>
+      <Project>{F1964689-E782-464C-BF32-CDAED7DE9641}</Project>
       <Name>ABChessEngine</Name>
     </ProjectReference>
   </ItemGroup>

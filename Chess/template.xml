@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ModuleDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<AIDescription xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <ModuleName>TemplateModule</ModuleName>
   <MainClassName>NameSpace.ClassName</MainClassName>
   <MainClassStartMethod>DoWork</MainClassStartMethod>
@@ -7,4 +7,4 @@
     <string>Argument1</string>
     <string>Argument2</string>
   </ConstructorArgument>
-</ModuleDescription>
+</AIDescription>

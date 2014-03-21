@@ -90,6 +90,12 @@ namespace ABChess.Engine
             return result;
         }
 
+        public AIInvoker Clone()
+        {
+            var invoker = new AIInvoker(this.descriptionFile, this.dllFile);
+            invoker.Load();
+            return invoker;
+        }
     }
 
 }

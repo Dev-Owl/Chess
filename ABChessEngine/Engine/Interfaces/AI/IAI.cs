@@ -8,12 +8,6 @@ namespace ABChess.Engine
 {
     public interface IAI : IPromotion
     {
-        void Init(MoveGenerator CurrentMoveGenerator);
-        
-        void YourTurn();
-
-        void ForceMove();
-
-        void MatchEnding();
+        void Init(MoveGenerator CurrentMoveGenerator,int PlayerColor);       
     }
 }

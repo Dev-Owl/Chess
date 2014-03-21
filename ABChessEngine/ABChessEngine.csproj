@@ -45,6 +45,7 @@
     <Compile Include="Engine\Classes\AI\AILoader.cs" />
     <Compile Include="Engine\Classes\GamePlay\AttackDatabase.cs" />
     <Compile Include="Engine\Classes\GamePlay\BitBoard.cs" />
+    <Compile Include="Engine\Classes\GamePlay\FigureMoveEventArgs.cs" />
     <Compile Include="Engine\Classes\Tools\BitOperations.cs" />
     <Compile Include="Engine\Classes\GamePlay\Defaults.cs" />
     <Compile Include="Engine\Enums\GamePlay\EFigures.cs" />

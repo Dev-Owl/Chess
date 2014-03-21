@@ -1,0 +1,20 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="e:\Privat\GitHub\Chess\Chess\GUI\GameBoard.cs">
+    <Files>
+      <File FileName="Chess\Program.cs" Line="20" Column="16" />
+      <File FileName="ABChessEngine\Engine\Interfaces\AI\IAI.cs" Line="1" Column="1" />
+      <File FileName="..\ChessAI\RichardRandom\RichardRandom.cs" Line="25" Column="10" />
+      <File FileName="Chess\GUI\Forms\StartNewGameFrom.cs" Line="86" Column="1" />
+      <File FileName="e:\Privat\GitHub\Chess\ABChessEngine\Engine\Classes\AI\AIInvoker.cs" Line="91" Column="1" />
+      <File FileName="e:\Privat\GitHub\Chess\Chess\GUI\Forms\ChessMainForm.cs" Line="72" Column="1" />
+      <File FileName="e:\Privat\GitHub\Chess\Chess\GUI\GameBoard.cs" Line="135" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="E:\Privat\GitHub\Chess\Chess\GUI\Forms\StartNewGameFrom.cs" line="95" column="1" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>

@@ -33,8 +33,25 @@ namespace Chess.GUI.Forms
         }
 
         private void BuildAIList()
-        { 
-        
+        {
+            List<string> LoadedAI = new List<string>();
+            foreach ( AIInvoker singleAI in mainLoader.InvokerObjects)
+            {
+                if (singleAI.Loaded)
+                {
+                    LoadedAI.Add(singleAI.AIDescription.ModuleName);
+                }
+            }
+            AddItems(comboBox1, LoadedAI);
+            AddItems(comboBox3, LoadedAI);
+            this.radioWhiteAI.Enabled = true;
+            this.radioBlackAI.Enabled = true;
+        }
+     
+        private void AddItems(ComboBox Box, List<string> AIElements)
+        {
+            Box.Items.AddRange(AIElements.ToArray());
+            Box.Enabled = true;
         }
 
         private void buttonStart_Click(object sender, EventArgs e)
@@ -47,8 +64,17 @@ namespace Chess.GUI.Forms
             }
             else
             {
-                newGame.Player1 = "Computer";
-                newGame.Player1IsAI = true;
+                if (this.comboBox1.SelectedItem != null)
+                {
+                    newGame.Player1 = this.comboBox1.SelectedItem.ToString();
+                    newGame.Player1IsAI = true;
+                    newGame.AI1 = GetAIByName(newGame.Player1);
+                }
+                else
+                {
+                    MessageBox.Show("Please select an AI for the white player");
+                    return;
+                }
             }
 
             if (radioBlackHuman.Checked)
@@ -58,12 +84,37 @@ namespace Chess.GUI.Forms
             }
             else
             {
-                newGame.Player2 = "Computer";
-                newGame.Player2IsAI = true;
+                if (this.comboBox3.SelectedItem != null)
+                {
+                    newGame.Player2 = this.comboBox3.SelectedItem.ToString();
+                    newGame.Player2IsAI = true;
+                    newGame.AI2 = GetAIByName(newGame.Player2);
+                }
+                else {
+                    MessageBox.Show("Please select an AI for the black player");
+                    return;
+                }
+                
             }
             newGame.StartingTime = (UInt64)(DateTime.Now - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
             this.mainForm.StartNewGame(newGame);
             this.Close();
         }
+
+        private void radioWhiteAI_CheckedChanged(object sender, EventArgs e)
+        {
+            
+        }
+
+		public IAI GetAIByName( string Name)
+		{
+			foreach (AIInvoker singleAI in mainLoader.InvokerObjects) 
+			{
+				if (singleAI.AIDescription.ModuleName == Name) {
+					return singleAI.Clone().GetAIInterfacObject();
+				}
+			}
+			return null;
+		}
     }
 }

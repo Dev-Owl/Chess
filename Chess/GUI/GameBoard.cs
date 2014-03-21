@@ -20,7 +20,23 @@ namespace Chess.GUI
         public MoveGenerator MoveGenerator
         {
             get { return moveGenerator; }
-            set { moveGenerator = value; this.moveGenerator.PromotionHandlerWhite = this; this.moveGenerator.PromotionHandlerBlack = this; this.moveGenerator.GameEnded += moveGenerator_GameEnded; }
+            set { moveGenerator = value; this.moveGenerator.PromotionHandlerWhite = this; this.moveGenerator.PromotionHandlerBlack = this; this.moveGenerator.GameEnded += moveGenerator_GameEnded; this.moveGenerator.AfterMove += moveGenerator_AfterMove; }
+        }
+
+        void moveGenerator_AfterMove(object sender, FigureMoveEventArgs e)
+        {
+            //Change the color of the active player
+            
+            this.ActiveColor = e.MovedFigure.Color *-1;
+            //Fire Move event
+            FireChangeEvent("Figure moved", this.SelectedFigure);
+            //Highlight the figure field
+            HighlightField = e.TargetPosition;
+            //Clear the selected values
+            this.SelectedMask = 0;
+            this.SelectedFigure = null;
+            this.selected = false;
+            this.Invalidate();
         }
 
         public AILoader AILoader { get; set; }
@@ -53,7 +69,9 @@ namespace Chess.GUI
         Brush white = new SolidBrush(Color.FromArgb(255, 191, 128));
         Brush activeFieldPlayer = new SolidBrush(Color.FromArgb(70, 36, 255, 36));
         Brush activeFieldEnemy = new SolidBrush(Color.FromArgb(70, 255, 36, 36));
-
+        Brush highlightField = new SolidBrush(Color.FromArgb(70,0,0,193));
+        
+        public short HighlightField { get; set; }
 
         public int FieldSizeX
         {
@@ -110,6 +128,7 @@ namespace Chess.GUI
             this.moveGenerator.PromotionHandlerWhite = this;
             this.moveGenerator.PromotionHandlerBlack = this;
             this.ActiveColor = Defaults.WHITE;
+            this.moveGenerator.AfterMove += moveGenerator_AfterMove;
         }      
 
         #region Drawing
@@ -168,6 +187,10 @@ namespace Chess.GUI
                             }
                         }
                     }
+                }
+                if(this.HighlightField >=0)
+                {
+                    gra.FillRectangle(highlightField, DrawHelper.ToDrawingRectangle(this.HighlightField, width, height, this.Width));
                 }
             }
             catch (Exception ex)
@@ -233,6 +256,7 @@ namespace Chess.GUI
 
             if (gameRunning)
             {
+                this.HighlightField=-1;
                 if (!ClickedMarkedField())
                 {
                     SelectedMask = 0;
@@ -267,20 +291,11 @@ namespace Chess.GUI
                 //Get the bitboard position of the click
                 UInt64 bitBoardPosition = DrawHelper.FromDrawingPoint(7 - selectedX, 7 - selectedY);
                 //If the move fields contain this position and the color of the selected figure is matching move the figure
-                if ((SelectedMask & bitBoardPosition) > 0 && this.ActiveColor == this.SelectedFigure.Color)
+                if ((SelectedMask & bitBoardPosition) > 0 && this.ActiveColor == this.SelectedFigure.Color && ! this.moveGenerator.IsPlayerAI( this.ActiveColor))
                 {
                     //The figure that should be move ( current selected one) and the position in the  1 to 64 matrix
                     this.moveGenerator.MakeAMove(this.SelectedFigure, GetShortPosition(selectedX, selectedY),this.moveGenerator.CurrentGameState);
-                    //Change the color of the active player
-                    this.ActiveColor *= -1;
-                    //Show the calling function that the move is done
                     moveDone = true;
-                    //Fire Move event
-                    FireChangeEvent("Figure moved", this.SelectedFigure);
-                    //Clear the selected values
-                    this.SelectedMask = 0;
-                    this.SelectedFigure = null;
-                    this.selected = false;
                     
                 }
             }

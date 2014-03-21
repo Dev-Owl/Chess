@@ -79,8 +79,6 @@
             // 
             this.comboBox1.Enabled = false;
             this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Items.AddRange(new object[] {
-            "Default AI"});
             this.comboBox1.Location = new System.Drawing.Point(40, 63);
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(121, 21);
@@ -96,6 +94,7 @@
             this.radioWhiteAI.TabIndex = 10;
             this.radioWhiteAI.Text = "Computer";
             this.radioWhiteAI.UseVisualStyleBackColor = true;
+            this.radioWhiteAI.CheckedChanged += new System.EventHandler(this.radioWhiteAI_CheckedChanged);
             // 
             // radioWhiteHuman
             // 
@@ -125,8 +124,6 @@
             // 
             this.comboBox3.Enabled = false;
             this.comboBox3.FormattingEnabled = true;
-            this.comboBox3.Items.AddRange(new object[] {
-            "Default AI"});
             this.comboBox3.Location = new System.Drawing.Point(40, 63);
             this.comboBox3.Name = "comboBox3";
             this.comboBox3.Size = new System.Drawing.Size(121, 21);

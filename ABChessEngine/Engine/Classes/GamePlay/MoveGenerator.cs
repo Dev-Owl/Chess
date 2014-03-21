@@ -20,6 +20,16 @@ namespace ABChess.Engine
         /// Event handler that is fired when the game ends because a player has won the game 
         /// </summary>
         public event EventHandler<GameEndedEventArgs> GameEnded;
+       
+        /// <summary>
+        /// Event handler which will be called before a figure is moved
+        /// </summary>
+        public event EventHandler<FigureMoveEventArgs> BeforeMove;
+      
+        /// <summary>
+        /// Event handler which will be called after a figure was moved
+        /// </summary>
+        public event EventHandler<FigureMoveEventArgs> AfterMove;
 
         /// <summary>
         /// In case of a Pawn promotion the engine will request the decision of the player with this interface
@@ -144,6 +154,22 @@ namespace ABChess.Engine
             this.history.MoveGenerator = this;
         }
 
+        public Boolean IsPlayerAI(int Color)
+        {
+            if (Color == Defaults.BLACK )
+            {
+                return this.currentGame.Player2IsAI;
+            }
+            else if (Color == Defaults.WHITE)
+            {
+                return this.currentGame.Player1IsAI;
+            }
+            else {
+                throw new Exception("Unknown color provided for IsPlayerAI function!");
+            }
+            return false;
+        }
+
         /// <summary>
         /// Start a new game reset all values in the current Board
         /// </summary>
@@ -171,6 +197,10 @@ namespace ABChess.Engine
             this.UpdateHelperBoards(this.currentGameState);
             //Setup all AI related stuff
             SetupPlayerConfig();
+            if (this.AfterMove != null)
+            {
+                this.AfterMove.Invoke(this, new FigureMoveEventArgs(new Figure(Defaults.BLACK, EFigures.NAN), 0));
+            }
         }
         /// <summary>
         /// Used to setup different conditions for AI,Network or local player based on the GameInfo Object int this.currentGame
@@ -180,12 +210,12 @@ namespace ABChess.Engine
             if (this.currentGame.Player1IsAI)
             {
                 this.promotionHandlerWhite = this.currentGame.AI1;
-                this.currentGame.AI1.Init(this);
+                this.currentGame.AI1.Init(this,Defaults.WHITE);
             }
             if (this.currentGame.Player2IsAI)
             {
-                this.promotionHandlerWhite = this.currentGame.AI2;
-                this.currentGame.AI2.Init(this);
+                this.promotionHandlerBlack = this.currentGame.AI2;
+                this.currentGame.AI2.Init(this, Defaults.BLACK);
             }
             
         }
@@ -846,7 +876,10 @@ namespace ABChess.Engine
         public void MakeAMove(Figure FigureToMove, Int16 TargetPosition,BitBoard CurrentBoard)
         {
             //IDEA: Fire pre and after move events to hook them elsewhere ( Computer player, other calculations)
-
+            if (BeforeMove != null)
+            {
+                BeforeMove.Invoke(this, new FigureMoveEventArgs(FigureToMove,TargetPosition));
+            }
             //Add the current Bitboard object to a history to offer the possibility to revert a move
             this.history.AddHistory(this.currentGame, CurrentBoard);
             //If the bitboard is update inside the special move function no update is needed 
@@ -862,24 +895,20 @@ namespace ABChess.Engine
             {
                 this.GameRunning = false;
             }
+            else
+            {
+                //Only fire the event if the game has not ended
+                if (AfterMove != null)
+                {
+
+                   
+                            AfterMove.Invoke(this, new FigureMoveEventArgs(FigureToMove, TargetPosition));
+                    
+                }
+            }
         }
 
-        /// <summary>
-        /// Notify the AI Player that they can start with theire move
-        /// </summary>
-        /// <param name="ActivePlayer">The Color of the active Player</param>
-        private void AfterMove(int ActivePlayer)
-        {
-            if (ActivePlayer == Defaults.WHITE && this.currentGame.Player1IsAI)
-            {
-                this.currentGame.AI1.YourTurn();
-            }
-            if (ActivePlayer == Defaults.BLACK && this.currentGame.Player2IsAI)
-            {
-                this.currentGame.AI2.YourTurn();
-            }
-
-        }
+   
 
         /// <summary>
         /// Simulate a move with a figure without history or any changes on the game state

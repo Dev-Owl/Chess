@@ -74,7 +74,6 @@ namespace Chess.GUI.Forms
         public void StartNewGame(GameInfo NewGame)
         {
             this.gameBoard.StartNewGame(NewGame);
-            
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
