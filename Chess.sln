@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABChess", "Chess\ABChess.csproj", "{F81B554F-4B07-4238-A8C3-63AC571B2718}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABChessEngine", "ABChessEngine\ABChessEngine.csproj", "{F1964689-E782-464C-BF32-CDAED7DE9641}"

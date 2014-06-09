@@ -7,6 +7,10 @@ namespace ABChess.Engine
 {
     public class GameEndedEventArgs : EventArgs
     {
+		/// <summary>
+		/// Color of the player that is the winner of the current match
+		/// </summary>
+		/// <value>The winner.</value>
         public int Winner { get; set; }
 
 

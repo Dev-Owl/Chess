@@ -15,7 +15,6 @@ namespace Chess.GUI.Forms
     public partial class ChessMainForm : Form
     {
 
-        Process mongoProcess;
         DebugViewFrom debugView;
         string DEFAULT_FILTER = "Chess saves (*.chess)|*.chess";
         string DEFAULT_DB_PATH = @"data\db\";
@@ -68,7 +67,7 @@ namespace Chess.GUI.Forms
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
             StartNewGameFrom newGameForm = new StartNewGameFrom(this);
-            newGameForm.ShowDialog(this);
+			newGameForm.Show();
         }
 
         public void StartNewGame(GameInfo NewGame)

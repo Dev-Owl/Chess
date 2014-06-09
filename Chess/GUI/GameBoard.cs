@@ -34,8 +34,11 @@ namespace Chess.GUI
             HighlightField = e.TargetPosition;
             //Clear the selected values
             this.SelectedMask = 0;
+			//No figure is selected
             this.SelectedFigure = null;
+			//No figure selected
             this.selected = false;
+			//Redraw the control
             this.Invalidate();
         }
 
@@ -129,6 +132,7 @@ namespace Chess.GUI
             this.moveGenerator.PromotionHandlerBlack = this;
             this.ActiveColor = Defaults.WHITE;
             this.moveGenerator.AfterMove += moveGenerator_AfterMove;
+			this.HighlightField=-1;
         }      
 
         #region Drawing
